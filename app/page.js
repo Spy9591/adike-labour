@@ -6,7 +6,8 @@ export default function Home() {
         background:
           "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
         color: "white",
-        padding: "40px"
+        padding: "40px",
+        fontFamily: "Arial"
       }}
     >
       <h1
@@ -25,12 +26,11 @@ export default function Home() {
 
       <p>
         ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು
-        ಮತ್ತು ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ
-        ವೇದಿಕೆ
+        ಮತ್ತು ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
       </p>
 
       <div style={{ marginTop: "30px" }}>
-        /labour
+        labour">
           <button
             style={{
               background: "#22c55e",
@@ -90,7 +90,12 @@ function Card({ title, value }) {
       }}
     >
       <h3>{title}</h3>
-      <h1 style={{ color: "#22c55e" }}>
+
+      <h1
+        style={{
+          color: "#22c55e"
+        }}
+      >
         {value}
       </h1>
     </div>
