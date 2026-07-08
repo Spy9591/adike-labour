@@ -1,121 +1,99 @@
-const workers = [
-  {
-    name: "ರಮೇಶ್",
-    village: "ಚನ್ನಗಿರಿ",
-    work: "ಅಡಿಕೆ ಕೊಯ್ಲು",
-    wage: "₹1000",
-    distance: "2 KM"
-  },
-  {
-    name: "ಮಂಜುನಾಥ್",
-    village: "ಸಂತೆಬೆನ್ನೂರು",
-    work: "ಮರ ಹತ್ತುವುದು",
-    wage: "₹1200",
-    distance: "4 KM"
-  },
-  {
-    name: "ಕಿರಣ್",
-    village: "ದೇವರಹಳ್ಳಿ",
-    work: "ಔಷಧ ಸಿಂಪಡಣೆ",
-    wage: "₹900",
-    distance: "3 KM"
-  }
-];
+import Link from "next/link";
 
-export default function OwnerPage() {
+export default function Home() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#0f172a",
+        background:
+          "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
         color: "white",
         padding: "40px"
       }}
     >
-      <h1 style={{ color: "#2563eb" }}>
-        🏡 ಕಾರ್ಮಿಕರನ್ನು ಹುಡುಕಿ
+      <h1
+        style={{
+          color: "#22c55e",
+          fontSize: "60px"
+        }}
+      >
+        🌴 ಅಡಿಕೆ ಕಾರ್ಮಿಕ
       </h1>
 
-      <input
-        style={input}
-        placeholder="ಕೆಲಸದ ವಿಧ"
-      />
+      <h2>
+        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು
+        ತಕ್ಷಣ ಹುಡುಕಿ
+      </h2>
 
-      <input
-        style={input}
-        placeholder="ವ್ಯಾಪ್ತಿ (5 KM)"
-      />
+      <p>
+        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು
+        ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
+      </p>
 
-      <button style={button}>
-        🔍 ಹುಡುಕಿ
-      </button>
+      <div style={{ marginTop: "30px" }}>
+        /labour
+          <button
+            style={{
+              background: "#22c55e",
+              color: "white",
+              padding: "15px 25px",
+              border: "none",
+              borderRadius: "10px",
+              marginRight: "10px",
+              cursor: "pointer"
+            }}
+          >
+            👷 ನಾನು ಕಾರ್ಮಿಕ
+          </button>
+        </Link>
 
-      {workers.map((worker) => (
-        <div
-          key={worker.name}
-          style={{
-            background: "#1e293b",
-            padding: "20px",
-            borderRadius: "15px",
-            marginTop: "20px"
-          }}
-        >
-          <h2>{worker.name}</h2>
+        /owner
+          <button
+            style={{
+              background: "#2563eb",
+              color: "white",
+              padding: "15px 25px",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer"
+            }}
+          >
+            🏡 ನಾನು ಮಾಲೀಕ
+          </button>
+        </Link>
+      </div>
 
-          <p>📍 {worker.village}</p>
-
-          <p>🔨 {worker.work}</p>
-
-          <p>💰 {worker.wage}</p>
-
-          <p>📏 {worker.distance}</p>
-
-          <div>
-            <button
-              style={{
-                ...small,
-                background: "#22c55e"
-              }}
-            >
-              📞 ಕರೆ ಮಾಡಿ
-            </button>
-
-            <button
-              style={{
-                ...small,
-                background: "#25D366",
-                marginLeft: "10px"
-              }}
-            >
-              WhatsApp
-            </button>
-          </div>
-        </div>
-      ))}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(250px,1fr))",
+          gap: "20px",
+          marginTop: "50px"
+        }}
+      >
+        <Card title="ಕಾರ್ಮಿಕರು" value="520+" />
+        <Card title="ಮಾಲೀಕರು" value="130+" />
+        <Card title="ಗ್ರಾಮಗಳು" value="35+" />
+        <Card title="ದೈನಂದಿನ ಕೆಲಸ" value="85+" />
+      </div>
     </div>
   );
 }
 
-const input = {
-  width: "100%",
-  maxWidth: "500px",
-  padding: "15px",
-  marginTop: "15px",
-  borderRadius: "8px"
-};
-
-const button = {
-  padding: "15px 25px",
-  marginTop: "15px",
-  background: "#2563eb",
-  border: "none",
-  color: "white",
-  borderRadius: "10px"
-};
-
-const small = {
-  padding: "10px 15px",
-  border: "none",
-  color: "white",
-  borderRadius: "8px"
-};
+function Card({ title, value }) {
+  return (
+    <div
+      style={{
+        background: "#1e293b",
+        padding: "25px",
+        borderRadius: "15px"
+      }}
+    >
+      <h3>{title}</h3>
+      <h1 style={{ color: "#22c55e" }}>
+        {value}
+      </h1>
+    </div>
+  );
+}
