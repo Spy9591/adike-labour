@@ -13,16 +13,15 @@ export default function Home() {
     >
       <h1
         style={{
-          color: "#22c55e",
-          fontSize: "60px"
+          fontSize: "60px",
+          color: "#22c55e"
         }}
       >
         🌴 ಅಡಿಕೆ ಕಾರ್ಮಿಕ
       </h1>
 
       <h2>
-        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು
-        ತಕ್ಷಣ ಹುಡುಕಿ
+        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು ತಕ್ಷಣ ಹುಡುಕಿ
       </h2>
 
       <p>
@@ -30,7 +29,13 @@ export default function Home() {
         ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
       </p>
 
-      <div style={{ marginTop: "30px" }}>
+      <div
+        style={{
+          marginTop: "30px",
+          display: "flex",
+          gap: "15px"
+        }}
+      >
         /labour
           <button
             style={{
@@ -39,7 +44,6 @@ export default function Home() {
               padding: "15px 25px",
               border: "none",
               borderRadius: "10px",
-              marginRight: "10px",
               cursor: "pointer"
             }}
           >
@@ -67,7 +71,7 @@ export default function Home() {
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
+            "repeat(auto-fit,minmax(220px,1fr))",
           gap: "20px",
           marginTop: "50px"
         }}
@@ -86,7 +90,7 @@ function Card({ title, value }) {
     <div
       style={{
         background: "#1e293b",
-        padding: "25px",
+        padding: "20px",
         borderRadius: "15px"
       }}
     >
