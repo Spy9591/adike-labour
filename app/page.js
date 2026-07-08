@@ -5,35 +5,32 @@ export default function Home() {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
+        background: "#0f172a",
         color: "white",
-        padding: "40px"
+        padding: "40px",
+        fontFamily: "Arial, sans-serif",
       }}
     >
       <h1
         style={{
-          fontSize: "60px",
-          color: "#22c55e"
+          color: "#22c55e",
+          fontSize: "50px",
         }}
       >
         🌴 ಅಡಿಕೆ ಕಾರ್ಮಿಕ
       </h1>
 
-      <h2>
-        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು ತಕ್ಷಣ ಹುಡುಕಿ
-      </h2>
+      <h2>ಚನ್ನಗಿರಿಯ ಅಡಿಕೆ ತೋಟಗಳಿಗಾಗಿ ಕಾರ್ಮಿಕರ ವೇದಿಕೆ</h2>
 
       <p>
-        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು
-        ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
+        ಕಾರ್ಮಿಕರು ಮತ್ತು ತೋಟದ ಮಾಲೀಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ಡಿಜಿಟಲ್ ವೇದಿಕೆ
       </p>
 
       <div
         style={{
           marginTop: "30px",
           display: "flex",
-          gap: "15px"
+          gap: "15px",
         }}
       >
         /labour
@@ -41,10 +38,10 @@ export default function Home() {
             style={{
               background: "#22c55e",
               color: "white",
-              padding: "15px 25px",
               border: "none",
+              padding: "15px 25px",
               borderRadius: "10px",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             👷 ನಾನು ಕಾರ್ಮಿಕ
@@ -56,48 +53,16 @@ export default function Home() {
             style={{
               background: "#2563eb",
               color: "white",
-              padding: "15px 25px",
               border: "none",
+              padding: "15px 25px",
               borderRadius: "10px",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             🏡 ನಾನು ಮಾಲೀಕ
           </button>
         </Link>
       </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: "20px",
-          marginTop: "50px"
-        }}
-      >
-        <Card title="ಕಾರ್ಮಿಕರು" value="520+" />
-        <Card title="ಮಾಲೀಕರು" value="130+" />
-        <Card title="ಗ್ರಾಮಗಳು" value="35+" />
-        <Card title="ದೈನಂದಿನ ಕೆಲಸ" value="85+" />
-      </div>
-    </div>
-  );
-}
-
-function Card({ title, value }) {
-  return (
-    <div
-      style={{
-        background: "#1e293b",
-        padding: "20px",
-        borderRadius: "15px"
-      }}
-    >
-      <h3>{title}</h3>
-      <h1 style={{ color: "#22c55e" }}>
-        {value}
-      </h1>
     </div>
   );
 }
