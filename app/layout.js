@@ -1,10 +1,10 @@
 export const metadata = {
-  title: "ಅಡಿಕೆ ಕಾರ್ಮಿಕ",
+  title: "Adike Labour",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="kn">
+    <html>
       <body>{children}</body>
     </html>
   );
