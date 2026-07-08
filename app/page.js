@@ -1,29 +1,33 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
+        background:
+          "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
         color: "white",
-        padding: "40px",
-        fontFamily: "Arial"
+        padding: "40px"
       }}
     >
       <h1
         style={{
-          fontSize: "60px",
-          color: "#22c55e"
+          color: "#22c55e",
+          fontSize: "60px"
         }}
       >
         🌴 ಅಡಿಕೆ ಕಾರ್ಮಿಕ
       </h1>
 
       <h2>
-        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು ತಕ್ಷಣ ಹುಡುಕಿ
+        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು
+        ತಕ್ಷಣ ಹುಡುಕಿ
       </h2>
 
       <p>
-        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
+        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು
+        ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
       </p>
 
       <div style={{ marginTop: "30px" }}>
@@ -41,9 +45,9 @@ export default function Home() {
           >
             👷 ನಾನು ಕಾರ್ಮಿಕ
           </button>
-        </a>
+        </Link>
 
-        owner">
+        /owner
           <button
             style={{
               background: "#2563eb",
@@ -56,13 +60,14 @@ export default function Home() {
           >
             🏡 ನಾನು ಮಾಲೀಕ
           </button>
-        </a>
+        </Link>
       </div>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(250px,1fr))",
           gap: "20px",
           marginTop: "50px"
         }}
@@ -86,7 +91,6 @@ function Card({ title, value }) {
       }}
     >
       <h3>{title}</h3>
-
       <h1 style={{ color: "#22c55e" }}>
         {value}
       </h1>
