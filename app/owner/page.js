@@ -1,99 +1,63 @@
-import Link from "next/link";
+const workers = [
+  {
+    name: "ರಮೇಶ್",
+    village: "ಚನ್ನಗಿರಿ",
+    work: "ಅಡಿಕೆ ಕೊಯ್ಲು",
+    wage: "₹1000"
+  },
+  {
+    name: "ಮಂಜುನಾಥ್",
+    village: "ಸಂತೆಬೆನ್ನೂರು",
+    work: "ಮರ ಹತ್ತುವುದು",
+    wage: "₹1200"
+  }
+];
 
-export default function Home() {
+export default function OwnerPage() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
+        background: "#0f172a",
         color: "white",
         padding: "40px"
       }}
     >
-      <h1
-        style={{
-          color: "#22c55e",
-          fontSize: "60px"
-        }}
-      >
-        🌴 ಅಡಿಕೆ ಕಾರ್ಮಿಕ
+      <h1 style={{ color: "#2563eb" }}>
+        🏡 ಕಾರ್ಮಿಕರನ್ನು ಹುಡುಕಿ
       </h1>
 
-      <h2>
-        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು
-        ತಕ್ಷಣ ಹುಡುಕಿ
-      </h2>
+      {workers.map((worker) => (
+        <div
+          key={worker.name}
+          style={{
+            background: "#1e293b",
+            padding: "20px",
+            borderRadius: "15px",
+            marginTop: "20px"
+          }}
+        >
+          <h2>{worker.name}</h2>
 
-      <p>
-        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು
-        ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
-      </p>
+          <p>📍 {worker.village}</p>
 
-      <div style={{ marginTop: "30px" }}>
-        /labour
+          <p>🔨 {worker.work}</p>
+
+          <p>💰 {worker.wage}</p>
+
           <button
             style={{
               background: "#22c55e",
-              color: "white",
-              padding: "15px 25px",
               border: "none",
-              borderRadius: "10px",
-              marginRight: "10px",
-              cursor: "pointer"
+              color: "white",
+              padding: "10px 15px",
+              borderRadius: "8px"
             }}
           >
-            👷 ನಾನು ಕಾರ್ಮಿಕ
+            📞 ಕರೆ ಮಾಡಿ
           </button>
-        </Link>
-
-        /owner
-          <button
-            style={{
-              background: "#2563eb",
-              color: "white",
-              padding: "15px 25px",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer"
-            }}
-          >
-            🏡 ನಾನು ಮಾಲೀಕ
-          </button>
-        </Link>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: "20px",
-          marginTop: "50px"
-        }}
-      >
-        <Card title="ಕಾರ್ಮಿಕರು" value="520+" />
-        <Card title="ಮಾಲೀಕರು" value="130+" />
-        <Card title="ಗ್ರಾಮಗಳು" value="35+" />
-        <Card title="ದೈನಂದಿನ ಕೆಲಸ" value="85+" />
-      </div>
-    </div>
-  );
-}
-
-function Card({ title, value }) {
-  return (
-    <div
-      style={{
-        background: "#1e293b",
-        padding: "25px",
-        borderRadius: "15px"
-      }}
-    >
-      <h3>{title}</h3>
-      <h1 style={{ color: "#22c55e" }}>
-        {value}
-      </h1>
+        </div>
+      ))}
     </div>
   );
 }
