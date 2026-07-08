@@ -48,9 +48,9 @@ export default function OwnerPage() {
           <button
             style={{
               background: "#22c55e",
-              border: "none",
               color: "white",
               padding: "10px 15px",
+              border: "none",
               borderRadius: "8px"
             }}
           >
