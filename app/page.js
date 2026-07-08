@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function Home() {
   return (
     <div
@@ -16,36 +14,30 @@ export default function Home() {
       <p>Find labourers in Channagiri</p>
 
       <div style={{ marginTop: "20px" }}>
-        /labour
-          <button
-            style={{
-              padding: "12px 20px",
-              background: "green",
-              color: "white",
-              border: "none",
-              marginRight: "10px",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            Labour Page
-          </button>
-        </Link>
+        <button
+          style={{
+            padding: "12px 20px",
+            marginRight: "10px",
+            background: "green",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+          }}
+        >
+          Labour Page
+        </button>
 
-        /owner
-          <button
-            style={{
-              padding: "12px 20px",
-              background: "blue",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            Owner Page
-          </button>
-        </Link>
+        <button
+          style={{
+            padding: "12px 20px",
+            background: "blue",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+          }}
+        >
+          Owner Page
+        </button>
       </div>
     </div>
   );
