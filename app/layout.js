@@ -1,6 +1,6 @@
 export const metadata = {
   title: "ಅಡಿಕೆ ಕಾರ್ಮಿಕ",
-  description: "ಅಡಿಕೆ ತೋಟ ಕಾರ್ಮಿಕರ ವೇದಿಕೆ"
+  description: "ಅಡಿಕೆ ಕಾರ್ಮಿಕ ವೇದಿಕೆ"
 };
 
 export default function RootLayout({ children }) {
@@ -9,7 +9,6 @@ export default function RootLayout({ children }) {
       <body
         style={{
           margin: 0,
-          padding: 0,
           fontFamily: "Arial, sans-serif"
         }}
       >
