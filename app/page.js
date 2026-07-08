@@ -3,8 +3,7 @@ export default function Home() {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
+        background: "linear-gradient(135deg,#020617,#0f172a,#1e293b)",
         color: "white",
         padding: "40px",
         fontFamily: "Arial"
@@ -20,17 +19,15 @@ export default function Home() {
       </h1>
 
       <h2>
-        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು
-        ತಕ್ಷಣ ಹುಡುಕಿ
+        ಅಡಿಕೆ ತೋಟಗಳಿಗೆ ಕಾರ್ಮಿಕರನ್ನು ತಕ್ಷಣ ಹುಡುಕಿ
       </h2>
 
       <p>
-        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು
-        ಮತ್ತು ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
+        ಚನ್ನಗಿರಿ ಪ್ರದೇಶದ ತೋಟ ಮಾಲೀಕರು ಮತ್ತು ಕಾರ್ಮಿಕರನ್ನು ಸಂಪರ್ಕಿಸುವ ವೇದಿಕೆ
       </p>
 
       <div style={{ marginTop: "30px" }}>
-        labour">
+        /labour
           <button
             style={{
               background: "#22c55e",
@@ -46,7 +43,7 @@ export default function Home() {
           </button>
         </a>
 
-        /owner
+        owner">
           <button
             style={{
               background: "#2563eb",
@@ -65,8 +62,7 @@ export default function Home() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
+          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
           gap: "20px",
           marginTop: "50px"
         }}
@@ -91,11 +87,7 @@ function Card({ title, value }) {
     >
       <h3>{title}</h3>
 
-      <h1
-        style={{
-          color: "#22c55e"
-        }}
-      >
+      <h1 style={{ color: "#22c55e" }}>
         {value}
       </h1>
     </div>
