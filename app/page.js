@@ -5,58 +5,45 @@ export default function Home() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0f172a",
+        backgroundColor: "#0f172a",
         color: "white",
         padding: "40px",
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <h1 style={{ color: "#22c55e" }}>
-        🌴 Adike Labour
-      </h1>
+      <h1>🌴 Adike Labour</h1>
 
-      <h2>
-        Find Arecanut Labourers in Channagiri
-      </h2>
+      <p>Find labourers in Channagiri</p>
 
-      <p>
-        Connecting labourers and farm owners.
-      </p>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-          marginTop: "30px",
-        }}
-      >
+      <div style={{ marginTop: "20px" }}>
         /labour
           <button
             style={{
-              background: "#22c55e",
+              padding: "12px 20px",
+              background: "green",
               color: "white",
               border: "none",
-              padding: "15px 25px",
-              borderRadius: "10px",
+              marginRight: "10px",
+              borderRadius: "8px",
               cursor: "pointer",
             }}
           >
-            👷 Labour
+            Labour Page
           </button>
         </Link>
 
         /owner
           <button
             style={{
-              background: "#2563eb",
+              padding: "12px 20px",
+              background: "blue",
               color: "white",
               border: "none",
-              padding: "15px 25px",
-              borderRadius: "10px",
+              borderRadius: "8px",
               cursor: "pointer",
             }}
           >
-            🏡 Owner
+            Owner Page
           </button>
         </Link>
       </div>
