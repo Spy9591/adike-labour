@@ -67,7 +67,7 @@ const button = {
   padding: "15px",
   marginTop: "20px",
   background: "#22c55e",
-  border: "none",
   color: "white",
+  border: "none",
   borderRadius: "10px"
 };
