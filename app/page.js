@@ -6,20 +6,6 @@ export default function Home() {
       <div className="overlay"></div>
 
       <div className="card">
-        <div className="logo">
-          <div className="trunk"></div>
-
-          <div className="leaf leaf1"></div>
-          <div className="leaf leaf2"></div>
-          <div className="leaf leaf3"></div>
-          <div className="leaf leaf4"></div>
-          <div className="leaf leaf5"></div>
-
-          <div className="nut nut1"></div>
-          <div className="nut nut2"></div>
-          <div className="nut nut3"></div>
-        </div>
-
         <h1 className="title">
           ಅಡಿಕೆ ನಾಡಿಗೆ ಸ್ವಾಗತ
         </h1>
@@ -35,7 +21,7 @@ export default function Home() {
               (window.location.href = "/labour")
             }
           >
-            👷 Labour Login
+            Labour Login
           </button>
 
           <button
@@ -44,7 +30,7 @@ export default function Home() {
               (window.location.href = "/owner")
             }
           >
-            🏡 Owner Login
+            Owner Login
           </button>
         </div>
       </div>
@@ -54,29 +40,32 @@ export default function Home() {
           min-height: 100vh;
           background: linear-gradient(
             135deg,
-            #08121f,
-            #10253d,
-            #17314f
+            #0b1120,
+            #172554,
+            #0f172a
           );
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
           overflow: hidden;
-          padding: 20px;
         }
 
         .page::before {
           content: "";
           position: absolute;
           inset: 0;
-          background-image:
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 70px,
-              rgba(255, 255, 255, 0.03) 72px,
-              rgba(255, 255, 255, 0.03) 75px
+
+          background:
+            radial-gradient(
+              circle at 20% 20%,
+              rgba(59,130,246,.15),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 80% 80%,
+              rgba(34,197,94,.15),
+              transparent 30%
             );
         }
 
@@ -84,117 +73,61 @@ export default function Home() {
           position: absolute;
           width: 500px;
           height: 500px;
-          background: rgba(34, 197, 94, 0.15);
+
+          background: rgba(255,255,255,.08);
+
           border-radius: 50%;
+
           filter: blur(120px);
+
           animation: pulse 6s infinite;
         }
 
         .card {
           position: relative;
           z-index: 2;
-          width: 100%;
-          max-width: 850px;
-          padding: 50px;
-          border-radius: 30px;
 
-          background: rgba(255, 255, 255, 0.12);
+          width: 90%;
+          max-width: 850px;
+
+          padding: 60px;
+
+          text-align: center;
+
+          background: rgba(255,255,255,.1);
+
           backdrop-filter: blur(20px);
 
           border: 1px solid rgba(255,255,255,.15);
 
-          text-align: center;
+          border-radius: 30px;
 
           box-shadow:
             0 25px 60px rgba(0,0,0,.5),
-            0 0 30px rgba(255,255,255,.1);
-        }
-
-        .logo {
-          position: relative;
-          width: 180px;
-          height: 180px;
-          margin: 0 auto 25px auto;
-          animation: float 4s ease-in-out infinite;
-        }
-
-        .trunk {
-          width: 22px;
-          height: 110px;
-          background: #8b5a2b;
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          bottom: 15px;
-          border-radius: 20px;
-        }
-
-        .leaf {
-          position: absolute;
-          width: 80px;
-          height: 20px;
-          background: #22c55e;
-          border-radius: 50px;
-          top: 30px;
-          left: 50%;
-          transform-origin: left center;
-        }
-
-        .leaf1 {
-          transform: translateX(-50%) rotate(0deg);
-        }
-
-        .leaf2 {
-          transform: translateX(-50%) rotate(40deg);
-        }
-
-        .leaf3 {
-          transform: translateX(-50%) rotate(80deg);
-        }
-
-        .leaf4 {
-          transform: translateX(-50%) rotate(120deg);
-        }
-
-        .leaf5 {
-          transform: translateX(-50%) rotate(160deg);
-        }
-
-        .nut {
-          position: absolute;
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: #d97706;
-          top: 65px;
-        }
-
-        .nut1 {
-          left: 82px;
-        }
-
-        .nut2 {
-          left: 102px;
-        }
-
-        .nut3 {
-          left: 92px;
-          top: 80px;
+            0 0 30px rgba(255,255,255,.08);
         }
 
         .title {
           color: white;
+
           font-size: 4rem;
-          margin-bottom: 10px;
+
+          margin-bottom: 15px;
 
           text-shadow:
-            0 0 15px rgba(255,255,255,.3);
+            0 0 15px rgba(255,255,255,.25);
+
+          animation: slideUp 1s ease;
         }
 
         .subtitle {
           color: #d1d5db;
+
           font-size: 1.5rem;
-          margin-bottom: 35px;
+
+          margin-bottom: 40px;
+
+          animation: slideUp 1.5s ease;
         }
 
         .buttons {
@@ -206,14 +139,21 @@ export default function Home() {
 
         .labourBtn,
         .ownerBtn {
-          padding: 16px 32px;
           border: none;
+
+          padding: 16px 35px;
+
           border-radius: 14px;
+
           color: white;
-          cursor: pointer;
+
           font-size: 18px;
+
           font-weight: 700;
-          transition: 0.3s;
+
+          cursor: pointer;
+
+          transition: all 0.3s ease;
         }
 
         .labourBtn {
@@ -227,17 +167,18 @@ export default function Home() {
         .labourBtn:hover,
         .ownerBtn:hover {
           transform: translateY(-5px);
-          box-shadow: 0 15px 30px rgba(0,0,0,.3);
+
+          box-shadow:
+            0 15px 35px rgba(0,0,0,.3);
         }
 
-        @keyframes float {
-          0% {
-            transform: translateY(0);
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(25px);
           }
-          50% {
-            transform: translateY(-12px);
-          }
-          100% {
+          to {
+            opacity: 1;
             transform: translateY(0);
           }
         }
@@ -246,9 +187,11 @@ export default function Home() {
           0% {
             transform: scale(1);
           }
+
           50% {
-            transform: scale(1.15);
+            transform: scale(1.1);
           }
+
           100% {
             transform: scale(1);
           }
@@ -256,7 +199,7 @@ export default function Home() {
 
         @media (max-width: 768px) {
           .title {
-            font-size: 2.4rem;
+            font-size: 2.3rem;
           }
 
           .subtitle {
@@ -264,7 +207,7 @@ export default function Home() {
           }
 
           .card {
-            padding: 30px;
+            padding: 35px;
           }
         }
       `}</style>
