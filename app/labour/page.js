@@ -1,10 +1,43 @@
 "use client";
 
+import { useState } from "react";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
+
 export default function LabourPage() {
-  const handleSubmit = (e) => {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [village, setVillage] = useState("");
+  const [location, setLocation] = useState("");
+  const [experience, setExperience] = useState("");
+  const [govtId, setGovtId] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    alert("✅ Labour Registration Submitted Successfully");
+    try {
+      await addDoc(collection(db, "labours"), {
+        name,
+        phone,
+        village,
+        location,
+        experience,
+        govtId,
+        createdAt: new Date(),
+      });
+
+      alert("✅ Labour Registration Saved Successfully");
+
+      setName("");
+      setPhone("");
+      setVillage("");
+      setLocation("");
+      setExperience("");
+      setGovtId("");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Failed to Save Data");
+    }
   };
 
   return (
@@ -28,8 +61,7 @@ export default function LabourPage() {
           backdropFilter: "blur(15px)",
           padding: "30px",
           borderRadius: "25px",
-          boxShadow:
-            "0 20px 50px rgba(0,0,0,0.5)",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           color: "white",
         }}
       >
@@ -46,6 +78,8 @@ export default function LabourPage() {
         <input
           type="text"
           placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
           style={inputStyle}
         />
@@ -54,7 +88,8 @@ export default function LabourPage() {
           type="tel"
           placeholder="Phone Number"
           pattern="[0-9]{10}"
-          title="Enter 10 digit mobile number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           required
           style={inputStyle}
         />
@@ -62,6 +97,8 @@ export default function LabourPage() {
         <input
           type="text"
           placeholder="Village"
+          value={village}
+          onChange={(e) => setVillage(e.target.value)}
           required
           style={inputStyle}
         />
@@ -69,6 +106,8 @@ export default function LabourPage() {
         <input
           type="text"
           placeholder="Location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
           required
           style={inputStyle}
         />
@@ -76,34 +115,19 @@ export default function LabourPage() {
         <input
           type="number"
           placeholder="Experience (Years)"
-          min="0"
+          value={experience}
+          onChange={(e) => setExperience(e.target.value)}
           required
           style={inputStyle}
-        />
-
-        <label>📷 Profile Photo *</label>
-        <input
-          type="file"
-          accept="image/*"
-          required
-          style={fileStyle}
         />
 
         <input
           type="text"
           placeholder="Government ID Number"
-          minLength="6"
-          maxLength="20"
+          value={govtId}
+          onChange={(e) => setGovtId(e.target.value)}
           required
           style={inputStyle}
-        />
-
-        <label>🪪 Government ID Photo *</label>
-        <input
-          type="file"
-          accept="image/*"
-          required
-          style={fileStyle}
         />
 
         <button type="submit" style={buttonStyle}>
@@ -120,11 +144,6 @@ const inputStyle = {
   margin: "10px 0",
   borderRadius: "10px",
   border: "none",
-};
-
-const fileStyle = {
-  marginTop: "10px",
-  marginBottom: "15px",
 };
 
 const buttonStyle = {
