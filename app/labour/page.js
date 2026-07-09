@@ -1,68 +1,35 @@
 export default function LabourPage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0f172a",
-        color: "white",
-        padding: "40px",
-      }}
-    >
-      <h1 style={{ color: "#22c55e" }}>
-        👷 Labour Registration
-      </h1>
+    <div style={{ padding: "40px" }}>
+      <h1>👷 Labour Registration</h1>
 
       <form
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "15px",
           maxWidth: "500px",
+          gap: "15px",
         }}
       >
-        <input
-          placeholder="Name"
-          style={inputStyle}
-        />
+        <input type="text" placeholder="Name" />
+        <input type="tel" placeholder="Phone Number" />
+        <input type="text" placeholder="Location" />
 
-        <input
-          placeholder="Phone Number"
-          style={inputStyle}
-        />
-
-        <input
-          placeholder="Location"
-          style={inputStyle}
-        />
-
-        <label>Profile Photo</label>
+        <label>Photo</label>
         <input type="file" />
 
         <input
+          type="text"
           placeholder="Government ID Number"
-          style={inputStyle}
         />
 
         <label>Government ID Photo</label>
         <input type="file" />
 
-        <button
-          style={{
-            padding: "15px",
-            background: "#22c55e",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-          }}
-        >
+        <button type="submit">
           Register Labour
         </button>
       </form>
     </div>
   );
 }
-
-const inputStyle = {
-  padding: "12px",
-  borderRadius: "8px",
-};
