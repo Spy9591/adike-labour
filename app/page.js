@@ -2,12 +2,27 @@
 
 export default function Home() {
   return (
-    <div className="page">
+    <div className="container">
       <div className="blob blob1"></div>
       <div className="blob blob2"></div>
 
       <div className="card">
-        <div className="tree">🌴</div>
+        <div className="heroLogo">
+          <div className="treeTrunk"></div>
+
+          <div className="treeTop">
+            <div className="leaf leaf1"></div>
+            <div className="leaf leaf2"></div>
+            <div className="leaf leaf3"></div>
+            <div className="leaf leaf4"></div>
+          </div>
+
+          <div className="nut nut1"></div>
+          <div className="nut nut2"></div>
+          <div className="nut nut3"></div>
+
+          <div className="climber">🧑</div>
+        </div>
 
         <h1 className="title">
           ಅಡಿಕೆ ನಾಡಿಗೆ ಸ್ವಾಗತ
@@ -39,13 +54,13 @@ export default function Home() {
       </div>
 
       <style jsx>{`
-        .page {
+        .container {
           min-height: 100vh;
           background: linear-gradient(
             135deg,
-            #021b0f,
-            #064e3b,
-            #0f172a
+            #020617,
+            #0f172a,
+            #1e293b
           );
           display: flex;
           justify-content: center;
@@ -57,96 +72,186 @@ export default function Home() {
 
         .blob {
           position: absolute;
-          border-radius: 50%;
+          border-radius: 999px;
           filter: blur(100px);
-          animation: move 10s infinite alternate;
         }
 
         .blob1 {
-          width: 350px;
-          height: 350px;
-          background: rgba(34, 197, 94, 0.4);
+          width: 300px;
+          height: 300px;
+          background: rgba(34, 197, 94, 0.3);
           top: 10%;
           left: 10%;
+          animation: move1 10s infinite alternate;
         }
 
         .blob2 {
           width: 350px;
           height: 350px;
-          background: rgba(37, 99, 235, 0.4);
+          background: rgba(59, 130, 246, 0.3);
           bottom: 10%;
           right: 10%;
+          animation: move2 12s infinite alternate;
         }
 
         .card {
+          width: 100%;
+          max-width: 900px;
           background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(20px);
-          padding: 50px;
-          border-radius: 30px;
+          border-radius: 35px;
           text-align: center;
+          padding: 50px;
           color: white;
-          z-index: 1;
+
           box-shadow:
-            0 25px 60px rgba(0, 0, 0, 0.4),
-            0 0 30px rgba(34, 197, 94, 0.3);
-          max-width: 850px;
-          width: 100%;
+            0 25px 70px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(255, 215, 0, 0.15);
         }
 
-        .tree {
-          font-size: 100px;
-          animation: float 3s ease-in-out infinite;
+        .heroLogo {
+          position: relative;
+          width: 220px;
+          height: 220px;
+          margin: 0 auto 20px auto;
+          animation: float 4s infinite ease-in-out;
+        }
+
+        .treeTrunk {
+          position: absolute;
+          width: 24px;
+          height: 140px;
+          background: linear-gradient(
+            to bottom,
+            #b08968,
+            #7f5539
+          );
+          left: 50%;
+          bottom: 20px;
+          transform: translateX(-50%);
+          border-radius: 30px;
+        }
+
+        .treeTop {
+          position: absolute;
+          top: 35px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .leaf {
+          position: absolute;
+          width: 70px;
+          height: 28px;
+
+          background: linear-gradient(
+            90deg,
+            #16a34a,
+            #4ade80
+          );
+
+          border-radius: 100px 0 100px 0;
+        }
+
+        .leaf1 {
+          transform: rotate(0deg);
+        }
+
+        .leaf2 {
+          transform: rotate(60deg);
+        }
+
+        .leaf3 {
+          transform: rotate(120deg);
+        }
+
+        .leaf4 {
+          transform: rotate(180deg);
+        }
+
+        .nut {
+          position: absolute;
+
+          width: 16px;
+          height: 16px;
+
+          background: #d97706;
+          border-radius: 50%;
+          top: 72px;
+        }
+
+        .nut1 {
+          left: 95px;
+        }
+
+        .nut2 {
+          left: 118px;
+        }
+
+        .nut3 {
+          left: 106px;
+          top: 90px;
+        }
+
+        .climber {
+          position: absolute;
+          left: 112px;
+          top: 115px;
+          font-size: 30px;
+
+          animation: climb 3s infinite ease-in-out;
         }
 
         .title {
           font-size: 4rem;
-          margin: 0;
-          color: #facc15;
+          color: #ffd700;
+
           text-shadow:
-            0 0 15px #facc15,
+            0 0 10px #ffd700,
             0 0 30px #f59e0b;
-          animation: fadeIn 1.5s ease;
         }
 
         .subtitle {
           font-size: 1.6rem;
-          margin-top: 15px;
           color: #e5e7eb;
-          animation: slideUp 2s ease;
+          margin-top: 15px;
+          margin-bottom: 35px;
         }
 
         .buttons {
           display: flex;
           justify-content: center;
           gap: 20px;
-          margin-top: 40px;
           flex-wrap: wrap;
         }
 
         .labourBtn,
         .ownerBtn {
           border: none;
-          padding: 16px 32px;
-          font-size: 18px;
-          color: white;
-          cursor: pointer;
+          padding: 18px 35px;
           border-radius: 15px;
-          transition: all 0.3s ease;
-          font-weight: bold;
+          color: white;
+          font-size: 18px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: 0.3s;
         }
 
         .labourBtn {
-          background: #22c55e;
+          background: #16a34a;
+          box-shadow:
+            0 10px 25px rgba(22,163,74,.45);
         }
 
         .ownerBtn {
           background: #2563eb;
+          box-shadow:
+            0 10px 25px rgba(37,99,235,.45);
         }
 
         .labourBtn:hover,
         .ownerBtn:hover {
-          transform: translateY(-5px) scale(1.05);
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+          transform: translateY(-6px) scale(1.05);
         }
 
         @keyframes float {
@@ -154,41 +259,58 @@ export default function Home() {
             transform: translateY(0);
           }
           50% {
-            transform: translateY(-15px);
+            transform: translateY(-12px);
           }
           100% {
             transform: translateY(0);
           }
         }
 
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: scale(0.8);
+        @keyframes climb {
+          0% {
+            transform: translateY(20px);
           }
-          to {
-            opacity: 1;
-            transform: scale(1);
+
+          50% {
+            transform: translateY(-20px);
+          }
+
+          100% {
+            transform: translateY(20px);
           }
         }
 
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes move {
+        @keyframes move1 {
           from {
             transform: translate(0, 0);
           }
+
           to {
-            transform: translate(50px, -50px);
+            transform: translate(80px, -50px);
+          }
+        }
+
+        @keyframes move2 {
+          from {
+            transform: translate(0, 0);
+          }
+
+          to {
+            transform: translate(-80px, 50px);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .title {
+            font-size: 2.5rem;
+          }
+
+          .subtitle {
+            font-size: 1.1rem;
+          }
+
+          .card {
+            padding: 30px;
           }
         }
       `}</style>
