@@ -1,59 +1,76 @@
 "use client";
 
-import Link from "next/link";
-
 export default function Home() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#0f172a",
+        background:
+          "linear-gradient(135deg,#064e3b,#14532d,#166534)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
         color: "white",
-        padding: "50px",
         textAlign: "center",
+        fontFamily: "Arial",
       }}
     >
-      <h1>🌴 ಅಡಿಕೆ ನಾಡಿಗೆ ಸ್ವಾಗತ</h1>
+      <h1
+        style={{
+          fontSize: "4rem",
+          color: "#facc15",
+        }}
+      >
+        🌴 ಅಡಿಕೆ ನಾಡಿಗೆ ಸ್ವಾಗತ 🌴
+      </h1>
 
-      <p>Welcome to Adike Labour Platform</p>
+      <p
+        style={{
+          fontSize: "1.2rem",
+          marginBottom: "30px",
+        }}
+      >
+        Welcome to Adike Labour Platform
+      </p>
 
       <div
         style={{
-          marginTop: "40px",
           display: "flex",
-          justifyContent: "center",
           gap: "20px",
         }}
       >
-        /labour
-          <button
-            style={{
-              padding: "15px 30px",
-              background: "green",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            👷 Labour Login
-          </button>
-        </Link>
+        <button
+          onClick={() => {
+            window.location.href = "/labour";
+          }}
+          style={{
+            background: "#22c55e",
+            color: "white",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+        >
+          👷 Labour Login
+        </button>
 
-        /owner
-          <button
-            style={{
-              padding: "15px 30px",
-              background: "blue",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            🏡 Owner Login
-          </button>
-        </Link>
+        <button
+          onClick={() => {
+            window.location.href = "/owner";
+          }}
+          style={{
+            background: "#2563eb",
+            color: "white",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+        >
+          🏡 Owner Login
+        </button>
       </div>
     </div>
   );
