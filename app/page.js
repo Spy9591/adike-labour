@@ -2,26 +2,22 @@
 
 export default function Home() {
   return (
-    <div className="container">
-      <div className="blob blob1"></div>
-      <div className="blob blob2"></div>
+    <div className="page">
+      <div className="overlay"></div>
 
       <div className="card">
-        <div className="heroLogo">
-          <div className="treeTrunk"></div>
+        <div className="logo">
+          <div className="trunk"></div>
 
-          <div className="treeTop">
-            <div className="leaf leaf1"></div>
-            <div className="leaf leaf2"></div>
-            <div className="leaf leaf3"></div>
-            <div className="leaf leaf4"></div>
-          </div>
+          <div className="leaf leaf1"></div>
+          <div className="leaf leaf2"></div>
+          <div className="leaf leaf3"></div>
+          <div className="leaf leaf4"></div>
+          <div className="leaf leaf5"></div>
 
           <div className="nut nut1"></div>
           <div className="nut nut2"></div>
           <div className="nut nut3"></div>
-
-          <div className="climber">🧑</div>
         </div>
 
         <h1 className="title">
@@ -54,167 +50,150 @@ export default function Home() {
       </div>
 
       <style jsx>{`
-        .container {
+        .page {
           min-height: 100vh;
           background: linear-gradient(
             135deg,
-            #020617,
-            #0f172a,
-            #1e293b
+            #08121f,
+            #10253d,
+            #17314f
           );
           display: flex;
           justify-content: center;
           align-items: center;
-          overflow: hidden;
           position: relative;
+          overflow: hidden;
           padding: 20px;
         }
 
-        .blob {
+        .page::before {
+          content: "";
           position: absolute;
-          border-radius: 999px;
-          filter: blur(100px);
+          inset: 0;
+          background-image:
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 70px,
+              rgba(255, 255, 255, 0.03) 72px,
+              rgba(255, 255, 255, 0.03) 75px
+            );
         }
 
-        .blob1 {
-          width: 300px;
-          height: 300px;
-          background: rgba(34, 197, 94, 0.3);
-          top: 10%;
-          left: 10%;
-          animation: move1 10s infinite alternate;
-        }
-
-        .blob2 {
-          width: 350px;
-          height: 350px;
-          background: rgba(59, 130, 246, 0.3);
-          bottom: 10%;
-          right: 10%;
-          animation: move2 12s infinite alternate;
+        .overlay {
+          position: absolute;
+          width: 500px;
+          height: 500px;
+          background: rgba(34, 197, 94, 0.15);
+          border-radius: 50%;
+          filter: blur(120px);
+          animation: pulse 6s infinite;
         }
 
         .card {
+          position: relative;
+          z-index: 2;
           width: 100%;
-          max-width: 900px;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(20px);
-          border-radius: 35px;
-          text-align: center;
+          max-width: 850px;
           padding: 50px;
-          color: white;
+          border-radius: 30px;
+
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(20px);
+
+          border: 1px solid rgba(255,255,255,.15);
+
+          text-align: center;
 
           box-shadow:
-            0 25px 70px rgba(0, 0, 0, 0.6),
-            0 0 40px rgba(255, 215, 0, 0.15);
+            0 25px 60px rgba(0,0,0,.5),
+            0 0 30px rgba(255,255,255,.1);
         }
 
-        .heroLogo {
+        .logo {
           position: relative;
-          width: 220px;
-          height: 220px;
-          margin: 0 auto 20px auto;
-          animation: float 4s infinite ease-in-out;
+          width: 180px;
+          height: 180px;
+          margin: 0 auto 25px auto;
+          animation: float 4s ease-in-out infinite;
         }
 
-        .treeTrunk {
+        .trunk {
+          width: 22px;
+          height: 110px;
+          background: #8b5a2b;
           position: absolute;
-          width: 24px;
-          height: 140px;
-          background: linear-gradient(
-            to bottom,
-            #b08968,
-            #7f5539
-          );
-          left: 50%;
-          bottom: 20px;
-          transform: translateX(-50%);
-          border-radius: 30px;
-        }
-
-        .treeTop {
-          position: absolute;
-          top: 35px;
           left: 50%;
           transform: translateX(-50%);
+          bottom: 15px;
+          border-radius: 20px;
         }
 
         .leaf {
           position: absolute;
-          width: 70px;
-          height: 28px;
-
-          background: linear-gradient(
-            90deg,
-            #16a34a,
-            #4ade80
-          );
-
-          border-radius: 100px 0 100px 0;
+          width: 80px;
+          height: 20px;
+          background: #22c55e;
+          border-radius: 50px;
+          top: 30px;
+          left: 50%;
+          transform-origin: left center;
         }
 
         .leaf1 {
-          transform: rotate(0deg);
+          transform: translateX(-50%) rotate(0deg);
         }
 
         .leaf2 {
-          transform: rotate(60deg);
+          transform: translateX(-50%) rotate(40deg);
         }
 
         .leaf3 {
-          transform: rotate(120deg);
+          transform: translateX(-50%) rotate(80deg);
         }
 
         .leaf4 {
-          transform: rotate(180deg);
+          transform: translateX(-50%) rotate(120deg);
+        }
+
+        .leaf5 {
+          transform: translateX(-50%) rotate(160deg);
         }
 
         .nut {
           position: absolute;
-
-          width: 16px;
-          height: 16px;
-
-          background: #d97706;
+          width: 14px;
+          height: 14px;
           border-radius: 50%;
-          top: 72px;
+          background: #d97706;
+          top: 65px;
         }
 
         .nut1 {
-          left: 95px;
+          left: 82px;
         }
 
         .nut2 {
-          left: 118px;
+          left: 102px;
         }
 
         .nut3 {
-          left: 106px;
-          top: 90px;
-        }
-
-        .climber {
-          position: absolute;
-          left: 112px;
-          top: 115px;
-          font-size: 30px;
-
-          animation: climb 3s infinite ease-in-out;
+          left: 92px;
+          top: 80px;
         }
 
         .title {
+          color: white;
           font-size: 4rem;
-          color: #ffd700;
+          margin-bottom: 10px;
 
           text-shadow:
-            0 0 10px #ffd700,
-            0 0 30px #f59e0b;
+            0 0 15px rgba(255,255,255,.3);
         }
 
         .subtitle {
-          font-size: 1.6rem;
-          color: #e5e7eb;
-          margin-top: 15px;
+          color: #d1d5db;
+          font-size: 1.5rem;
           margin-bottom: 35px;
         }
 
@@ -227,31 +206,28 @@ export default function Home() {
 
         .labourBtn,
         .ownerBtn {
+          padding: 16px 32px;
           border: none;
-          padding: 18px 35px;
-          border-radius: 15px;
+          border-radius: 14px;
           color: white;
+          cursor: pointer;
           font-size: 18px;
           font-weight: 700;
-          cursor: pointer;
           transition: 0.3s;
         }
 
         .labourBtn {
           background: #16a34a;
-          box-shadow:
-            0 10px 25px rgba(22,163,74,.45);
         }
 
         .ownerBtn {
           background: #2563eb;
-          box-shadow:
-            0 10px 25px rgba(37,99,235,.45);
         }
 
         .labourBtn:hover,
         .ownerBtn:hover {
-          transform: translateY(-6px) scale(1.05);
+          transform: translateY(-5px);
+          box-shadow: 0 15px 30px rgba(0,0,0,.3);
         }
 
         @keyframes float {
@@ -266,47 +242,25 @@ export default function Home() {
           }
         }
 
-        @keyframes climb {
+        @keyframes pulse {
           0% {
-            transform: translateY(20px);
+            transform: scale(1);
           }
-
           50% {
-            transform: translateY(-20px);
+            transform: scale(1.15);
           }
-
           100% {
-            transform: translateY(20px);
-          }
-        }
-
-        @keyframes move1 {
-          from {
-            transform: translate(0, 0);
-          }
-
-          to {
-            transform: translate(80px, -50px);
-          }
-        }
-
-        @keyframes move2 {
-          from {
-            transform: translate(0, 0);
-          }
-
-          to {
-            transform: translate(-80px, 50px);
+            transform: scale(1);
           }
         }
 
         @media (max-width: 768px) {
           .title {
-            font-size: 2.5rem;
+            font-size: 2.4rem;
           }
 
           .subtitle {
-            font-size: 1.1rem;
+            font-size: 1rem;
           }
 
           .card {
