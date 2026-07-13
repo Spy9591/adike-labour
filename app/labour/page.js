@@ -8,46 +8,58 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-
 import { db } from "../firebase";
 
 export default function LabourPage() {
-  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
+
+  const [name, setName] = useState("");
   const [village, setVillage] = useState("");
   const [location, setLocation] = useState("");
   const [experience, setExperience] = useState("");
   const [govtId, setGovtId] = useState("");
   const [photo, setPhoto] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const checkUser = async () => {
+    if (!phone) {
+      alert("Enter Phone Number");
+      return;
+    }
 
     try {
-      // Check if account exists
       const q = query(
         collection(db, "labours"),
         where("phone", "==", phone)
       );
 
-      const existingUser = await getDocs(q);
+      const result = await getDocs(q);
 
-      if (!existingUser.empty) {
-        alert("⚠️ Account already exists. Please Login.");
+      if (!result.empty) {
+        alert("✅ Account Already Exists");
+
+        window.location.href = "/labour/dashboard";
         return;
       }
 
-      // Mandatory validations
-      if (!govtId) {
-        alert("Government ID is mandatory");
-        return;
-      }
+      setChecked(true);
+      setIsNewUser(true);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to check account");
+    }
+  };
 
-      if (!photo) {
-        alert("Photo is mandatory");
-        return;
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    if (!photo) {
+      alert("Photo is mandatory");
+      return;
+    }
+
+    try {
       await addDoc(collection(db, "labours"), {
         name,
         phone,
@@ -60,22 +72,12 @@ export default function LabourPage() {
         createdAt: new Date(),
       });
 
-      alert("✅ Labour Registration Saved Successfully");
+      alert("✅ Account Created Successfully");
 
-      setName("");
-      setPhone("");
-      setVillage("");
-      setLocation("");
-      setExperience("");
-      setGovtId("");
-      setPhoto(null);
-
-      // Future dashboard redirect
-      // window.location.href = "/labour/dashboard";
-
+      window.location.href = "/labour/dashboard";
     } catch (error) {
       console.error(error);
-      alert("❌ Failed to Save Data");
+      alert("Failed to Save Data");
     }
   };
 
@@ -111,17 +113,8 @@ export default function LabourPage() {
             marginBottom: "25px",
           }}
         >
-          👷 ಕಾರ್ಮಿಕರ ನೋಂದಣಿ
+          👷 Labour Login / Registration
         </h1>
-
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={inputStyle}
-        />
 
         <input
           type="tel"
@@ -133,53 +126,85 @@ export default function LabourPage() {
           style={inputStyle}
         />
 
-        <input
-          type="text"
-          placeholder="Village"
-          value={village}
-          onChange={(e) => setVillage(e.target.value)}
-          required
-          style={inputStyle}
-        />
+        {!checked && (
+          <button
+            type="button"
+            onClick={checkUser}
+            style={buttonStyle}
+          >
+            Continue
+          </button>
+        )}
 
-        <input
-          type="text"
-          placeholder="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          required
-          style={inputStyle}
-        />
+        {isNewUser && (
+          <>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={inputStyle}
+            />
 
-        <input
-          type="number"
-          placeholder="Experience (Years)"
-          value={experience}
-          onChange={(e) => setExperience(e.target.value)}
-          required
-          style={inputStyle}
-        />
+            <input
+              type="text"
+              placeholder="Village"
+              value={village}
+              onChange={(e) => setVillage(e.target.value)}
+              required
+              style={inputStyle}
+            />
 
-        <input
-          type="text"
-          placeholder="Government ID Number"
-          value={govtId}
-          onChange={(e) => setGovtId(e.target.value)}
-          required
-          style={inputStyle}
-        />
+            <input
+              type="text"
+              placeholder="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              style={inputStyle}
+            />
 
-        <input
-          type="file"
-          accept="image/*"
-          required
-          onChange={(e) => setPhoto(e.target.files[0])}
-          style={inputStyle}
-        />
+            <input
+              type="number"
+              placeholder="Experience (Years)"
+              value={experience}
+              onChange={(e) =>
+                setExperience(e.target.value)
+              }
+              required
+              style={inputStyle}
+            />
 
-        <button type="submit" style={buttonStyle}>
-          ✅ Register Labour
-        </button>
+            <input
+              type="text"
+              placeholder="Government ID Number"
+              value={govtId}
+              onChange={(e) =>
+                setGovtId(e.target.value)
+              }
+              required
+              style={inputStyle}
+            />
+
+            <input
+              type="file"
+              accept="image/*"
+              required
+              onChange={(e) =>
+                setPhoto(e.target.files[0])
+              }
+              style={inputStyle}
+            />
+
+            <button
+              type="submit"
+              style={buttonStyle}
+            >
+              Create Account
+            </button>
+          </>
+        )}
       </form>
     </div>
   );
