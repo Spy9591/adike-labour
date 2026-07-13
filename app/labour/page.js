@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
 import { db } from "../firebase";
 
 export default function LabourPage() {
@@ -11,11 +18,36 @@ export default function LabourPage() {
   const [location, setLocation] = useState("");
   const [experience, setExperience] = useState("");
   const [govtId, setGovtId] = useState("");
+  const [photo, setPhoto] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      // Check if account exists
+      const q = query(
+        collection(db, "labours"),
+        where("phone", "==", phone)
+      );
+
+      const existingUser = await getDocs(q);
+
+      if (!existingUser.empty) {
+        alert("⚠️ Account already exists. Please Login.");
+        return;
+      }
+
+      // Mandatory validations
+      if (!govtId) {
+        alert("Government ID is mandatory");
+        return;
+      }
+
+      if (!photo) {
+        alert("Photo is mandatory");
+        return;
+      }
+
       await addDoc(collection(db, "labours"), {
         name,
         phone,
@@ -23,6 +55,8 @@ export default function LabourPage() {
         location,
         experience,
         govtId,
+        photoName: photo.name,
+        onDuty: false,
         createdAt: new Date(),
       });
 
@@ -34,6 +68,11 @@ export default function LabourPage() {
       setLocation("");
       setExperience("");
       setGovtId("");
+      setPhoto(null);
+
+      // Future dashboard redirect
+      // window.location.href = "/labour/dashboard";
+
     } catch (error) {
       console.error(error);
       alert("❌ Failed to Save Data");
@@ -127,6 +166,14 @@ export default function LabourPage() {
           value={govtId}
           onChange={(e) => setGovtId(e.target.value)}
           required
+          style={inputStyle}
+        />
+
+        <input
+          type="file"
+          accept="image/*"
+          required
+          onChange={(e) => setPhoto(e.target.files[0])}
           style={inputStyle}
         />
 
