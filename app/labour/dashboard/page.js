@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
 export default function Dashboard() {
-  const [onDuty, setOnDuty] = useState(false);
-
   return (
     <div
       style={{
@@ -13,7 +9,7 @@ export default function Dashboard() {
         justifyContent: "center",
         alignItems: "center",
         background:
-          "linear-gradient(135deg,#0f172a,#14532d,#064e3b)",
+          "linear-gradient(135deg,#021b12,#14532d,#064e3b)",
       }}
     >
       <div
@@ -27,30 +23,19 @@ export default function Dashboard() {
         }}
       >
         <h1>👷 Labour Dashboard</h1>
-
-        <h2>
-          {onDuty
-            ? "🟢 Available For Work"
-            : "🔴 Not Available"}
-        </h2>
+        <h3>Welcome to Adike Labour Platform</h3>
 
         <button
-          onClick={() => setOnDuty(!onDuty)}
           style={{
-            padding: "15px 20px",
-            border: "none",
-            borderRadius: "10px",
-            background: onDuty
-              ? "#dc2626"
-              : "#16a34a",
+            background: "#16a34a",
             color: "white",
+            border: "none",
+            padding: "15px 25px",
+            borderRadius: "10px",
             cursor: "pointer",
-            fontSize: "18px",
           }}
         >
-          {onDuty
-            ? "GO OFF DUTY"
-            : "GO ON DUTY"}
+          🟢 GO ON DUTY
         </button>
       </div>
     </div>
