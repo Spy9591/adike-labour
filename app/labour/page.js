@@ -14,6 +14,7 @@ export default function LabourPage() {
   const [phone, setPhone] = useState("");
   const [checked, setChecked] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [village, setVillage] = useState("");
@@ -23,12 +24,14 @@ export default function LabourPage() {
   const [photo, setPhoto] = useState(null);
 
   const checkUser = async () => {
-    if (!phone) {
-      alert("Enter Phone Number");
+    if (phone.length !== 10) {
+      alert("Enter valid 10 digit phone number");
       return;
     }
 
     try {
+      setLoading(true);
+
       const q = query(
         collection(db, "labours"),
         where("phone", "==", phone)
@@ -47,7 +50,9 @@ export default function LabourPage() {
       setIsNewUser(true);
     } catch (error) {
       console.error(error);
-      alert("Failed to check account");
+      alert("Failed to verify account");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +65,8 @@ export default function LabourPage() {
     }
 
     try {
+      setLoading(true);
+
       await addDoc(collection(db, "labours"), {
         name,
         phone,
@@ -77,92 +84,64 @@ export default function LabourPage() {
       window.location.href = "/labour/dashboard";
     } catch (error) {
       console.error(error);
-      alert("Failed to Save Data");
+      alert("Failed to save data");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#0f172a,#14532d,#064e3b)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: "100%",
-          maxWidth: "650px",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(15px)",
-          padding: "30px",
-          borderRadius: "25px",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
-          color: "white",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#22c55e",
-            marginBottom: "25px",
-          }}
-        >
-          👷 Labour Login / Registration
-        </h1>
+    <div className="page">
+      <div className="card">
+        <h1>👷 Labour Login / Registration</h1>
 
         <input
           type="tel"
-          placeholder="Phone Number"
-          pattern="[0-9]{10}"
+          placeholder="Enter Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          required
-          style={inputStyle}
         />
 
         {!checked && (
           <button
             type="button"
             onClick={checkUser}
-            style={buttonStyle}
+            disabled={loading}
           >
-            Continue
+            {loading ? "Checking..." : "Continue"}
           </button>
         )}
 
         {isNewUser && (
-          <>
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Full Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
               required
-              style={inputStyle}
             />
 
             <input
               type="text"
               placeholder="Village"
               value={village}
-              onChange={(e) => setVillage(e.target.value)}
+              onChange={(e) =>
+                setVillage(e.target.value)
+              }
               required
-              style={inputStyle}
             />
 
             <input
               type="text"
               placeholder="Location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) =>
+                setLocation(e.target.value)
+              }
               required
-              style={inputStyle}
             />
 
             <input
@@ -173,7 +152,6 @@ export default function LabourPage() {
                 setExperience(e.target.value)
               }
               required
-              style={inputStyle}
             />
 
             <input
@@ -184,48 +162,121 @@ export default function LabourPage() {
                 setGovtId(e.target.value)
               }
               required
-              style={inputStyle}
             />
 
             <input
               type="file"
               accept="image/*"
-              required
               onChange={(e) =>
                 setPhoto(e.target.files[0])
               }
-              style={inputStyle}
+              required
             />
 
             <button
               type="submit"
-              style={buttonStyle}
+              disabled={loading}
             >
-              Create Account
+              {loading
+                ? "Creating Account..."
+                : "Create Account"}
             </button>
-          </>
+          </form>
         )}
-      </form>
+      </div>
+
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
+          background: linear-gradient(
+            135deg,
+            #021b12,
+            #14532d,
+            #064e3b
+          );
+        }
+
+        .card {
+          width: 100%;
+          max-width: 700px;
+          padding: 40px;
+          border-radius: 30px;
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(25px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 0 50px rgba(34, 197, 94, 0.2);
+        }
+
+        h1 {
+          text-align: center;
+          color: #22c55e;
+          margin-bottom: 30px;
+          font-size: 2rem;
+        }
+
+        input {
+          width: 100%;
+          padding: 16px;
+          margin-bottom: 15px;
+          border-radius: 14px;
+          border: none;
+          outline: none;
+          font-size: 16px;
+          background: rgba(255, 255, 255, 0.15);
+          color: white;
+          box-shadow:
+            inset 0 2px 5px rgba(255,255,255,0.1),
+            0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        input::placeholder {
+          color: #d1d5db;
+        }
+
+        button {
+          width: 100%;
+          padding: 16px;
+          border: none;
+          border-radius: 14px;
+          background: linear-gradient(
+            90deg,
+            #22c55e,
+            #16a34a
+          );
+          color: white;
+          font-size: 18px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: 0.3s;
+          box-shadow:
+            0 15px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        button:hover {
+          transform: translateY(-2px);
+        }
+
+        button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+          .card {
+            padding: 25px;
+          }
+
+          h1 {
+            font-size: 1.5rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "14px",
-  margin: "10px 0",
-  borderRadius: "10px",
-  border: "none",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "15px",
-  background: "#22c55e",
-  border: "none",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "18px",
-  cursor: "pointer",
-  marginTop: "15px",
-};
