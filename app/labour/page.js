@@ -1,20 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   collection,
-  addDoc,
   query,
   where,
   getDocs,
+  addDoc,
 } from "firebase/firestore";
-import { db } from "../firebase";
+
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
+
+import { db, auth } from "../firebase";
 
 export default function LabourPage() {
+  const router = useRouter();
+
   const [phone, setPhone] = useState("");
-  const [checked, setChecked] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] =
+    useState(null);
+
+  const [otpVerified, setOtpVerified] =
+    useState(false);
+
   const [loading, setLoading] = useState(false);
+
+  const [showRegistration, setShowRegistration] =
+    useState(false);
 
   const [name, setName] = useState("");
   const [village, setVillage] = useState("");
@@ -23,42 +41,84 @@ export default function LabourPage() {
   const [govtId, setGovtId] = useState("");
   const [photo, setPhoto] = useState(null);
 
-  const checkUser = async () => {
+  const sendOtp = async () => {
     if (phone.length !== 10) {
-      alert("Enter valid 10 digit mobile number");
+      alert("Enter valid mobile number");
       return;
     }
 
     try {
       setLoading(true);
 
-      const q = query(
-        collection(db, "labours"),
-        where("phone", "==", phone)
-      );
+      window.recaptchaVerifier =
+        new RecaptchaVerifier(
+          auth,
+          "recaptcha-container",
+          {
+            size: "normal",
+          }
+        );
 
-      const result = await getDocs(q);
+      const result =
+        await signInWithPhoneNumber(
+          auth,
+          `+91${phone}`,
+          window.recaptchaVerifier
+        );
 
-      if (!result.empty) {
-        localStorage.setItem("labourPhone", phone);
+      setConfirmationResult(result);
 
-        alert("✅ Account already exists");
-
-        window.location.href = "/labour/dashboard";
-        return;
-      }
-
-      setChecked(true);
-      setIsNewUser(true);
+      alert("OTP Sent Successfully");
     } catch (error) {
       console.error(error);
-      alert("Failed to verify account");
+      alert("Failed to send OTP");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const verifyOtp = async () => {
+    if (!otp) {
+      alert("Enter OTP");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await confirmationResult.confirm(otp);
+
+      setOtpVerified(true);
+
+      const q = query(
+        collection(db, "labours"),
+        where("phone", "==", phone)
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        localStorage.setItem(
+          "labourPhone",
+          phone
+        );
+
+        alert("Login Successful");
+
+        router.push("/labour/dashboard");
+        return;
+      }
+
+      setShowRegistration(true);
+    } catch (error) {
+      console.error(error);
+      alert("Invalid OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createAccount = async (e) => {
     e.preventDefault();
 
     if (!photo) {
@@ -81,14 +141,17 @@ export default function LabourPage() {
         createdAt: new Date(),
       });
 
-      alert("✅ Account Created Successfully");
+      localStorage.setItem(
+        "labourPhone",
+        phone
+      );
 
-      localStorage.setItem("labourPhone", phone);
+      alert("Account Created Successfully");
 
-      window.location.href = "/labour/dashboard";
+      router.push("/labour/dashboard");
     } catch (error) {
       console.error(error);
-      alert("Failed to save data");
+      alert("Registration Failed");
     } finally {
       setLoading(false);
     }
@@ -97,33 +160,68 @@ export default function LabourPage() {
   return (
     <div className="page">
       <div className="card">
-        <h1>👷 Labour Login / Registration</h1>
 
-        <input
-          type="tel"
-          placeholder="Enter Mobile Number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          maxLength={10}
-        />
+        <h1>
+          👷 Labour Login / Registration
+        </h1>
 
-        {!checked && (
-          <button
-            type="button"
-            onClick={checkUser}
-            disabled={loading}
-          >
-            {loading ? "Checking..." : "Continue"}
-          </button>
+        {!otpVerified && (
+          <>
+            <input
+              type="tel"
+              placeholder="Enter Mobile Number"
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value)
+              }
+              maxLength={10}
+            />
+
+            <button
+              onClick={sendOtp}
+              disabled={loading}
+            >
+              {loading
+                ? "Sending OTP..."
+                : "Send OTP"}
+            </button>
+
+            <div
+              id="recaptcha-container"
+              style={{ marginTop: 20 }}
+            />
+
+            {confirmationResult && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(e.target.value)
+                  }
+                />
+
+                <button
+                  onClick={verifyOtp}
+                  disabled={loading}
+                >
+                  Verify OTP
+                </button>
+              </>
+            )}
+          </>
         )}
 
-        {isNewUser && (
-          <form onSubmit={handleSubmit}>
+        {showRegistration && (
+          <form onSubmit={createAccount}>
             <input
               type="text"
               placeholder="Full Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
               required
             />
 
@@ -131,7 +229,9 @@ export default function LabourPage() {
               type="text"
               placeholder="Village"
               value={village}
-              onChange={(e) => setVillage(e.target.value)}
+              onChange={(e) =>
+                setVillage(e.target.value)
+              }
               required
             />
 
@@ -139,13 +239,15 @@ export default function LabourPage() {
               type="text"
               placeholder="Location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) =>
+                setLocation(e.target.value)
+              }
               required
             />
 
             <input
               type="number"
-              placeholder="Experience (Years)"
+              placeholder="Experience"
               value={experience}
               onChange={(e) =>
                 setExperience(e.target.value)
@@ -155,7 +257,7 @@ export default function LabourPage() {
 
             <input
               type="text"
-              placeholder="Government ID Number"
+              placeholder="Government ID"
               value={govtId}
               onChange={(e) =>
                 setGovtId(e.target.value)
@@ -176,9 +278,7 @@ export default function LabourPage() {
               type="submit"
               disabled={loading}
             >
-              {loading
-                ? "Creating Account..."
-                : "Create Account"}
+              Create Account
             </button>
           </form>
         )}
@@ -190,112 +290,53 @@ export default function LabourPage() {
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 20px;
-
           background: linear-gradient(
             135deg,
-            #0b1120,
+            #0f172a,
             #14532d,
             #064e3b
           );
+          padding: 20px;
         }
 
         .card {
           width: 100%;
-          max-width: 750px;
-
-          background: rgba(255, 255, 255, 0.08);
-
+          max-width: 700px;
+          padding: 35px;
+          border-radius: 25px;
+          background: rgba(255,255,255,.08);
           backdrop-filter: blur(20px);
-
-          border: 1px solid rgba(255, 255, 255, 0.1);
-
-          border-radius: 30px;
-
-          padding: 40px;
-
           box-shadow:
-            0 30px 80px rgba(0,0,0,.45),
-            0 0 50px rgba(34,197,94,.2);
+            0 25px 60px rgba(0,0,0,.5);
         }
 
         h1 {
-          text-align: center;
           color: #22c55e;
-          margin-bottom: 30px;
-          font-size: 2rem;
+          text-align: center;
+          margin-bottom: 25px;
         }
 
         input {
           width: 100%;
           padding: 16px;
           margin-bottom: 15px;
-
+          border-radius: 12px;
           border: none;
           outline: none;
-
-          border-radius: 14px;
-
-          background: rgba(255,255,255,.15);
-
+          background: rgba(255,255,255,.12);
           color: white;
-
-          font-size: 16px;
-
-          box-shadow:
-            inset 0 1px 3px rgba(255,255,255,.15),
-            0 10px 25px rgba(0,0,0,.25);
-        }
-
-        input::placeholder {
-          color: #d1d5db;
         }
 
         button {
           width: 100%;
-          padding: 16px;
-
+          padding: 15px;
           border: none;
-
-          border-radius: 14px;
-
-          background: linear-gradient(
-            90deg,
-            #22c55e,
-            #16a34a
-          );
-
+          border-radius: 12px;
+          background: #16a34a;
           color: white;
-
-          font-size: 18px;
-
-          font-weight: 600;
-
+          font-size: 17px;
           cursor: pointer;
-
-          transition: all .3s ease;
-
-          box-shadow:
-            0 15px 30px rgba(34,197,94,.4);
-        }
-
-        button:hover {
-          transform: translateY(-2px);
-        }
-
-        button:disabled {
-          opacity: .7;
-          cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-          .card {
-            padding: 25px;
-          }
-
-          h1 {
-            font-size: 1.6rem;
-          }
+          margin-bottom: 15px;
         }
       `}</style>
     </div>
