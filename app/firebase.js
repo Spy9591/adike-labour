@@ -1,15 +1,17 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCwxkAbqJ168UjhoUYkWPugf4ybZ7xXXTk",
-  authDomain: "channagiri-labour-platform.firebaseapp.com",
-  projectId: "channagiri-labour-platform",
-  storageBucket: "channagiri-labour-platform.firebasestorage.app",
-  messagingSenderId: "534300835463",
-  appId: "1:534300835463:web:8f90650c97941111da8222",
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "...",
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
+export const storage = getStorage(app);
