@@ -23,13 +23,10 @@ export default function LabourPage() {
 
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [confirmationResult, setConfirmationResult] =
     useState(null);
-
-  const [otpVerified, setOtpVerified] =
-    useState(false);
-
-  const [loading, setLoading] = useState(false);
 
   const [showRegistration, setShowRegistration] =
     useState(false);
@@ -43,67 +40,68 @@ export default function LabourPage() {
 
   const sendOtp = async () => {
     if (phone.length !== 10) {
-      alert("Enter valid mobile number");
+      alert("Enter valid 10 digit mobile number");
       return;
     }
 
     try {
       setLoading(true);
 
-      window.recaptchaVerifier =
-        new RecaptchaVerifier(
-          auth,
-          "recaptcha-container",
-          {
-            size: "normal",
-          }
-        );
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier =
+          new RecaptchaVerifier(
+            auth,
+            "recaptcha-container",
+            {
+              size: "normal",
+            }
+          );
+      }
+
+      const appVerifier =
+        window.recaptchaVerifier;
 
       const result =
         await signInWithPhoneNumber(
           auth,
           `+91${phone}`,
-          window.recaptchaVerifier
+          appVerifier
         );
 
       setConfirmationResult(result);
 
-      alert("OTP Sent Successfully");
+      alert("✅ OTP Sent Successfully");
     } catch (error) {
-      console.error(error);
-      alert("Failed to send OTP");
+      console.error("OTP ERROR:", error);
+
+      alert(
+        `Code: ${error.code}\n\nMessage:\n${error.message}`
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const verifyOtp = async () => {
-    if (!otp) {
-      alert("Enter OTP");
-      return;
-    }
-
     try {
       setLoading(true);
 
       await confirmationResult.confirm(otp);
-
-      setOtpVerified(true);
 
       const q = query(
         collection(db, "labours"),
         where("phone", "==", phone)
       );
 
-      const snapshot = await getDocs(q);
+      const result = await getDocs(q);
 
-      if (!snapshot.empty) {
+      if (!result.empty) {
         localStorage.setItem(
           "labourPhone",
           phone
         );
 
-        alert("Login Successful");
+        alert("✅ Login Successful");
 
         router.push("/labour/dashboard");
         return;
@@ -146,7 +144,7 @@ export default function LabourPage() {
         phone
       );
 
-      alert("Account Created Successfully");
+      alert("✅ Account Created");
 
       router.push("/labour/dashboard");
     } catch (error) {
@@ -161,22 +159,20 @@ export default function LabourPage() {
     <div className="page">
       <div className="card">
 
-        <h1>
-          👷 Labour Login / Registration
-        </h1>
+        <h1>👷 Labour Login / Registration</h1>
 
-        {!otpVerified && (
+        <input
+          type="tel"
+          placeholder="Enter Mobile Number"
+          value={phone}
+          maxLength={10}
+          onChange={(e) =>
+            setPhone(e.target.value)
+          }
+        />
+
+        {!confirmationResult && (
           <>
-            <input
-              type="tel"
-              placeholder="Enter Mobile Number"
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              maxLength={10}
-            />
-
             <button
               onClick={sendOtp}
               disabled={loading}
@@ -190,28 +186,29 @@ export default function LabourPage() {
               id="recaptcha-container"
               style={{ marginTop: 20 }}
             />
-
-            {confirmationResult && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) =>
-                    setOtp(e.target.value)
-                  }
-                />
-
-                <button
-                  onClick={verifyOtp}
-                  disabled={loading}
-                >
-                  Verify OTP
-                </button>
-              </>
-            )}
           </>
         )}
+
+        {confirmationResult &&
+          !showRegistration && (
+            <>
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) =>
+                  setOtp(e.target.value)
+                }
+              />
+
+              <button
+                onClick={verifyOtp}
+                disabled={loading}
+              >
+                Verify OTP
+              </button>
+            </>
+          )}
 
         {showRegistration && (
           <form onSubmit={createAccount}>
@@ -311,19 +308,20 @@ export default function LabourPage() {
         }
 
         h1 {
-          color: #22c55e;
           text-align: center;
+          color: #22c55e;
           margin-bottom: 25px;
         }
 
         input {
           width: 100%;
-          padding: 16px;
+          padding: 15px;
           margin-bottom: 15px;
           border-radius: 12px;
           border: none;
           outline: none;
-          background: rgba(255,255,255,.12);
+          background:
+            rgba(255,255,255,.12);
           color: white;
         }
 
@@ -336,7 +334,6 @@ export default function LabourPage() {
           color: white;
           font-size: 17px;
           cursor: pointer;
-          margin-bottom: 15px;
         }
       `}</style>
     </div>
