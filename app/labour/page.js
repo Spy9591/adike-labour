@@ -25,7 +25,7 @@ export default function LabourPage() {
 
   const checkUser = async () => {
     if (phone.length !== 10) {
-      alert("Enter valid 10 digit phone number");
+      alert("Enter valid 10 digit mobile number");
       return;
     }
 
@@ -40,7 +40,9 @@ export default function LabourPage() {
       const result = await getDocs(q);
 
       if (!result.empty) {
-        alert("✅ Account Already Exists");
+        localStorage.setItem("labourPhone", phone);
+
+        alert("✅ Account already exists");
 
         window.location.href = "/labour/dashboard";
         return;
@@ -81,6 +83,8 @@ export default function LabourPage() {
 
       alert("✅ Account Created Successfully");
 
+      localStorage.setItem("labourPhone", phone);
+
       window.location.href = "/labour/dashboard";
     } catch (error) {
       console.error(error);
@@ -97,9 +101,10 @@ export default function LabourPage() {
 
         <input
           type="tel"
-          placeholder="Enter Phone Number"
+          placeholder="Enter Mobile Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          maxLength={10}
         />
 
         {!checked && (
@@ -118,9 +123,7 @@ export default function LabourPage() {
               type="text"
               placeholder="Full Name"
               value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
+              onChange={(e) => setName(e.target.value)}
               required
             />
 
@@ -128,9 +131,7 @@ export default function LabourPage() {
               type="text"
               placeholder="Village"
               value={village}
-              onChange={(e) =>
-                setVillage(e.target.value)
-              }
+              onChange={(e) => setVillage(e.target.value)}
               required
             />
 
@@ -138,9 +139,7 @@ export default function LabourPage() {
               type="text"
               placeholder="Location"
               value={location}
-              onChange={(e) =>
-                setLocation(e.target.value)
-              }
+              onChange={(e) => setLocation(e.target.value)}
               required
             />
 
@@ -167,10 +166,10 @@ export default function LabourPage() {
             <input
               type="file"
               accept="image/*"
+              required
               onChange={(e) =>
                 setPhoto(e.target.files[0])
               }
-              required
             />
 
             <button
@@ -192,9 +191,10 @@ export default function LabourPage() {
           justify-content: center;
           align-items: center;
           padding: 20px;
+
           background: linear-gradient(
             135deg,
-            #021b12,
+            #0b1120,
             #14532d,
             #064e3b
           );
@@ -202,15 +202,21 @@ export default function LabourPage() {
 
         .card {
           width: 100%;
-          max-width: 700px;
-          padding: 40px;
-          border-radius: 30px;
+          max-width: 750px;
+
           background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(25px);
+
+          backdrop-filter: blur(20px);
+
           border: 1px solid rgba(255, 255, 255, 0.1);
+
+          border-radius: 30px;
+
+          padding: 40px;
+
           box-shadow:
-            0 20px 60px rgba(0, 0, 0, 0.5),
-            0 0 50px rgba(34, 197, 94, 0.2);
+            0 30px 80px rgba(0,0,0,.45),
+            0 0 50px rgba(34,197,94,.2);
         }
 
         h1 {
@@ -224,15 +230,21 @@ export default function LabourPage() {
           width: 100%;
           padding: 16px;
           margin-bottom: 15px;
-          border-radius: 14px;
+
           border: none;
           outline: none;
-          font-size: 16px;
-          background: rgba(255, 255, 255, 0.15);
+
+          border-radius: 14px;
+
+          background: rgba(255,255,255,.15);
+
           color: white;
+
+          font-size: 16px;
+
           box-shadow:
-            inset 0 2px 5px rgba(255,255,255,0.1),
-            0 8px 20px rgba(0,0,0,0.25);
+            inset 0 1px 3px rgba(255,255,255,.15),
+            0 10px 25px rgba(0,0,0,.25);
         }
 
         input::placeholder {
@@ -242,20 +254,29 @@ export default function LabourPage() {
         button {
           width: 100%;
           padding: 16px;
+
           border: none;
+
           border-radius: 14px;
+
           background: linear-gradient(
             90deg,
             #22c55e,
             #16a34a
           );
+
           color: white;
+
           font-size: 18px;
+
           font-weight: 600;
+
           cursor: pointer;
-          transition: 0.3s;
+
+          transition: all .3s ease;
+
           box-shadow:
-            0 15px 30px rgba(34, 197, 94, 0.4);
+            0 15px 30px rgba(34,197,94,.4);
         }
 
         button:hover {
@@ -263,7 +284,7 @@ export default function LabourPage() {
         }
 
         button:disabled {
-          opacity: 0.7;
+          opacity: .7;
           cursor: not-allowed;
         }
 
@@ -273,7 +294,7 @@ export default function LabourPage() {
           }
 
           h1 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
           }
         }
       `}</style>
