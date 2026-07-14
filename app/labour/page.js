@@ -1,54 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase";
 
 export default function LabourPage() {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const [password, setPassword] =
+    useState("");
+
   const [otp, setOtp] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [verified, setVerified] = useState(false);
+  const [generatedOtp, setGeneratedOtp] =
+    useState("");
+
+  const [verified, setVerified] =
+    useState(false);
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [village, setVillage] = useState("");
   const [location, setLocation] = useState("");
-  const [experience, setExperience] = useState("");
+  const [experience, setExperience] =
+    useState("");
   const [govtId, setGovtId] = useState("");
-  const [photo, setPhoto] = useState(null);
+
+  const [hasBike, setHasBike] =
+    useState(false);
 
   const sendOtp = async () => {
-    if (!email) {
-      alert("Enter Email");
-      return;
-    }
-
     const newOtp = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
 
     setGeneratedOtp(newOtp);
 
-    const response = await fetch(
-      "/api/send-otp",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          otp: newOtp,
-        }),
-      }
-    );
+    await fetch("/api/send-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        otp: newOtp,
+      }),
+    });
 
-    if (response.ok) {
-      alert("OTP Sent Successfully");
-    } else {
-      alert("Failed To Send OTP");
-    }
+    alert("OTP Sent");
   };
 
   const verifyOtp = () => {
@@ -60,36 +59,51 @@ export default function LabourPage() {
     }
   };
 
-  const registerLabour = async (e) => {
+  const registerLabour = async (
+    e
+  ) => {
     e.preventDefault();
 
-    if (!photo) {
-      alert("Photo is mandatory");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "labours"), {
+    const docRef = await addDoc(
+      collection(db, "labours"),
+      {
         email,
-        name,
         phone,
+        password,
+
+        name,
         village,
         location,
         experience,
         govtId,
-        photoName: photo.name,
+
+        hasBike,
+
+        rating: 5,
+        reviewCount: 0,
+
+        walletBalance: 0,
+
+        completedJobs: 0,
+
         onDuty: false,
+
+        latitude: null,
+        longitude: null,
+
         createdAt: new Date(),
-      });
+      }
+    );
 
-      alert("Registration Successful");
+    localStorage.setItem(
+      "labourId",
+      docRef.id
+    );
 
-      window.location.href =
-        "/labour/dashboard";
-    } catch (error) {
-      console.error(error);
-      alert("Failed To Register");
-    }
+    alert("Registration Success");
+
+    window.location.href =
+      "/labour/dashboard";
   };
 
   return (
@@ -103,20 +117,39 @@ export default function LabourPage() {
         {!verified && (
           <>
             <input
-              type="email"
-              placeholder="Email Address"
+              placeholder="Email"
               value={email}
               onChange={(e) =>
                 setEmail(e.target.value)
               }
             />
 
-            <button onClick={sendOtp}>
+            <input
+              placeholder="Mobile"
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value)
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Create Password"
+              value={password}
+              onChange={(e) =>
+                setPassword(
+                  e.target.value
+                )
+              }
+            />
+
+            <button
+              onClick={sendOtp}
+            >
               Send OTP
             </button>
 
             <input
-              type="text"
               placeholder="Enter OTP"
               value={otp}
               onChange={(e) =>
@@ -124,17 +157,37 @@ export default function LabourPage() {
               }
             />
 
-            <button onClick={verifyOtp}>
+            <button
+              onClick={verifyOtp}
+            >
               Verify OTP
             </button>
           </>
         )}
 
         {verified && (
-          <form onSubmit={registerLabour}>
+          <form
+            onSubmit={
+              registerLabour
+            }
+          >
+            <input
+              value={email}
+              disabled
+            />
 
             <input
-              type="text"
+              value={phone}
+              disabled
+            />
+
+            <input
+              type="password"
+              value={password}
+              disabled
+            />
+
+            <input
               placeholder="Full Name"
               value={name}
               onChange={(e) =>
@@ -144,133 +197,74 @@ export default function LabourPage() {
             />
 
             <input
-              type="tel"
-              placeholder="Phone Number"
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              required
-            />
-
-            <input
-              type="text"
               placeholder="Village"
               value={village}
               onChange={(e) =>
-                setVillage(e.target.value)
+                setVillage(
+                  e.target.value
+                )
               }
               required
             />
 
             <input
-              type="text"
               placeholder="Location"
               value={location}
               onChange={(e) =>
-                setLocation(e.target.value)
+                setLocation(
+                  e.target.value
+                )
               }
               required
             />
 
             <input
-              type="number"
-              placeholder="Experience (Years)"
+              placeholder="Experience"
               value={experience}
               onChange={(e) =>
-                setExperience(e.target.value)
+                setExperience(
+                  e.target.value
+                )
               }
               required
             />
 
             <input
-              type="text"
-              placeholder="Government ID Number"
+              placeholder="Government ID"
               value={govtId}
               onChange={(e) =>
-                setGovtId(e.target.value)
+                setGovtId(
+                  e.target.value
+                )
               }
               required
             />
 
-            <input
-              type="file"
-              accept="image/*"
-              required
+            <select
               onChange={(e) =>
-                setPhoto(e.target.files[0])
+                setHasBike(
+                  e.target.value ===
+                    "yes"
+                )
               }
-            />
+            >
+              <option value="no">
+                No Bike
+              </option>
 
-            <button type="submit">
-              Register Labour
+              <option value="yes">
+                Have Bike
+              </option>
+            </select>
+
+            <button
+              type="submit"
+            >
+              Create Account
             </button>
-
           </form>
         )}
-
       </div>
-
-      <style jsx>{`
-        .page {
-          min-height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
-          background: linear-gradient(
-            135deg,
-            #0f172a,
-            #14532d,
-            #064e3b
-          );
-        }
-
-        .card {
-          width: 100%;
-          max-width: 700px;
-          background: rgba(255,255,255,.08);
-          backdrop-filter: blur(20px);
-          padding: 35px;
-          border-radius: 25px;
-          box-shadow:
-            0 25px 60px rgba(0,0,0,.45);
-        }
-
-        h1 {
-          color: #22c55e;
-          text-align: center;
-          margin-bottom: 25px;
-        }
-
-        input {
-          width: 100%;
-          padding: 15px;
-          margin-bottom: 15px;
-          border-radius: 12px;
-          border: none;
-          outline: none;
-          background:
-            rgba(255,255,255,.15);
-          color: white;
-        }
-
-        input::placeholder {
-          color: #d1d5db;
-        }
-
-        button {
-          width: 100%;
-          padding: 15px;
-          border: none;
-          border-radius: 12px;
-          background: #16a34a;
-          color: white;
-          cursor: pointer;
-          font-size: 16px;
-          margin-bottom: 15px;
-        }
-      `}</style>
     </div>
   );
 }
