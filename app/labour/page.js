@@ -1,37 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-} from "firebase/firestore";
-
-import {
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from "firebase/auth";
-
-import { db, auth } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function LabourPage() {
-  const router = useRouter();
-
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const [confirmationResult, setConfirmationResult] =
-    useState(null);
-
-  const [showRegistration, setShowRegistration] =
-    useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [verified, setVerified] = useState(false);
 
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [village, setVillage] = useState("");
   const [location, setLocation] = useState("");
   const [experience, setExperience] = useState("");
@@ -39,84 +19,48 @@ export default function LabourPage() {
   const [photo, setPhoto] = useState(null);
 
   const sendOtp = async () => {
-    if (phone.length !== 10) {
-      alert("Enter valid 10 digit mobile number");
+    if (!email) {
+      alert("Enter Email");
       return;
     }
 
-    try {
-      setLoading(true);
+    const newOtp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier =
-          new RecaptchaVerifier(
-            auth,
-            "recaptcha-container",
-            {
-              size: "normal",
-            }
-          );
+    setGeneratedOtp(newOtp);
+
+    const response = await fetch(
+      "/api/send-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          otp: newOtp,
+        }),
       }
+    );
 
-      const appVerifier =
-        window.recaptchaVerifier;
-
-      const result =
-        await signInWithPhoneNumber(
-          auth,
-          `+91${phone}`,
-          appVerifier
-        );
-
-      setConfirmationResult(result);
-
-      alert("✅ OTP Sent Successfully");
-    } catch (error) {
-      console.error("OTP ERROR:", error);
-
-      alert(
-        `Code: ${error.code}\n\nMessage:\n${error.message}`
-      );
-    } finally {
-      setLoading(false);
+    if (response.ok) {
+      alert("OTP Sent Successfully");
+    } else {
+      alert("Failed To Send OTP");
     }
   };
 
-  const verifyOtp = async () => {
-    try {
-      setLoading(true);
-
-      await confirmationResult.confirm(otp);
-
-      const q = query(
-        collection(db, "labours"),
-        where("phone", "==", phone)
-      );
-
-      const result = await getDocs(q);
-
-      if (!result.empty) {
-        localStorage.setItem(
-          "labourPhone",
-          phone
-        );
-
-        alert("✅ Login Successful");
-
-        router.push("/labour/dashboard");
-        return;
-      }
-
-      setShowRegistration(true);
-    } catch (error) {
-      console.error(error);
+  const verifyOtp = () => {
+    if (otp === generatedOtp) {
+      setVerified(true);
+      alert("OTP Verified");
+    } else {
       alert("Invalid OTP");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const createAccount = async (e) => {
+  const registerLabour = async (e) => {
     e.preventDefault();
 
     if (!photo) {
@@ -125,9 +69,8 @@ export default function LabourPage() {
     }
 
     try {
-      setLoading(true);
-
       await addDoc(collection(db, "labours"), {
+        email,
         name,
         phone,
         village,
@@ -139,19 +82,13 @@ export default function LabourPage() {
         createdAt: new Date(),
       });
 
-      localStorage.setItem(
-        "labourPhone",
-        phone
-      );
+      alert("Registration Successful");
 
-      alert("✅ Account Created");
-
-      router.push("/labour/dashboard");
+      window.location.href =
+        "/labour/dashboard";
     } catch (error) {
       console.error(error);
-      alert("Registration Failed");
-    } finally {
-      setLoading(false);
+      alert("Failed To Register");
     }
   };
 
@@ -159,65 +96,59 @@ export default function LabourPage() {
     <div className="page">
       <div className="card">
 
-        <h1>👷 Labour Login / Registration</h1>
+        <h1>
+          👷 Labour Registration
+        </h1>
 
-        <input
-          type="tel"
-          placeholder="Enter Mobile Number"
-          value={phone}
-          maxLength={10}
-          onChange={(e) =>
-            setPhone(e.target.value)
-          }
-        />
-
-        {!confirmationResult && (
+        {!verified && (
           <>
-            <button
-              onClick={sendOtp}
-              disabled={loading}
-            >
-              {loading
-                ? "Sending OTP..."
-                : "Send OTP"}
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+            />
+
+            <button onClick={sendOtp}>
+              Send OTP
             </button>
 
-            <div
-              id="recaptcha-container"
-              style={{ marginTop: 20 }}
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) =>
+                setOtp(e.target.value)
+              }
             />
+
+            <button onClick={verifyOtp}>
+              Verify OTP
+            </button>
           </>
         )}
 
-        {confirmationResult &&
-          !showRegistration && (
-            <>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value)
-                }
-              />
+        {verified && (
+          <form onSubmit={registerLabour}>
 
-              <button
-                onClick={verifyOtp}
-                disabled={loading}
-              >
-                Verify OTP
-              </button>
-            </>
-          )}
-
-        {showRegistration && (
-          <form onSubmit={createAccount}>
             <input
               type="text"
               placeholder="Full Name"
               value={name}
               onChange={(e) =>
                 setName(e.target.value)
+              }
+              required
+            />
+
+            <input
+              type="tel"
+              placeholder="Phone Number"
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value)
               }
               required
             />
@@ -244,7 +175,7 @@ export default function LabourPage() {
 
             <input
               type="number"
-              placeholder="Experience"
+              placeholder="Experience (Years)"
               value={experience}
               onChange={(e) =>
                 setExperience(e.target.value)
@@ -254,7 +185,7 @@ export default function LabourPage() {
 
             <input
               type="text"
-              placeholder="Government ID"
+              placeholder="Government ID Number"
               value={govtId}
               onChange={(e) =>
                 setGovtId(e.target.value)
@@ -271,14 +202,13 @@ export default function LabourPage() {
               }
             />
 
-            <button
-              type="submit"
-              disabled={loading}
-            >
-              Create Account
+            <button type="submit">
+              Register Labour
             </button>
+
           </form>
         )}
+
       </div>
 
       <style jsx>{`
@@ -287,29 +217,29 @@ export default function LabourPage() {
           display: flex;
           justify-content: center;
           align-items: center;
+          padding: 20px;
           background: linear-gradient(
             135deg,
             #0f172a,
             #14532d,
             #064e3b
           );
-          padding: 20px;
         }
 
         .card {
           width: 100%;
           max-width: 700px;
-          padding: 35px;
-          border-radius: 25px;
           background: rgba(255,255,255,.08);
           backdrop-filter: blur(20px);
+          padding: 35px;
+          border-radius: 25px;
           box-shadow:
-            0 25px 60px rgba(0,0,0,.5);
+            0 25px 60px rgba(0,0,0,.45);
         }
 
         h1 {
-          text-align: center;
           color: #22c55e;
+          text-align: center;
           margin-bottom: 25px;
         }
 
@@ -321,8 +251,12 @@ export default function LabourPage() {
           border: none;
           outline: none;
           background:
-            rgba(255,255,255,.12);
+            rgba(255,255,255,.15);
           color: white;
+        }
+
+        input::placeholder {
+          color: #d1d5db;
         }
 
         button {
@@ -332,8 +266,9 @@ export default function LabourPage() {
           border-radius: 12px;
           background: #16a34a;
           color: white;
-          font-size: 17px;
           cursor: pointer;
+          font-size: 16px;
+          margin-bottom: 15px;
         }
       `}</style>
     </div>
