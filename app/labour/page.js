@@ -1,26 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+
 import { db } from "../firebase";
 
 export default function LabourPage() {
+  const [mode, setMode] = useState("login");
+
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
   const [otp, setOtp] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] =
+    useState("");
 
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] =
+    useState(false);
+
+  const [newPassword, setNewPassword] =
+    useState("");
 
   const [name, setName] = useState("");
-  const [village, setVillage] = useState("");
-  const [location, setLocation] = useState("");
-  const [experience, setExperience] = useState("");
-  const [govtId, setGovtId] = useState("");
+  const [village, setVillage] =
+    useState("");
 
-  const [hasBike, setHasBike] = useState(false);
+  const [location, setLocation] =
+    useState("");
+
+  const [experience, setExperience] =
+    useState("");
+
+  const [govtId, setGovtId] =
+    useState("");
+
+  const [hasBike, setHasBike] =
+    useState(false);
 
   const sendOtp = async () => {
     if (!email) {
@@ -37,7 +61,8 @@ export default function LabourPage() {
     await fetch("/api/send-otp", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify({
         email,
@@ -57,8 +82,92 @@ export default function LabourPage() {
     }
   };
 
+  const loginUser = async () => {
+    const q = query(
+      collection(db, "labours"),
+      where("phone", "==", phone)
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    if (snapshot.empty) {
+      alert("Account not found");
+      return;
+    }
+
+    const labourDoc =
+      snapshot.docs[0];
+
+    const labourData =
+      labourDoc.data();
+
+    if (
+      labourData.password !==
+      password
+    ) {
+      alert("Invalid Password");
+      return;
+    }
+
+    localStorage.setItem(
+      "labourId",
+      labourDoc.id
+    );
+
+    window.location.href =
+      "/labour/dashboard";
+  };
+
+  const resetPassword = async () => {
+    const q = query(
+      collection(db, "labours"),
+      where("phone", "==", phone)
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    if (snapshot.empty) {
+      alert("Account not found");
+      return;
+    }
+
+    await updateDoc(
+      doc(
+        db,
+        "labours",
+        snapshot.docs[0].id
+      ),
+      {
+        password: newPassword,
+      }
+    );
+
+    alert(
+      "Password Updated Successfully"
+    );
+
+    setMode("login");
+  };
+
   const registerLabour = async (e) => {
     e.preventDefault();
+
+    const q = query(
+      collection(db, "labours"),
+      where("phone", "==", phone)
+    );
+
+    const existing =
+      await getDocs(q);
+
+    if (!existing.empty) {
+      alert(
+        "Account already exists"
+      );
+      return;
+    }
 
     const docRef = await addDoc(
       collection(db, "labours"),
@@ -102,8 +211,6 @@ export default function LabourPage() {
       docRef.id
     );
 
-    alert("Account Created Successfully");
-
     window.location.href =
       "/labour/dashboard";
   };
@@ -122,10 +229,12 @@ export default function LabourPage() {
     width: "100%",
     maxWidth: "850px",
     padding: "40px",
-    background: "rgba(255,255,255,.08)",
+    background:
+      "rgba(255,255,255,.08)",
     backdropFilter: "blur(25px)",
     borderRadius: "30px",
-    border: "1px solid rgba(255,255,255,.1)",
+    border:
+      "1px solid rgba(255,255,255,.1)",
     boxShadow:
       "0 25px 80px rgba(0,0,0,.45)",
   };
@@ -158,172 +267,288 @@ export default function LabourPage() {
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
-
         <h1
           style={{
             color: "white",
             textAlign: "center",
-            marginBottom: 25,
+            marginBottom: "25px",
           }}
         >
-          👷 Labour Registration
+          👷 Labour Portal
         </h1>
 
-        {!verified && (
+        {mode === "login" && (
           <>
-            <input
-              style={inputStyle}
-              placeholder="Email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-            />
-
             <input
               style={inputStyle}
               placeholder="Mobile Number"
               value={phone}
               onChange={(e) =>
-                setPhone(e.target.value)
-              }
-            />
-
-            <input
-              style={inputStyle}
-              type="password"
-              placeholder="Create Password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-            />
-
-            <button
-              style={buttonStyle}
-              onClick={sendOtp}
-            >
-              Send OTP
-            </button>
-
-            <input
-              style={inputStyle}
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value)
-              }
-            />
-
-            <button
-              style={buttonStyle}
-              onClick={verifyOtp}
-            >
-              Verify OTP
-            </button>
-          </>
-        )}
-
-        {verified && (
-          <form onSubmit={registerLabour}>
-
-            <input
-              style={inputStyle}
-              value={email}
-              disabled
-            />
-
-            <input
-              style={inputStyle}
-              value={phone}
-              disabled
-            />
-
-            <input
-              style={inputStyle}
-              value={password}
-              disabled
-              type="password"
-            />
-
-            <input
-              style={inputStyle}
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
-              required
-            />
-
-            <input
-              style={inputStyle}
-              placeholder="Village"
-              value={village}
-              onChange={(e) =>
-                setVillage(e.target.value)
-              }
-              required
-            />
-
-            <input
-              style={inputStyle}
-              placeholder="Location"
-              value={location}
-              onChange={(e) =>
-                setLocation(e.target.value)
-              }
-              required
-            />
-
-            <input
-              style={inputStyle}
-              placeholder="Experience"
-              value={experience}
-              onChange={(e) =>
-                setExperience(
+                setPhone(
                   e.target.value
                 )
               }
-              required
             />
 
             <input
               style={inputStyle}
-              placeholder="Government ID"
-              value={govtId}
+              type="password"
+              placeholder="Password"
+              value={password}
               onChange={(e) =>
-                setGovtId(e.target.value)
-              }
-              required
-            />
-
-            <select
-              style={inputStyle}
-              onChange={(e) =>
-                setHasBike(
-                  e.target.value === "yes"
+                setPassword(
+                  e.target.value
                 )
               }
-            >
-              <option value="no">
-                No Bike
-              </option>
-
-              <option value="yes">
-                Have Bike
-              </option>
-            </select>
+            />
 
             <button
-              type="submit"
               style={buttonStyle}
+              onClick={loginUser}
+            >
+              Login
+            </button>
+
+            <button
+              style={buttonStyle}
+              onClick={() =>
+                setMode("register")
+              }
             >
               Create Account
             </button>
 
-          </form>
+            <button
+              style={buttonStyle}
+              onClick={() =>
+                setMode("forgot")
+              }
+            >
+              Forgot Password
+            </button>
+          </>
         )}
+
+        {mode === "forgot" && (
+          <>
+            <input
+              style={inputStyle}
+              placeholder="Mobile Number"
+              value={phone}
+              onChange={(e) =>
+                setPhone(
+                  e.target.value
+                )
+              }
+            />
+
+            <input
+              style={inputStyle}
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) =>
+                setNewPassword(
+                  e.target.value
+                )
+              }
+            />
+
+            <button
+              style={buttonStyle}
+              onClick={resetPassword}
+            >
+              Update Password
+            </button>
+
+            <button
+              style={buttonStyle}
+              onClick={() =>
+                setMode("login")
+              }
+            >
+              Back To Login
+            </button>
+          </>
+        )}
+
+        {mode === "register" &&
+          !verified && (
+            <>
+              <input
+                style={inputStyle}
+                placeholder="Email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(
+                    e.target.value
+                  )
+                }
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Mobile Number"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(
+                    e.target.value
+                  )
+                }
+              />
+
+              <input
+                style={inputStyle}
+                type="password"
+                placeholder="Create Password"
+                value={password}
+                onChange={(e) =>
+                  setPassword(
+                    e.target.value
+                  )
+                }
+              />
+
+              <button
+                style={buttonStyle}
+                onClick={sendOtp}
+              >
+                Send OTP
+              </button>
+
+              <input
+                style={inputStyle}
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) =>
+                  setOtp(
+                    e.target.value
+                  )
+                }
+              />
+
+              <button
+                style={buttonStyle}
+                onClick={verifyOtp}
+              >
+                Verify OTP
+              </button>
+            </>
+          )}
+
+        {mode === "register" &&
+          verified && (
+            <form
+              onSubmit={
+                registerLabour
+              }
+            >
+              <input
+                style={inputStyle}
+                value={email}
+                disabled
+              />
+
+              <input
+                style={inputStyle}
+                value={phone}
+                disabled
+              />
+
+              <input
+                style={inputStyle}
+                value={password}
+                disabled
+                type="password"
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) =>
+                  setName(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Village"
+                value={village}
+                onChange={(e) =>
+                  setVillage(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Location"
+                value={location}
+                onChange={(e) =>
+                  setLocation(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Experience"
+                value={experience}
+                onChange={(e) =>
+                  setExperience(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <input
+                style={inputStyle}
+                placeholder="Government ID"
+                value={govtId}
+                onChange={(e) =>
+                  setGovtId(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <select
+                style={inputStyle}
+                onChange={(e) =>
+                  setHasBike(
+                    e.target
+                      .value ===
+                      "yes"
+                  )
+                }
+              >
+                <option value="no">
+                  No Bike
+                </option>
+
+                <option value="yes">
+                  Have Bike
+                </option>
+              </select>
+
+              <button
+                type="submit"
+                style={buttonStyle}
+              >
+                Create Account
+              </button>
+            </form>
+          )}
       </div>
     </div>
   );
