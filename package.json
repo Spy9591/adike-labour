@@ -9,6 +9,7 @@
   "dependencies": {
     "firebase": "^12.16.0",
     "next": "latest",
+    "nodemailer": "^9.0.3",
     "react": "latest",
     "react-dom": "latest"
   }
