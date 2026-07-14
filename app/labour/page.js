@@ -21,63 +21,119 @@ export default function LabourPage() {
   const [password, setPassword] = useState("");
 
   const [otp, setOtp] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] =
+    useState("");
 
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] =
+    useState(false);
 
-  const [forgotOtp, setForgotOtp] = useState("");
-  const [generatedForgotOtp, setGeneratedForgotOtp] = useState("");
+  const [forgotOtp, setForgotOtp] =
+    useState("");
 
-  const [forgotVerified, setForgotVerified] = useState(false);
+  const [
+    generatedForgotOtp,
+    setGeneratedForgotOtp,
+  ] = useState("");
 
-  const [newPassword, setNewPassword] = useState("");
+  const [forgotVerified,
+    setForgotVerified] =
+    useState(false);
+
+  const [newPassword,
+    setNewPassword] =
+    useState("");
 
   const [name, setName] = useState("");
-  const [village, setVillage] = useState("");
-  const [location, setLocation] = useState("");
-  const [experience, setExperience] = useState("");
-  const [govtId, setGovtId] = useState("");
+  const [village, setVillage] =
+    useState("");
+  const [location, setLocation] =
+    useState("");
+  const [experience,
+    setExperience] =
+    useState("");
+  const [govtId, setGovtId] =
+    useState("");
 
-  const [hasBike, setHasBike] = useState(false);
+  const [hasBike, setHasBike] =
+    useState(false);
 
   const sendOtp = async () => {
-    const q = query(
-      collection(db, "labours"),
-      where("phone", "==", phone)
-    );
+    try {
+      if (!email || !phone) {
+        alert(
+          "Enter Email and Mobile Number"
+        );
+        return;
+      }
 
-    const existing = await getDocs(q);
-
-    if (!existing.empty) {
-      alert(
-        "Account already exists. Please login or use Forgot Password."
+      const phoneQuery = query(
+        collection(db, "labours"),
+        where("phone", "==", phone)
       );
-      return;
+
+      const phoneExists =
+        await getDocs(phoneQuery);
+
+      if (!phoneExists.empty) {
+        alert(
+          "Account already exists. Please Login or use Forgot Password."
+        );
+
+        setMode("login");
+        return;
+      }
+
+      const emailQuery = query(
+        collection(db, "labours"),
+        where("email", "==", email)
+      );
+
+      const emailExists =
+        await getDocs(emailQuery);
+
+      if (!emailExists.empty) {
+        alert(
+          "Email already registered. Please Login or use Forgot Password."
+        );
+
+        setMode("login");
+        return;
+      }
+
+      const otpCode = Math.floor(
+        100000 +
+          Math.random() * 900000
+      ).toString();
+
+      setGeneratedOtp(otpCode);
+
+      await fetch(
+        "/api/send-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            otp: otpCode,
+          }),
+        }
+      );
+
+      alert(
+        "OTP Sent Successfully"
+      );
+    } catch (error) {
+      console.log(error);
     }
-
-    const newOtp = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    setGeneratedOtp(newOtp);
-
-    await fetch("/api/send-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        otp: newOtp,
-      }),
-    });
-
-    alert("OTP Sent Successfully");
   };
 
   const verifyOtp = () => {
     if (otp === generatedOtp) {
       setVerified(true);
+
       alert("OTP Verified");
     } else {
       alert("Invalid OTP");
@@ -85,202 +141,344 @@ export default function LabourPage() {
   };
 
   const loginUser = async () => {
-    const q = query(
-      collection(db, "labours"),
-      where("phone", "==", phone)
-    );
+    try {
+      const q = query(
+        collection(db, "labours"),
+        where("phone", "==", phone)
+      );
 
-    const snapshot = await getDocs(q);
+      const snapshot =
+        await getDocs(q);
 
-    if (snapshot.empty) {
-      alert("Account not found");
-      return;
-    }
+      if (snapshot.empty) {
+        alert(
+          "Account not found. Please Create Account."
+        );
+        return;
+      }
 
-    const labourDoc = snapshot.docs[0];
+      const labourDoc =
+        snapshot.docs[0];
 
-    const labourData = labourDoc.data();
+      const labourData =
+        labourDoc.data();
 
-    if (labourData.password !== password) {
-      alert("Invalid Password");
-      return;
-    }
+      if (
+        labourData.password !==
+        password
+      ) {
+        alert(
+          "Invalid Password"
+        );
+        return;
+      }
 
-    localStorage.setItem(
-      "labourId",
-      labourDoc.id
-    );
-
-    window.location.href =
-      "/labour/dashboard";
-  };
-
-  const sendForgotOtp = async () => {
-    const q = query(
-      collection(db, "labours"),
-      where("phone", "==", phone)
-    );
-
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      alert("Account not found");
-      return;
-    }
-
-    const labourData =
-      snapshot.docs[0].data();
-
-    const otpCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    setGeneratedForgotOtp(otpCode);
-
-    await fetch("/api/send-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        email: labourData.email,
-        otp: otpCode,
-      }),
-    });
-
-    alert(
-      `OTP sent to ${labourData.email}`
-    );
-  };
-
-  const verifyForgotOtp = () => {
-    if (
-      forgotOtp === generatedForgotOtp
-    ) {
-      setForgotVerified(true);
-      alert("OTP Verified");
-    } else {
-      alert("Invalid OTP");
-    }
-  };
-
-  const resetPassword = async () => {
-    const q = query(
-      collection(db, "labours"),
-      where("phone", "==", phone)
-    );
-
-    const snapshot =
-      await getDocs(q);
-
-    if (snapshot.empty) {
-      alert("Account not found");
-      return;
-    }
-
-    const labourDoc =
-      snapshot.docs[0];
-
-    await updateDoc(
-      doc(
-        db,
-        "labours",
+      localStorage.setItem(
+        "labourId",
         labourDoc.id
-      ),
-      {
-        password: newPassword,
-      }
-    );
+      );
 
-    alert(
-      "Password Updated Successfully"
-    );
-
-    setMode("login");
-    setForgotVerified(false);
+      window.location.href =
+        "/labour/dashboard";
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const registerLabour = async (e) => {
-    e.preventDefault();
+  const sendForgotOtp =
+    async () => {
+      try {
+        const q = query(
+          collection(
+            db,
+            "labours"
+          ),
+          where(
+            "phone",
+            "==",
+            phone
+          )
+        );
 
-    const docRef = await addDoc(
-      collection(db, "labours"),
-      {
-        email,
-        phone,
-        password,
+        const snapshot =
+          await getDocs(q);
 
-        name,
-        village,
-        location,
-        experience,
-        govtId,
+        if (
+          snapshot.empty
+        ) {
+          alert(
+            "Account not found"
+          );
+          return;
+        }
 
-        hasBike,
+        const labourData =
+          snapshot.docs[0].data();
 
-        rating: 5,
-        reviewCount: 0,
+        const otpCode =
+          Math.floor(
+            100000 +
+              Math.random() *
+                900000
+          ).toString();
 
-        walletBalance: 0,
+        setGeneratedForgotOtp(
+          otpCode
+        );
 
-        completedJobs: 0,
+        await fetch(
+          "/api/send-otp",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              email:
+                labourData.email,
+              otp: otpCode,
+            }),
+          }
+        );
 
-        workHistory: [],
-
-        ownerRequest: null,
-
-        currentBooking: null,
-
-        onDuty: false,
-
-        latitude: null,
-        longitude: null,
-
-        createdAt: new Date(),
+        alert(
+          `OTP sent to ${labourData.email}`
+        );
+      } catch (error) {
+        console.log(error);
       }
-    );
+    };
 
-    localStorage.setItem(
-      "labourId",
-      docRef.id
-    );
+  const verifyForgotOtp =
+    () => {
+      if (
+        forgotOtp ===
+        generatedForgotOtp
+      ) {
+        setForgotVerified(
+          true
+        );
 
-    window.location.href =
-      "/labour/dashboard";
-  };
+        alert(
+          "OTP Verified"
+        );
+      } else {
+        alert(
+          "Invalid OTP"
+        );
+      }
+    };
+
+  const resetPassword =
+    async () => {
+      try {
+        const q = query(
+          collection(
+            db,
+            "labours"
+          ),
+          where(
+            "phone",
+            "==",
+            phone
+          )
+        );
+
+        const snapshot =
+          await getDocs(q);
+
+        if (
+          snapshot.empty
+        ) {
+          alert(
+            "Account not found"
+          );
+          return;
+        }
+
+        await updateDoc(
+          doc(
+            db,
+            "labours",
+            snapshot.docs[0].id
+          ),
+          {
+            password:
+              newPassword,
+          }
+        );
+
+        alert(
+          "Password Updated Successfully"
+        );
+
+        setMode("login");
+        setForgotVerified(
+          false
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  const registerLabour =
+    async (e) => {
+      e.preventDefault();
+
+      const phoneQuery =
+        query(
+          collection(
+            db,
+            "labours"
+          ),
+          where(
+            "phone",
+            "==",
+            phone
+          )
+        );
+
+      const phoneExists =
+        await getDocs(
+          phoneQuery
+        );
+
+      if (
+        !phoneExists.empty
+      ) {
+        alert(
+          "Account already exists. Please Login or use Forgot Password."
+        );
+
+        setMode("login");
+
+        return;
+      }
+
+      const emailQuery =
+        query(
+          collection(
+            db,
+            "labours"
+          ),
+          where(
+            "email",
+            "==",
+            email
+          )
+        );
+
+      const emailExists =
+        await getDocs(
+          emailQuery
+        );
+
+      if (
+        !emailExists.empty
+      ) {
+        alert(
+          "Email already registered."
+        );
+
+        setMode("login");
+
+        return;
+      }
+
+      const docRef =
+        await addDoc(
+          collection(
+            db,
+            "labours"
+          ),
+          {
+            email,
+            phone,
+            password,
+
+            name,
+            village,
+            location,
+            experience,
+            govtId,
+
+            hasBike,
+
+            rating: 5,
+            reviewCount:
+              0,
+
+            walletBalance:
+              0,
+
+            completedJobs:
+              0,
+
+            workHistory:
+              [],
+
+            ownerRequest:
+              null,
+
+            currentBooking:
+              null,
+
+            onDuty: false,
+
+            latitude:
+              null,
+
+            longitude:
+              null,
+
+            createdAt:
+              new Date(),
+          }
+        );
+
+      localStorage.setItem(
+        "labourId",
+        docRef.id
+      );
+
+      alert(
+        "Account Created Successfully"
+      );
+
+      window.location.href =
+        "/labour/dashboard";
+    };
 
   const pageStyle = {
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "20px",
     background:
       "linear-gradient(135deg,#020617,#0f172a,#064e3b)",
+    padding: "20px",
   };
 
   const cardStyle = {
     width: "100%",
     maxWidth: "850px",
-    padding: "40px",
     background:
       "rgba(255,255,255,.08)",
-    backdropFilter: "blur(25px)",
+    backdropFilter:
+      "blur(25px)",
     borderRadius: "30px",
+    padding: "40px",
     border:
       "1px solid rgba(255,255,255,.1)",
-    boxShadow:
-      "0 25px 80px rgba(0,0,0,.45)",
   };
 
   const inputStyle = {
     width: "100%",
-    padding: "16px",
+    padding: "15px",
     marginBottom: "15px",
-    borderRadius: "16px",
     border: "none",
-    outline: "none",
+    borderRadius: "15px",
     background:
       "rgba(255,255,255,.12)",
     color: "white",
@@ -288,13 +486,12 @@ export default function LabourPage() {
 
   const buttonStyle = {
     width: "100%",
-    padding: "16px",
+    padding: "15px",
     border: "none",
-    borderRadius: "16px",
+    borderRadius: "15px",
     background:
       "linear-gradient(90deg,#22c55e,#16a34a)",
     color: "white",
-    fontSize: "18px",
     cursor: "pointer",
     marginBottom: "15px",
   };
@@ -306,7 +503,7 @@ export default function LabourPage() {
           style={{
             color: "white",
             textAlign: "center",
-            marginBottom: "25px",
+            marginBottom: 25,
           }}
         >
           👷 Labour Portal
@@ -315,44 +512,64 @@ export default function LabourPage() {
         {mode === "login" && (
           <>
             <input
-              style={inputStyle}
+              style={
+                inputStyle
+              }
               placeholder="Mobile Number"
               value={phone}
               onChange={(e) =>
-                setPhone(e.target.value)
+                setPhone(
+                  e.target.value
+                )
               }
             />
 
             <input
-              style={inputStyle}
+              style={
+                inputStyle
+              }
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) =>
-                setPassword(e.target.value)
+                setPassword(
+                  e.target.value
+                )
               }
             />
 
             <button
-              style={buttonStyle}
-              onClick={loginUser}
+              style={
+                buttonStyle
+              }
+              onClick={
+                loginUser
+              }
             >
               Login
             </button>
 
             <button
-              style={buttonStyle}
+              style={
+                buttonStyle
+              }
               onClick={() =>
-                setMode("register")
+                setMode(
+                  "register"
+                )
               }
             >
               Create Account
             </button>
 
             <button
-              style={buttonStyle}
+              style={
+                buttonStyle
+              }
               onClick={() =>
-                setMode("forgot")
+                setMode(
+                  "forgot"
+                )
               }
             >
               Forgot Password
@@ -363,36 +580,51 @@ export default function LabourPage() {
         {mode === "forgot" && (
           <>
             <input
-              style={inputStyle}
+              style={
+                inputStyle
+              }
               placeholder="Mobile Number"
               value={phone}
               onChange={(e) =>
-                setPhone(e.target.value)
+                setPhone(
+                  e.target.value
+                )
               }
             />
 
             {!forgotVerified && (
               <>
                 <button
-                  style={buttonStyle}
-                  onClick={sendForgotOtp}
+                  style={
+                    buttonStyle
+                  }
+                  onClick={
+                    sendForgotOtp
+                  }
                 >
                   Send OTP
                 </button>
 
                 <input
-                  style={inputStyle}
+                  style={
+                    inputStyle
+                  }
                   placeholder="Enter OTP"
-                  value={forgotOtp}
+                  value={
+                    forgotOtp
+                  }
                   onChange={(e) =>
                     setForgotOtp(
-                      e.target.value
+                      e.target
+                        .value
                     )
                   }
                 />
 
                 <button
-                  style={buttonStyle}
+                  style={
+                    buttonStyle
+                  }
                   onClick={
                     verifyForgotOtp
                   }
@@ -405,34 +637,34 @@ export default function LabourPage() {
             {forgotVerified && (
               <>
                 <input
-                  style={inputStyle}
+                  style={
+                    inputStyle
+                  }
                   type="password"
                   placeholder="New Password"
-                  value={newPassword}
+                  value={
+                    newPassword
+                  }
                   onChange={(e) =>
                     setNewPassword(
-                      e.target.value
+                      e.target
+                        .value
                     )
                   }
                 />
 
                 <button
-                  style={buttonStyle}
-                  onClick={resetPassword}
+                  style={
+                    buttonStyle
+                  }
+                  onClick={
+                    resetPassword
+                  }
                 >
                   Update Password
                 </button>
               </>
             )}
-
-            <button
-              style={buttonStyle}
-              onClick={() =>
-                setMode("login")
-              }
-            >
-              Back To Login
-            </button>
           </>
         )}
 
@@ -440,7 +672,9 @@ export default function LabourPage() {
           !verified && (
             <>
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Email"
                 value={email}
                 onChange={(e) =>
@@ -451,7 +685,9 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Mobile Number"
                 value={phone}
                 onChange={(e) =>
@@ -462,7 +698,9 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 type="password"
                 placeholder="Create Password"
                 value={password}
@@ -474,14 +712,20 @@ export default function LabourPage() {
               />
 
               <button
-                style={buttonStyle}
-                onClick={sendOtp}
+                style={
+                  buttonStyle
+                }
+                onClick={
+                  sendOtp
+                }
               >
                 Send OTP
               </button>
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) =>
@@ -492,8 +736,12 @@ export default function LabourPage() {
               />
 
               <button
-                style={buttonStyle}
-                onClick={verifyOtp}
+                style={
+                  buttonStyle
+                }
+                onClick={
+                  verifyOtp
+                }
               >
                 Verify OTP
               </button>
@@ -508,26 +756,33 @@ export default function LabourPage() {
               }
             >
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 value={email}
                 disabled
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 value={phone}
                 disabled
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 value={password}
-                type="password"
                 disabled
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) =>
@@ -539,7 +794,9 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Village"
                 value={village}
                 onChange={(e) =>
@@ -551,7 +808,9 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Location"
                 value={location}
                 onChange={(e) =>
@@ -563,9 +822,13 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Experience"
-                value={experience}
+                value={
+                  experience
+                }
                 onChange={(e) =>
                   setExperience(
                     e.target.value
@@ -575,7 +838,9 @@ export default function LabourPage() {
               />
 
               <input
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 placeholder="Government ID"
                 value={govtId}
                 onChange={(e) =>
@@ -587,10 +852,13 @@ export default function LabourPage() {
               />
 
               <select
-                style={inputStyle}
+                style={
+                  inputStyle
+                }
                 onChange={(e) =>
                   setHasBike(
-                    e.target.value ===
+                    e.target
+                      .value ===
                       "yes"
                   )
                 }
@@ -606,7 +874,9 @@ export default function LabourPage() {
 
               <button
                 type="submit"
-                style={buttonStyle}
+                style={
+                  buttonStyle
+                }
               >
                 Create Account
               </button>
