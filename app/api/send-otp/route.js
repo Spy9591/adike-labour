@@ -1,35 +1,65 @@
-import nodemailer from "nodemailer";
-
-export async function POST(req) {
-  try {
-    const { email, otp } = await req.json();
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Adike Labour OTP",
-      html: `
-        <h2>Adike Labour Platform</h2>
-        <h1>${otp}</h1>
-        <p>Your OTP is valid for 5 minutes.</p>
-      `,
-    });
-
-    return Response.json({ success: true });
-  } catch (error) {
-    console.error(error);
-
-    return Response.json(
-      { success: false },
-      { status: 500 }
-    );
+const sendOtp = async () => {
+  if (!email || !phone) {
+    alert("Enter Email and Mobile Number");
+    return;
   }
-}
+
+  const phoneQuery = query(
+    collection(db, "labours"),
+    where("phone", "==", phone)
+  );
+
+  const phoneExists =
+    await getDocs(phoneQuery);
+
+  if (!phoneExists.empty) {
+    alert(
+      "Account already exists. Please Login or use Forgot Password."
+    );
+
+    setMode("login");
+
+    return;
+  }
+
+  const emailQuery = query(
+    collection(db, "labours"),
+    where("email", "==", email)
+  );
+
+  const emailExists =
+    await getDocs(emailQuery);
+
+  if (!emailExists.empty) {
+    alert(
+      "Email already registered. Please Login or use Forgot Password."
+    );
+
+    setMode("login");
+
+    return;
+  }
+
+  const newOtp = Math.floor(
+    100000 +
+      Math.random() * 900000
+  ).toString();
+
+  setGeneratedOtp(newOtp);
+
+  await fetch("/api/send-otp", {
+    method: "POST",
+
+    headers: {
+      "Content-Type":
+        "application/json",
+    },
+
+    body: JSON.stringify({
+      email,
+      otp: newOtp,
+    }),
+  });
+
+  alert("OTP Sent Successfully");
+};
