@@ -5,16 +5,56 @@ import {
   doc,
   getDoc,
   updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
+
 import { db } from "../../firebase";
 
 export default function Dashboard() {
   const [labour, setLabour] =
     useState(null);
 
+  const [bookings, setBookings] =
+    useState([]);
+
   useEffect(() => {
     loadLabour();
   }, []);
+
+  const loadBookings = async (
+    labourId
+  ) => {
+    const q = query(
+      collection(db, "bookings"),
+      where(
+        "labourId",
+        "==",
+        labourId
+      ),
+      where(
+        "status",
+        "==",
+        "pending"
+      )
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    const requests = [];
+
+    snapshot.forEach((doc) => {
+      requests.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    setBookings(requests);
+  };
 
   const loadLabour = async () => {
     const labourId =
@@ -33,6 +73,8 @@ export default function Dashboard() {
         id: snap.id,
         ...snap.data(),
       });
+
+      loadBookings(labourId);
     }
   };
 
@@ -69,6 +111,46 @@ export default function Dashboard() {
     );
   };
 
+  const acceptBooking =
+    async (bookingId) => {
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          bookingId
+        ),
+        {
+          status: "accepted",
+        }
+      );
+
+      alert(
+        "Booking Accepted"
+      );
+
+      loadLabour();
+    };
+
+  const rejectBooking =
+    async (bookingId) => {
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          bookingId
+        ),
+        {
+          status: "rejected",
+        }
+      );
+
+      alert(
+        "Booking Rejected"
+      );
+
+      loadLabour();
+    };
+
   if (!labour)
     return (
       <div
@@ -95,10 +177,15 @@ export default function Dashboard() {
   const heroStyle = {
     background:
       "rgba(255,255,255,.08)",
+
     backdropFilter: "blur(25px)",
+
     padding: "30px",
+
     borderRadius: "30px",
+
     color: "white",
+
     marginBottom: "20px",
   };
 
@@ -112,15 +199,18 @@ export default function Dashboard() {
   const glassCard = {
     background:
       "rgba(255,255,255,.08)",
+
     backdropFilter: "blur(20px)",
+
     borderRadius: "20px",
+
     padding: "20px",
+
     color: "white",
   };
 
   return (
     <div style={pageStyle}>
-
       <div style={heroStyle}>
         <h1>
           👷 {labour.name}
@@ -144,27 +234,32 @@ export default function Dashboard() {
       <div style={gridStyle}>
         <div style={glassCard}>
           <h3>💰 Wallet</h3>
+
           <h1>
-            ₹{labour.walletBalance}
+            ₹
+            {labour.walletBalance || 0}
           </h1>
         </div>
 
         <div style={glassCard}>
           <h3>📋 Jobs</h3>
+
           <h1>
-            {labour.completedJobs}
+            {labour.completedJobs || 0}
           </h1>
         </div>
 
         <div style={glassCard}>
           <h3>⭐ Rating</h3>
+
           <h1>
-            {labour.rating}
+            {labour.rating || 5}
           </h1>
         </div>
 
         <div style={glassCard}>
           <h3>🚲 Vehicle</h3>
+
           <h1>
             {labour.hasBike
               ? "Bike"
@@ -184,9 +279,11 @@ export default function Dashboard() {
           color: "white",
           fontSize: "18px",
           cursor: "pointer",
-          background: labour.onDuty
-            ? "linear-gradient(90deg,#ef4444,#dc2626)"
-            : "linear-gradient(90deg,#22c55e,#16a34a)",
+
+          background:
+            labour.onDuty
+              ? "linear-gradient(90deg,#ef4444,#dc2626)"
+              : "linear-gradient(90deg,#22c55e,#16a34a)",
         }}
       >
         {labour.onDuty
@@ -200,11 +297,107 @@ export default function Dashboard() {
           marginTop: "20px",
         }}
       >
-        <h2>🔔 Owner Requests</h2>
+        <h2>
+          🔔 Booking Requests
+        </h2>
 
-        <p>
-          No Active Requests
-        </p>
+        {bookings.length ===
+        0 ? (
+          <p>
+            No Active Requests
+          </p>
+        ) : (
+          bookings.map(
+            (booking) => (
+              <div
+                key={
+                  booking.id
+                }
+                style={{
+                  marginTop:
+                    "15px",
+                  padding:
+                    "15px",
+                  background:
+                    "rgba(255,255,255,.08)",
+                  borderRadius:
+                    "12px",
+                }}
+              >
+                <p>
+                  👤 Owner:
+                  {" "}
+                  {
+                    booking.ownerName
+                  }
+                </p>
+
+                <p>
+                  Status:
+                  {" "}
+                  {
+                    booking.status
+                  }
+                </p>
+
+                <button
+                  onClick={() =>
+                    acceptBooking(
+                      booking.id
+                    )
+                  }
+                  style={{
+                    marginRight:
+                      "10px",
+
+                    padding:
+                      "10px",
+
+                    border:
+                      "none",
+
+                    borderRadius:
+                      "10px",
+
+                    background:
+                      "#22c55e",
+
+                    color:
+                      "white",
+                  }}
+                >
+                  ✅ Accept
+                </button>
+
+                <button
+                  onClick={() =>
+                    rejectBooking(
+                      booking.id
+                    )
+                  }
+                  style={{
+                    padding:
+                      "10px",
+
+                    border:
+                      "none",
+
+                    borderRadius:
+                      "10px",
+
+                    background:
+                      "#ef4444",
+
+                    color:
+                      "white",
+                  }}
+                >
+                  ❌ Reject
+                </button>
+              </div>
+            )
+          )
+        )}
       </div>
 
       <div
@@ -213,12 +406,14 @@ export default function Dashboard() {
           marginTop: "20px",
         }}
       >
-        <h2>📋 Work History</h2>
+        <h2>
+          📋 Work History
+        </h2>
 
         <p>
           Completed Jobs:
           {" "}
-          {labour.completedJobs}
+          {labour.completedJobs || 0}
         </p>
       </div>
     </div>
