@@ -14,42 +14,53 @@ import {
 import { db } from "../../firebase";
 
 export default function Dashboard() {
-  const [labour, setLabour] =
+  const [labour, setLabour] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [runningBooking, setRunningBooking] =
     useState(null);
-
-  const [bookings, setBookings] =
-    useState([]);
 
   useEffect(() => {
     loadLabour();
   }, []);
+
+  const loadRunningBooking = async (
+    labourId
+  ) => {
+    const q = query(
+      collection(db, "bookings"),
+      where("labourId", "==", labourId),
+      where("status", "==", "accepted")
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      setRunningBooking({
+        id: snapshot.docs[0].id,
+        ...snapshot.docs[0].data(),
+      });
+    } else {
+      setRunningBooking(null);
+    }
+  };
 
   const loadBookings = async (
     labourId
   ) => {
     const q = query(
       collection(db, "bookings"),
-      where(
-        "labourId",
-        "==",
-        labourId
-      ),
-      where(
-        "status",
-        "==",
-        "pending"
-      )
+      where("labourId", "==", labourId),
+      where("status", "==", "pending")
     );
 
-    const snapshot =
-      await getDocs(q);
+    const snapshot = await getDocs(q);
 
     const requests = [];
 
-    snapshot.forEach((doc) => {
+    snapshot.forEach((docItem) => {
       requests.push({
-        id: doc.id,
-        ...doc.data(),
+        id: docItem.id,
+        ...docItem.data(),
       });
     });
 
@@ -58,9 +69,7 @@ export default function Dashboard() {
 
   const loadLabour = async () => {
     const labourId =
-      localStorage.getItem(
-        "labourId"
-      );
+      localStorage.getItem("labourId");
 
     if (!labourId) return;
 
@@ -75,6 +84,7 @@ export default function Dashboard() {
       });
 
       loadBookings(labourId);
+      loadRunningBooking(labourId);
     }
   };
 
@@ -87,18 +97,20 @@ export default function Dashboard() {
           );
 
         await updateDoc(
-          doc(db, "labours", labourId),
+          doc(
+            db,
+            "labours",
+            labourId
+          ),
           {
             onDuty:
               !labour.onDuty,
 
             latitude:
-              position.coords
-                .latitude,
+              position.coords.latitude,
 
             longitude:
-              position.coords
-                .longitude,
+              position.coords.longitude,
           }
         );
 
@@ -113,6 +125,11 @@ export default function Dashboard() {
 
   const acceptBooking =
     async (bookingId) => {
+      const labourId =
+        localStorage.getItem(
+          "labourId"
+        );
+
       await updateDoc(
         doc(
           db,
@@ -121,6 +138,19 @@ export default function Dashboard() {
         ),
         {
           status: "accepted",
+          startTime: new Date(),
+        }
+      );
+
+      await updateDoc(
+        doc(
+          db,
+          "labours",
+          labourId
+        ),
+        {
+          busy: true,
+          currentBooking: bookingId,
         }
       );
 
@@ -146,6 +176,53 @@ export default function Dashboard() {
 
       alert(
         "Booking Rejected"
+      );
+
+      loadLabour();
+    };
+
+  const completeWork =
+    async () => {
+      if (!runningBooking) return;
+
+      const labourId =
+        localStorage.getItem(
+          "labourId"
+        );
+
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          runningBooking.id
+        ),
+        {
+          status: "completed",
+        }
+      );
+
+      await updateDoc(
+        doc(
+          db,
+          "labours",
+          labourId
+        ),
+        {
+          busy: false,
+          currentBooking: null,
+
+          completedJobs:
+            (labour.completedJobs ||
+              0) + 1,
+
+          walletBalance:
+            (labour.walletBalance ||
+              0) + 700,
+        }
+      );
+
+      alert(
+        "Work Completed Successfully"
       );
 
       loadLabour();
@@ -177,15 +254,10 @@ export default function Dashboard() {
   const heroStyle = {
     background:
       "rgba(255,255,255,.08)",
-
     backdropFilter: "blur(25px)",
-
     padding: "30px",
-
     borderRadius: "30px",
-
     color: "white",
-
     marginBottom: "20px",
   };
 
@@ -199,13 +271,9 @@ export default function Dashboard() {
   const glassCard = {
     background:
       "rgba(255,255,255,.08)",
-
     backdropFilter: "blur(20px)",
-
     borderRadius: "20px",
-
     padding: "20px",
-
     color: "white",
   };
 
@@ -225,7 +293,9 @@ export default function Dashboard() {
         </p>
 
         <p>
-          {labour.onDuty
+          {labour.busy
+            ? "🟠 BUSY"
+            : labour.onDuty
             ? "🟢 ON DUTY"
             : "🔴 OFF DUTY"}
         </p>
@@ -234,24 +304,23 @@ export default function Dashboard() {
       <div style={gridStyle}>
         <div style={glassCard}>
           <h3>💰 Wallet</h3>
-
           <h1>
             ₹
-            {labour.walletBalance || 0}
+            {labour.walletBalance ||
+              0}
           </h1>
         </div>
 
         <div style={glassCard}>
           <h3>📋 Jobs</h3>
-
           <h1>
-            {labour.completedJobs || 0}
+            {labour.completedJobs ||
+              0}
           </h1>
         </div>
 
         <div style={glassCard}>
           <h3>⭐ Rating</h3>
-
           <h1>
             {labour.rating || 5}
           </h1>
@@ -259,7 +328,6 @@ export default function Dashboard() {
 
         <div style={glassCard}>
           <h3>🚲 Vehicle</h3>
-
           <h1>
             {labour.hasBike
               ? "Bike"
@@ -279,7 +347,6 @@ export default function Dashboard() {
           color: "white",
           fontSize: "18px",
           cursor: "pointer",
-
           background:
             labour.onDuty
               ? "linear-gradient(90deg,#ef4444,#dc2626)"
@@ -316,27 +383,13 @@ export default function Dashboard() {
                 style={{
                   marginTop:
                     "15px",
-                  padding:
-                    "15px",
-                  background:
-                    "rgba(255,255,255,.08)",
-                  borderRadius:
-                    "12px",
                 }}
               >
                 <p>
-                  👤 Owner:
+                  Owner:
                   {" "}
                   {
                     booking.ownerName
-                  }
-                </p>
-
-                <p>
-                  Status:
-                  {" "}
-                  {
-                    booking.status
                   }
                 </p>
 
@@ -346,25 +399,6 @@ export default function Dashboard() {
                       booking.id
                     )
                   }
-                  style={{
-                    marginRight:
-                      "10px",
-
-                    padding:
-                      "10px",
-
-                    border:
-                      "none",
-
-                    borderRadius:
-                      "10px",
-
-                    background:
-                      "#22c55e",
-
-                    color:
-                      "white",
-                  }}
                 >
                   ✅ Accept
                 </button>
@@ -376,20 +410,8 @@ export default function Dashboard() {
                     )
                   }
                   style={{
-                    padding:
+                    marginLeft:
                       "10px",
-
-                    border:
-                      "none",
-
-                    borderRadius:
-                      "10px",
-
-                    background:
-                      "#ef4444",
-
-                    color:
-                      "white",
                   }}
                 >
                   ❌ Reject
@@ -399,6 +421,48 @@ export default function Dashboard() {
           )
         )}
       </div>
+
+      {runningBooking && (
+        <div
+          style={{
+            ...glassCard,
+            marginTop: "20px",
+          }}
+        >
+          <h2>
+            🟠 Running Job
+          </h2>
+
+          <p>
+            Owner:
+            {" "}
+            {
+              runningBooking.ownerName
+            }
+          </p>
+
+          <p>
+            Status:
+            {" "}
+            {
+              runningBooking.status
+            }
+          </p>
+
+          <p>
+            Payment:
+            ₹700
+          </p>
+
+          <button
+            onClick={
+              completeWork
+            }
+          >
+            ✅ Complete Work
+          </button>
+        </div>
+      )}
 
       <div
         style={{
@@ -413,7 +477,8 @@ export default function Dashboard() {
         <p>
           Completed Jobs:
           {" "}
-          {labour.completedJobs || 0}
+          {labour.completedJobs ||
+            0}
         </p>
       </div>
     </div>
