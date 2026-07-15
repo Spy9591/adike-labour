@@ -5,12 +5,6 @@ export async function POST(req) {
     const { email, otp, portal } =
       await req.json();
 
-    console.log("================================");
-    console.log("OTP REQUEST");
-    console.log("Portal:", portal);
-    console.log("Email:", email);
-    console.log("================================");
-
     const transporter =
       nodemailer.createTransport({
         service: "gmail",
@@ -22,61 +16,39 @@ export async function POST(req) {
 
     const info =
       await transporter.sendMail({
-        from: `"Adike Labour Platform" <${process.env.EMAIL_USER}>`,
+        from: process.env.EMAIL_USER,
+
         to: email,
 
         subject:
           portal === "owner"
-            ? "Owner Portal OTP Verification"
-            : "Labour Portal OTP Verification",
+            ? "Owner Portal OTP"
+            : "Labour Portal OTP",
 
         html: `
-          <div
-            style="
-              font-family: Arial, sans-serif;
-              padding: 20px;
-            "
-          >
-            <h2 style="color:#16a34a;">
-              Adike Labour Platform
-            </h2>
+          <div style="font-family:Arial;padding:20px">
+            <h2>Adike Labour Platform</h2>
 
-            <p>
-              Your One Time Password (OTP)
-            </p>
+            <p>Your OTP is:</p>
 
-            <div
-              style="
-                font-size:40px;
-                font-weight:bold;
-                color:#2563eb;
-                margin:20px 0;
-              "
-            >
+            <h1 style="color:#2563eb">
               ${otp}
-            </div>
+            </h1>
 
             <p>
-              Valid for 5 minutes.
-            </p>
-
-            <hr />
-
-            <p>
-              Do not share this OTP with anyone.
+              OTP valid for 5 minutes.
             </p>
           </div>
         `,
       });
 
     console.log(
-      "MESSAGE ID:",
+      "Message sent:",
       info.messageId
     );
 
     return Response.json({
       success: true,
-      messageId: info.messageId,
     });
   } catch (error) {
     console.error(
