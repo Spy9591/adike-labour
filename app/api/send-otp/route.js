@@ -6,13 +6,9 @@ export async function POST(req) {
       await req.json();
 
     console.log("================================");
-    console.log("OTP REQUEST RECEIVED");
-    console.log("Email:", email);
+    console.log("OTP REQUEST");
     console.log("Portal:", portal);
-    console.log(
-      "EMAIL_USER:",
-      process.env.EMAIL_USER
-    );
+    console.log("Email:", email);
     console.log("================================");
 
     const transporter =
@@ -26,14 +22,50 @@ export async function POST(req) {
 
     const info =
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        from: `"Adike Labour Platform" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: `Adike ${portal} OTP`,
+
+        subject:
+          portal === "owner"
+            ? "Owner Portal OTP Verification"
+            : "Labour Portal OTP Verification",
+
         html: `
-          <h2>Adike Labour Platform</h2>
-          <h3>${portal}</h3>
-          <h1>${otp}</h1>
-          <p>OTP valid for 5 minutes.</p>
+          <div
+            style="
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            "
+          >
+            <h2 style="color:#16a34a;">
+              Adike Labour Platform
+            </h2>
+
+            <p>
+              Your One Time Password (OTP)
+            </p>
+
+            <div
+              style="
+                font-size:40px;
+                font-weight:bold;
+                color:#2563eb;
+                margin:20px 0;
+              "
+            >
+              ${otp}
+            </div>
+
+            <p>
+              Valid for 5 minutes.
+            </p>
+
+            <hr />
+
+            <p>
+              Do not share this OTP with anyone.
+            </p>
+          </div>
         `,
       });
 
@@ -42,12 +74,9 @@ export async function POST(req) {
       info.messageId
     );
 
-    console.log(
-      "OTP SENT SUCCESSFULLY"
-    );
-
     return Response.json({
       success: true,
+      messageId: info.messageId,
     });
   } catch (error) {
     console.error(
