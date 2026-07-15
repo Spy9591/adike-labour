@@ -6,11 +6,15 @@ import {
   getDocs,
   query,
   where,
+  addDoc,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
 
 export default function OwnerDashboard() {
+  const [availableLabours, setAvailableLabours] =
+    useState([]);
+
   const [runningJobs, setRunningJobs] =
     useState([]);
 
@@ -21,6 +25,7 @@ export default function OwnerDashboard() {
     useState([]);
 
   useEffect(() => {
+    loadAvailableLabours();
     loadBookings();
   }, []);
 
@@ -52,6 +57,37 @@ export default function OwnerDashboard() {
 
     return amount;
   };
+
+  const loadAvailableLabours =
+    async () => {
+      const snapshot =
+        await getDocs(
+          collection(
+            db,
+            "labours"
+          )
+        );
+
+      const labours = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        if (
+          data.onDuty === true &&
+          data.busy !== true
+        ) {
+          labours.push({
+            id: doc.id,
+            ...data,
+          });
+        }
+      });
+
+      setAvailableLabours(
+        labours
+      );
+    };
 
   const loadBookings =
     async () => {
@@ -112,9 +148,9 @@ export default function OwnerDashboard() {
 
           if (
             booking.status ===
-            "cancelled" ||
+              "rejected" ||
             booking.status ===
-              "rejected"
+              "cancelled"
           ) {
             cancelled.push(
               booking
@@ -136,10 +172,51 @@ export default function OwnerDashboard() {
       );
     };
 
+  const bookLabour =
+    async (labour) => {
+      try {
+        const ownerId =
+          localStorage.getItem(
+            "ownerId"
+          );
+
+        await addDoc(
+          collection(
+            db,
+            "bookings"
+          ),
+          {
+            ownerId,
+            ownerName:
+              "Farm Owner",
+
+            labourId:
+              labour.id,
+
+            labourName:
+              labour.name,
+
+            status:
+              "pending",
+
+            createdAt:
+              new Date(),
+          }
+        );
+
+        alert(
+          "Booking Request Sent"
+        );
+
+        loadBookings();
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
   const pageStyle = {
     minHeight: "100vh",
     padding: "20px",
-
     background:
       "linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb)",
   };
@@ -161,19 +238,98 @@ export default function OwnerDashboard() {
       "15px",
   };
 
+  const buttonStyle = {
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "10px",
+    background:
+      "#22c55e",
+    color: "white",
+    cursor: "pointer",
+  };
+
   return (
     <div style={pageStyle}>
-      <div
-        style={cardStyle}
-      >
+      <div style={cardStyle}>
         <h1>
           🏡 Owner Dashboard
         </h1>
       </div>
 
-      <div
-        style={cardStyle}
-      >
+      <div style={cardStyle}>
+        <h2>
+          🟢 Available Labour
+        </h2>
+
+        {availableLabours.length ===
+        0 ? (
+          <p>
+            No Labour On Duty
+          </p>
+        ) : (
+          availableLabours.map(
+            (labour) => (
+              <div
+                key={
+                  labour.id
+                }
+                style={{
+                  marginTop:
+                    "15px",
+                  padding:
+                    "15px",
+                  borderRadius:
+                    "10px",
+                  background:
+                    "rgba(255,255,255,.05)",
+                }}
+              >
+                <h3>
+                  👷{" "}
+                  {
+                    labour.name
+                  }
+                </h3>
+
+                <p>
+                  📍{" "}
+                  {
+                    labour.village
+                  }
+                </p>
+
+                <p>
+                  ⭐{" "}
+                  {labour.rating ||
+                    5}
+                </p>
+
+                <p>
+                  🚲{" "}
+                  {labour.hasBike
+                    ? "Bike Available"
+                    : "No Bike"}
+                </p>
+
+                <button
+                  style={
+                    buttonStyle
+                  }
+                  onClick={() =>
+                    bookLabour(
+                      labour
+                    )
+                  }
+                >
+                  Book Labour
+                </button>
+              </div>
+            )
+          )
+        )}
+      </div>
+
+      <div style={cardStyle}>
         <h2>
           🟠 Running Jobs
         </h2>
@@ -196,8 +352,7 @@ export default function OwnerDashboard() {
                 }}
               >
                 <p>
-                  👷 Labour:
-                  {" "}
+                  👷{" "}
                   {
                     job.labourName
                   }
@@ -221,41 +376,15 @@ export default function OwnerDashboard() {
                     )}
                   </p>
                 )}
-
-                <button
-                  onClick={() =>
-                    window.open(
-                      `https://www.google.com/maps`
-                    )
-                  }
-                  style={{
-                    padding:
-                      "10px",
-                    border:
-                      "none",
-                    borderRadius:
-                      "10px",
-                    background:
-                      "#22c55e",
-                    color:
-                      "white",
-                  }}
-                >
-                  📍 Track
-                  Labour
-                </button>
               </div>
             )
           )
         )}
       </div>
 
-      <div
-        style={cardStyle}
-      >
+      <div style={cardStyle}>
         <h2>
-          ✅ Completed
-          Jobs
+          ✅ Completed Jobs
         </h2>
 
         {completedJobs.length ===
@@ -290,12 +419,9 @@ export default function OwnerDashboard() {
         )}
       </div>
 
-      <div
-        style={cardStyle}
-      >
+      <div style={cardStyle}>
         <h2>
-          ❌ Cancelled
-          Jobs
+          ❌ Cancelled Jobs
         </h2>
 
         {cancelledJobs.length ===
