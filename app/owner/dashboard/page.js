@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+} from "firebase/firestore";
+
 import { db } from "../../firebase";
 
 export default function OwnerDashboard() {
@@ -103,6 +108,44 @@ export default function OwnerDashboard() {
     }
 
     setLoading(false);
+  };
+
+  const bookLabour = async (
+    labour
+  ) => {
+    try {
+      const ownerId =
+        localStorage.getItem(
+          "ownerId"
+        );
+
+      await addDoc(
+        collection(db, "bookings"),
+        {
+          ownerId,
+          labourId: labour.id,
+          labourName: labour.name,
+
+          ownerName:
+            "Farm Owner",
+
+          status: "pending",
+
+          createdAt:
+            new Date(),
+        }
+      );
+
+      alert(
+        "✅ Booking Request Sent Successfully"
+      );
+    } catch (error) {
+      console.log(error);
+
+      alert(
+        "Failed To Create Booking"
+      );
+    }
   };
 
   const pageStyle = {
@@ -238,6 +281,11 @@ export default function OwnerDashboard() {
 
           <button
             style={buttonStyle}
+            onClick={() =>
+              bookLabour(
+                labour
+              )
+            }
           >
             Book Labour
           </button>
