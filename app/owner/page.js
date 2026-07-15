@@ -1,285 +1,666 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 
 export default function OwnerPage() {
-  const router = useRouter();
+  const [mode, setMode] = useState("login");
 
-  const [showRegister, setShowRegister] = useState(false);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] =
+    useState("");
 
-    // Firebase Login Logic Here
+  const [verified, setVerified] =
+    useState(false);
 
-    router.push("/owner/dashboard");
+  const [forgotOtp, setForgotOtp] =
+    useState("");
+
+  const [
+    generatedForgotOtp,
+    setGeneratedForgotOtp,
+  ] = useState("");
+
+  const [forgotVerified,
+    setForgotVerified] =
+    useState(false);
+
+  const [newPassword,
+    setNewPassword] =
+    useState("");
+
+  const [name, setName] = useState("");
+  const [village, setVillage] =
+    useState("");
+
+  const [location, setLocation] =
+    useState("");
+
+  const [farmLocation,
+    setFarmLocation] =
+    useState("");
+
+  const [workersRequired,
+    setWorkersRequired] =
+    useState("");
+
+  const [govtId, setGovtId] =
+    useState("");
+
+  const sendOtp = async () => {
+    try {
+      if (!email || !phone) {
+        alert(
+          "Enter Email and Mobile Number"
+        );
+        return;
+      }
+
+      const phoneQuery = query(
+        collection(db, "owners"),
+        where("phone", "==", phone)
+      );
+
+      const phoneExists =
+        await getDocs(phoneQuery);
+
+      if (!phoneExists.empty) {
+        alert(
+          "Account already exists. Please Login or use Forgot Password."
+        );
+
+        setMode("login");
+        return;
+      }
+
+      const emailQuery = query(
+        collection(db, "owners"),
+        where("email", "==", email)
+      );
+
+      const emailExists =
+        await getDocs(emailQuery);
+
+      if (!emailExists.empty) {
+        alert(
+          "Email already registered."
+        );
+
+        setMode("login");
+        return;
+      }
+
+      const otpCode = Math.floor(
+        100000 +
+          Math.random() * 900000
+      ).toString();
+
+      setGeneratedOtp(otpCode);
+
+      await fetch("/api/send-otp", {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          email,
+          otp: otpCode,
+        }),
+      });
+
+      alert("OTP Sent Successfully");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  const verifyOtp = () => {
+    if (otp === generatedOtp) {
+      setVerified(true);
+      alert("OTP Verified");
+    } else {
+      alert("Invalid OTP");
+    }
+  };
 
-    // Firebase Save Logic Here
+  const loginUser = async () => {
+    const q = query(
+      collection(db, "owners"),
+      where("phone", "==", phone)
+    );
 
-    alert("✅ Owner Registration Submitted Successfully");
+    const snapshot =
+      await getDocs(q);
 
-    router.push("/owner/dashboard");
+    if (snapshot.empty) {
+      alert(
+        "Account not found. Please Create Account."
+      );
+      return;
+    }
+
+    const ownerDoc =
+      snapshot.docs[0];
+
+    const ownerData =
+      ownerDoc.data();
+
+    if (
+      ownerData.password !==
+      password
+    ) {
+      alert("Invalid Password");
+      return;
+    }
+
+    localStorage.setItem(
+      "ownerId",
+      ownerDoc.id
+    );
+
+    window.location.href =
+      "/owner/dashboard";
+  };
+
+  const sendForgotOtp =
+    async () => {
+      const q = query(
+        collection(
+          db,
+          "owners"
+        ),
+        where(
+          "phone",
+          "==",
+          phone
+        )
+      );
+
+      const snapshot =
+        await getDocs(q);
+
+      if (
+        snapshot.empty
+      ) {
+        alert(
+          "Account not found"
+        );
+        return;
+      }
+
+      const ownerData =
+        snapshot.docs[0].data();
+
+      const otpCode =
+        Math.floor(
+          100000 +
+            Math.random() *
+              900000
+        ).toString();
+
+      setGeneratedForgotOtp(
+        otpCode
+      );
+
+      await fetch(
+        "/api/send-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            email:
+              ownerData.email,
+            otp: otpCode,
+          }),
+        }
+      );
+
+      alert(
+        `OTP sent to ${ownerData.email}`
+      );
+    };
+
+  const verifyForgotOtp =
+    () => {
+      if (
+        forgotOtp ===
+        generatedForgotOtp
+      ) {
+        setForgotVerified(
+          true
+        );
+
+        alert(
+          "OTP Verified"
+        );
+      } else {
+        alert(
+          "Invalid OTP"
+        );
+      }
+    };
+
+  const resetPassword =
+    async () => {
+      const q = query(
+        collection(
+          db,
+          "owners"
+        ),
+        where(
+          "phone",
+          "==",
+          phone
+        )
+      );
+
+      const snapshot =
+        await getDocs(q);
+
+      if (
+        snapshot.empty
+      ) {
+        alert(
+          "Account not found"
+        );
+        return;
+      }
+
+      await updateDoc(
+        doc(
+          db,
+          "owners",
+          snapshot.docs[0].id
+        ),
+        {
+          password:
+            newPassword,
+        }
+      );
+
+      alert(
+        "Password Updated Successfully"
+      );
+
+      setMode("login");
+      setForgotVerified(
+        false
+      );
+    };
+
+  const registerOwner =
+    async (e) => {
+      e.preventDefault();
+
+      const phoneQuery =
+        query(
+          collection(
+            db,
+            "owners"
+          ),
+          where(
+            "phone",
+            "==",
+            phone
+          )
+        );
+
+      const phoneExists =
+        await getDocs(
+          phoneQuery
+        );
+
+      if (
+        !phoneExists.empty
+      ) {
+        alert(
+          "Account already exists."
+        );
+
+        setMode("login");
+        return;
+      }
+
+      const docRef =
+        await addDoc(
+          collection(
+            db,
+            "owners"
+          ),
+          {
+            email,
+            phone,
+            password,
+
+            name,
+            village,
+            location,
+
+            farmLocation,
+
+            workersRequired,
+
+            govtId,
+
+            createdAt:
+              new Date(),
+          }
+        );
+
+      localStorage.setItem(
+        "ownerId",
+        docRef.id
+      );
+
+      window.location.href =
+        "/owner/dashboard";
+    };
+
+  const pageStyle = {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background:
+      "linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb)",
+    padding: "20px",
+  };
+
+  const cardStyle = {
+    width: "100%",
+    maxWidth: "850px",
+    background:
+      "rgba(255,255,255,.08)",
+    backdropFilter:
+      "blur(25px)",
+    borderRadius: "30px",
+    padding: "40px",
+    border:
+      "1px solid rgba(255,255,255,.1)",
+  };
+
+  const inputStyle = {
+    width: "100%",
+    padding: "15px",
+    marginBottom: "15px",
+    border: "none",
+    borderRadius: "15px",
+    background:
+      "rgba(255,255,255,.12)",
+    color: "white",
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    padding: "15px",
+    border: "none",
+    borderRadius: "15px",
+    background:
+      "linear-gradient(90deg,#2563eb,#1d4ed8)",
+    color: "white",
+    cursor: "pointer",
+    marginBottom: "15px",
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-      }}
-    >
-      {!showRegister ? (
-        <form onSubmit={handleLogin} style={glassCard}>
-          <h1 style={heading}>
-            🏡 Owner Portal
-          </h1>
+    <div style={pageStyle}>
+      <div style={cardStyle}>
+        <h1
+          style={{
+            color: "white",
+            textAlign: "center",
+            marginBottom: 25,
+          }}
+        >
+          🏡 Owner Portal
+        </h1>
 
-          <input
-            type="tel"
-            placeholder="Mobile Number"
-            required
-            style={inputStyle}
-          />
+        {mode === "login" && (
+          <>
+            <input
+              style={inputStyle}
+              placeholder="Mobile Number"
+              value={phone}
+              onChange={(e) =>
+                setPhone(
+                  e.target.value
+                )
+              }
+            />
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            style={inputStyle}
-          />
+            <input
+              style={inputStyle}
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) =>
+                setPassword(
+                  e.target.value
+                )
+              }
+            />
 
-          <button type="submit" style={loginButton}>
-            Login
-          </button>
+            <button
+              style={buttonStyle}
+              onClick={loginUser}
+            >
+              Login
+            </button>
 
-          <button
-            type="button"
-            style={createButton}
-            onClick={() => setShowRegister(true)}
-          >
-            Create Account
-          </button>
+            <button
+              style={buttonStyle}
+              onClick={() =>
+                setMode(
+                  "register"
+                )
+              }
+            >
+              Create Account
+            </button>
 
-          <button
-            type="button"
-            style={forgotButton}
-          >
-            Forgot Password
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleRegister} style={glassCard}>
-          <h1 style={heading}>
-            🏡 ಮಾಲೀಕರ ನೋಂದಣಿ
-          </h1>
+            <button
+              style={buttonStyle}
+              onClick={() =>
+                setMode(
+                  "forgot"
+                )
+              }
+            >
+              Forgot Password
+            </button>
+          </>
+        )}
 
-          <input
-            type="text"
-            placeholder="Full Name"
-            required
-            style={inputStyle}
-          />
+        {mode === "register" &&
+          !verified && (
+            <>
+              <input
+                style={inputStyle}
+                placeholder="Email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(
+                    e.target.value
+                  )
+                }
+              />
 
-          <input
-            type="tel"
-            placeholder="Phone Number"
-            pattern="[0-9]{10}"
-            required
-            style={inputStyle}
-          />
+              <input
+                style={inputStyle}
+                placeholder="Mobile Number"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(
+                    e.target.value
+                  )
+                }
+              />
 
-          <input
-            type="text"
-            placeholder="Village"
-            required
-            style={inputStyle}
-          />
+              <input
+                style={inputStyle}
+                type="password"
+                placeholder="Create Password"
+                value={password}
+                onChange={(e) =>
+                  setPassword(
+                    e.target.value
+                  )
+                }
+              />
 
-          <input
-            type="text"
-            placeholder="Location"
-            required
-            style={inputStyle}
-          />
+              <button
+                style={buttonStyle}
+                onClick={sendOtp}
+              >
+                Send OTP
+              </button>
 
-          <input
-            type="text"
-            placeholder="Farm Location"
-            required
-            style={inputStyle}
-          />
+              <input
+                style={inputStyle}
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) =>
+                  setOtp(
+                    e.target.value
+                  )
+                }
+              />
 
-          <input
-            type="number"
-            placeholder="Workers Required"
-            required
-            style={inputStyle}
-          />
+              <button
+                style={buttonStyle}
+                onClick={verifyOtp}
+              >
+                Verify OTP
+              </button>
+            </>
+          )}
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            style={inputStyle}
-          />
+        {mode === "register" &&
+          verified && (
+            <form
+              onSubmit={
+                registerOwner
+              }
+            >
+              <input
+                style={inputStyle}
+                value={email}
+                disabled
+              />
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            required
-            style={inputStyle}
-          />
+              <input
+                style={inputStyle}
+                value={phone}
+                disabled
+              />
 
-          <label style={labelStyle}>
-            📷 Profile Photo
-          </label>
+              <input
+                style={inputStyle}
+                value={password}
+                disabled
+              />
 
-          <input
-            type="file"
-            accept="image/*"
-            required
-            style={fileStyle}
-          />
+              <input
+                style={inputStyle}
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) =>
+                  setName(
+                    e.target.value
+                  )
+                }
+                required
+              />
 
-          <input
-            type="text"
-            placeholder="Government ID Number"
-            required
-            style={inputStyle}
-          />
+              <input
+                style={inputStyle}
+                placeholder="Village"
+                value={village}
+                onChange={(e) =>
+                  setVillage(
+                    e.target.value
+                  )
+                }
+                required
+              />
 
-          <label style={labelStyle}>
-            🪪 Government ID Photo
-          </label>
+              <input
+                style={inputStyle}
+                placeholder="Location"
+                value={location}
+                onChange={(e) =>
+                  setLocation(
+                    e.target.value
+                  )
+                }
+                required
+              />
 
-          <input
-            type="file"
-            accept="image/*"
-            required
-            style={fileStyle}
-          />
+              <input
+                style={inputStyle}
+                placeholder="Farm Location"
+                value={farmLocation}
+                onChange={(e) =>
+                  setFarmLocation(
+                    e.target.value
+                  )
+                }
+                required
+              />
 
-          <button
-            type="submit"
-            style={loginButton}
-          >
-            Register Owner
-          </button>
+              <input
+                style={inputStyle}
+                placeholder="Workers Required"
+                value={workersRequired}
+                onChange={(e) =>
+                  setWorkersRequired(
+                    e.target.value
+                  )
+                }
+                required
+              />
 
-          <button
-            type="button"
-            style={backButton}
-            onClick={() => setShowRegister(false)}
-          >
-            Back To Login
-          </button>
-        </form>
-      )}
+              <input
+                style={inputStyle}
+                placeholder="Government ID"
+                value={govtId}
+                onChange={(e) =>
+                  setGovtId(
+                    e.target.value
+                  )
+                }
+                required
+              />
+
+              <button
+                type="submit"
+                style={buttonStyle}
+              >
+                Create Account
+              </button>
+            </form>
+          )}
+      </div>
     </div>
   );
 }
-
-const glassCard = {
-  width: "100%",
-  maxWidth: "650px",
-  background: "rgba(255,255,255,0.08)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.15)",
-  padding: "30px",
-  borderRadius: "25px",
-  boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
-  color: "white",
-};
-
-const heading = {
-  textAlign: "center",
-  color: "#fff",
-  marginBottom: "25px",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "14px",
-  marginBottom: "14px",
-  borderRadius: "12px",
-  border: "none",
-  outline: "none",
-  background: "rgba(255,255,255,0.1)",
-  color: "white",
-  fontSize: "16px",
-};
-
-const labelStyle = {
-  display: "block",
-  marginBottom: "8px",
-  marginTop: "10px",
-};
-
-const fileStyle = {
-  width: "100%",
-  marginBottom: "15px",
-  color: "white",
-};
-
-const loginButton = {
-  width: "100%",
-  padding: "15px",
-  background: "#22c55e",
-  border: "none",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "10px",
-};
-
-const createButton = {
-  width: "100%",
-  padding: "15px",
-  background: "#16a34a",
-  border: "none",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "15px",
-};
-
-const forgotButton = {
-  width: "100%",
-  padding: "15px",
-  background: "#15803d",
-  border: "none",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "15px",
-};
-
-const backButton = {
-  width: "100%",
-  padding: "15px",
-  background: "#334155",
-  border: "none",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "18px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "15px",
-};
