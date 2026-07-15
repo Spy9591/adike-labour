@@ -1,65 +1,68 @@
-const sendOtp = async () => {
-  if (!email || !phone) {
-    alert("Enter Email and Mobile Number");
-    return;
-  }
+import nodemailer from "nodemailer";
 
-  const phoneQuery = query(
-    collection(db, "labours"),
-    where("phone", "==", phone)
-  );
+export async function POST(req) {
+  try {
+    const { email, otp, portal } =
+      await req.json();
 
-  const phoneExists =
-    await getDocs(phoneQuery);
+    console.log("================================");
+    console.log("OTP REQUEST RECEIVED");
+    console.log("Email:", email);
+    console.log("Portal:", portal);
+    console.log(
+      "EMAIL_USER:",
+      process.env.EMAIL_USER
+    );
+    console.log("================================");
 
-  if (!phoneExists.empty) {
-    alert(
-      "Account already exists. Please Login or use Forgot Password."
+    const transporter =
+      nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+    const info =
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: `Adike ${portal} OTP`,
+        html: `
+          <h2>Adike Labour Platform</h2>
+          <h3>${portal}</h3>
+          <h1>${otp}</h1>
+          <p>OTP valid for 5 minutes.</p>
+        `,
+      });
+
+    console.log(
+      "MESSAGE ID:",
+      info.messageId
     );
 
-    setMode("login");
-
-    return;
-  }
-
-  const emailQuery = query(
-    collection(db, "labours"),
-    where("email", "==", email)
-  );
-
-  const emailExists =
-    await getDocs(emailQuery);
-
-  if (!emailExists.empty) {
-    alert(
-      "Email already registered. Please Login or use Forgot Password."
+    console.log(
+      "OTP SENT SUCCESSFULLY"
     );
 
-    setMode("login");
+    return Response.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(
+      "OTP ERROR:",
+      error
+    );
 
-    return;
+    return Response.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      {
+        status: 500,
+      }
+    );
   }
-
-  const newOtp = Math.floor(
-    100000 +
-      Math.random() * 900000
-  ).toString();
-
-  setGeneratedOtp(newOtp);
-
-  await fetch("/api/send-otp", {
-    method: "POST",
-
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
-
-    body: JSON.stringify({
-      email,
-      otp: newOtp,
-    }),
-  });
-
-  alert("OTP Sent Successfully");
-};
+}
