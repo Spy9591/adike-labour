@@ -9,47 +9,57 @@ export async function POST(req) {
       nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user:
+            process.env.EMAIL_USER,
+          pass:
+            process.env.EMAIL_PASS,
         },
       });
 
-    const info =
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
 
-        to: email,
+      to: email,
 
-        subject:
-          portal === "owner"
-            ? "Owner Portal OTP"
-            : "Labour Portal OTP",
+      subject:
+        portal === "owner"
+          ? "Owner Portal OTP"
+          : "Labour Portal OTP",
 
-        html: `
-          <div style="font-family:Arial;padding:20px">
-            <h2>Adike Labour Platform</h2>
+      html: `
+        <div
+          style="
+            font-family:Arial;
+            padding:20px;
+          "
+        >
+          <h2>
+            Adike Labour Platform
+          </h2>
 
-            <p>Your OTP is:</p>
+          <p>
+            Your OTP is:
+          </p>
 
-            <h1 style="color:#2563eb">
-              ${otp}
-            </h1>
+          <h1
+            style="
+              color:#2563eb;
+            "
+          >
+            ${otp}
+          </h1>
 
-            <p>
-              OTP valid for 5 minutes.
-            </p>
-          </div>
-        `,
-      });
-
-    console.log(
-      "Message sent:",
-      info.messageId
-    );
+          <p>
+            OTP valid for 5 minutes.
+          </p>
+        </div>
+      `,
+    });
 
     return Response.json({
       success: true,
     });
+
   } catch (error) {
     console.error(
       "OTP ERROR:",
@@ -59,7 +69,8 @@ export async function POST(req) {
     return Response.json(
       {
         success: false,
-        error: error.message,
+        error:
+          error.message,
       },
       {
         status: 500,
