@@ -4,293 +4,331 @@ import { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
-  addDoc,
+  query,
+  where,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
 
 export default function OwnerDashboard() {
-  const [labours, setLabours] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [runningJobs, setRunningJobs] =
+    useState([]);
+
+  const [completedJobs, setCompletedJobs] =
+    useState([]);
+
+  const [cancelledJobs, setCancelledJobs] =
+    useState([]);
 
   useEffect(() => {
-    getOwnerLocation();
+    loadBookings();
   }, []);
 
-  const getOwnerLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        loadLabours(
-          position.coords.latitude,
-          position.coords.longitude
+  const calculateAmount = (
+    startTime
+  ) => {
+    if (!startTime) return 700;
+
+    const diff =
+      new Date() -
+      startTime.toDate();
+
+    const hours =
+      diff / 3600000;
+
+    let amount = 700;
+
+    if (hours > 9) {
+      const extraMinutes =
+        (hours - 9) * 60;
+
+      const blocks =
+        Math.ceil(
+          extraMinutes / 30
         );
-      },
-      () => {
-        alert("Please enable location services");
-        setLoading(false);
-      }
-    );
-  };
 
-  const calculateDistance = (
-    lat1,
-    lon1,
-    lat2,
-    lon2
-  ) => {
-    const R = 6371;
-
-    const dLat =
-      ((lat2 - lat1) * Math.PI) / 180;
-
-    const dLon =
-      ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(dLat / 2) *
-        Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c =
-      2 *
-      Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
-      );
-
-    return (R * c).toFixed(1);
-  };
-
-  const loadLabours = async (
-    ownerLat,
-    ownerLng
-  ) => {
-    try {
-      const snapshot = await getDocs(
-        collection(db, "labours")
-      );
-
-      const labourList = [];
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-
-        if (data.onDuty === true) {
-          labourList.push({
-            id: doc.id,
-            ...data,
-            distance:
-              data.latitude &&
-              data.longitude
-                ? calculateDistance(
-                    ownerLat,
-                    ownerLng,
-                    data.latitude,
-                    data.longitude
-                  )
-                : "N/A",
-          });
-        }
-      });
-
-      labourList.sort(
-        (a, b) =>
-          parseFloat(a.distance) -
-          parseFloat(b.distance)
-      );
-
-      setLabours(labourList);
-    } catch (error) {
-      console.log(error);
+      amount += blocks * 50;
     }
 
-    setLoading(false);
+    return amount;
   };
 
-  const bookLabour = async (
-    labour
-  ) => {
-    try {
+  const loadBookings =
+    async () => {
       const ownerId =
         localStorage.getItem(
           "ownerId"
         );
 
-      await addDoc(
-        collection(db, "bookings"),
-        {
-          ownerId,
-          labourId: labour.id,
-          labourName: labour.name,
+      const snapshot =
+        await getDocs(
+          query(
+            collection(
+              db,
+              "bookings"
+            ),
+            where(
+              "ownerId",
+              "==",
+              ownerId
+            )
+          )
+        );
 
-          ownerName:
-            "Farm Owner",
+      const running =
+        [];
 
-          status: "pending",
+      const completed =
+        [];
 
-          createdAt:
-            new Date(),
+      const cancelled =
+        [];
+
+      snapshot.forEach(
+        (doc) => {
+          const booking =
+            {
+              id: doc.id,
+              ...doc.data(),
+            };
+
+          if (
+            booking.status ===
+            "accepted"
+          ) {
+            running.push(
+              booking
+            );
+          }
+
+          if (
+            booking.status ===
+            "completed"
+          ) {
+            completed.push(
+              booking
+            );
+          }
+
+          if (
+            booking.status ===
+            "cancelled" ||
+            booking.status ===
+              "rejected"
+          ) {
+            cancelled.push(
+              booking
+            );
+          }
         }
       );
 
-      alert(
-        "✅ Booking Request Sent Successfully"
+      setRunningJobs(
+        running
       );
-    } catch (error) {
-      console.log(error);
 
-      alert(
-        "Failed To Create Booking"
+      setCompletedJobs(
+        completed
       );
-    }
-  };
+
+      setCancelledJobs(
+        cancelled
+      );
+    };
 
   const pageStyle = {
     minHeight: "100vh",
     padding: "20px",
+
     background:
       "linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb)",
   };
 
-  const heroCard = {
+  const cardStyle = {
     background:
       "rgba(255,255,255,.08)",
-    backdropFilter: "blur(25px)",
-    borderRadius: "25px",
-    padding: "30px",
-    color: "white",
-    marginBottom: "20px",
-  };
 
-  const labourCard = {
-    background:
-      "rgba(255,255,255,.08)",
-    backdropFilter: "blur(20px)",
+    backdropFilter:
+      "blur(20px)",
+
     borderRadius: "20px",
+
     padding: "20px",
-    color: "white",
-    marginBottom: "15px",
-  };
 
-  const buttonStyle = {
-    padding: "12px 18px",
-    border: "none",
-    borderRadius: "12px",
-    background:
-      "linear-gradient(90deg,#22c55e,#16a34a)",
     color: "white",
-    cursor: "pointer",
-    marginTop: "10px",
-  };
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#0f172a",
-          color: "white",
-          fontSize: "20px",
-        }}
-      >
-        Loading Labour Details...
-      </div>
-    );
-  }
+    marginBottom:
+      "15px",
+  };
 
   return (
     <div style={pageStyle}>
-      <div style={heroCard}>
+      <div
+        style={cardStyle}
+      >
         <h1>
           🏡 Owner Dashboard
         </h1>
-
-        <p>
-          Available Labour:
-          {" "}
-          {labours.length}
-        </p>
-
-        <p>
-          Showing ON DUTY labour only
-        </p>
       </div>
 
-      {labours.length === 0 && (
-        <div style={labourCard}>
-          <h2>
-            No Labour Currently On Duty
-          </h2>
-        </div>
-      )}
+      <div
+        style={cardStyle}
+      >
+        <h2>
+          🟠 Running Jobs
+        </h2>
 
-      {labours.map((labour) => (
-        <div
-          key={labour.id}
-          style={labourCard}
-        >
-          <h2>
-            👷 {labour.name}
-          </h2>
-
+        {runningJobs.length ===
+        0 ? (
           <p>
-            ⭐ Rating:
-            {" "}
-            {labour.rating || 5}
+            No Running Jobs
           </p>
+        ) : (
+          runningJobs.map(
+            (job) => (
+              <div
+                key={
+                  job.id
+                }
+                style={{
+                  marginTop:
+                    "15px",
+                }}
+              >
+                <p>
+                  👷 Labour:
+                  {" "}
+                  {
+                    job.labourName
+                  }
+                </p>
 
+                <p>
+                  Status:
+                  {" "}
+                  {
+                    job.status
+                  }
+                </p>
+
+                {job.startTime && (
+                  <p>
+                    💰 Current
+                    Amount:
+                    ₹
+                    {calculateAmount(
+                      job.startTime
+                    )}
+                  </p>
+                )}
+
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://www.google.com/maps`
+                    )
+                  }
+                  style={{
+                    padding:
+                      "10px",
+                    border:
+                      "none",
+                    borderRadius:
+                      "10px",
+                    background:
+                      "#22c55e",
+                    color:
+                      "white",
+                  }}
+                >
+                  📍 Track
+                  Labour
+                </button>
+              </div>
+            )
+          )
+        )}
+      </div>
+
+      <div
+        style={cardStyle}
+      >
+        <h2>
+          ✅ Completed
+          Jobs
+        </h2>
+
+        {completedJobs.length ===
+        0 ? (
           <p>
-            📍 Village:
-            {" "}
-            {labour.village}
+            No Completed
+            Jobs
           </p>
+        ) : (
+          completedJobs.map(
+            (job) => (
+              <div
+                key={
+                  job.id
+                }
+              >
+                <p>
+                  👷{" "}
+                  {
+                    job.labourName
+                  }
+                </p>
 
+                <p>
+                  ₹
+                  {job.totalAmount ||
+                    700}
+                </p>
+              </div>
+            )
+          )
+        )}
+      </div>
+
+      <div
+        style={cardStyle}
+      >
+        <h2>
+          ❌ Cancelled
+          Jobs
+        </h2>
+
+        {cancelledJobs.length ===
+        0 ? (
           <p>
-            📌 Location:
-            {" "}
-            {labour.location}
+            No Cancelled
+            Jobs
           </p>
+        ) : (
+          cancelledJobs.map(
+            (job) => (
+              <div
+                key={
+                  job.id
+                }
+              >
+                <p>
+                  👷{" "}
+                  {
+                    job.labourName
+                  }
+                </p>
 
-          <p>
-            🚲 Vehicle:
-            {" "}
-            {labour.hasBike
-              ? "Bike Available"
-              : "No Bike"}
-          </p>
-
-          <p>
-            📏 Distance:
-            {" "}
-            {labour.distance}
-            {" "}
-            KM
-          </p>
-
-          <p>
-            💼 Experience:
-            {" "}
-            {labour.experience}
-          </p>
-
-          <button
-            style={buttonStyle}
-            onClick={() =>
-              bookLabour(
-                labour
-              )
-            }
-          >
-            Book Labour
-          </button>
-        </div>
-      ))}
+                <p>
+                  {
+                    job.status
+                  }
+                </p>
+              </div>
+            )
+          )
+        )}
+      </div>
     </div>
   );
 }
