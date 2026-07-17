@@ -94,7 +94,9 @@ export default function Dashboard() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const labourId =
-          localStorage.getItem("labourId");
+          localStorage.getItem(
+            "labourId"
+          );
 
         await updateDoc(
           doc(
@@ -237,8 +239,7 @@ export default function Dashboard() {
         busy: false,
         currentBooking: null,
         completedJobs:
-          (labour.completedJobs || 0) +
-          1,
+          (labour.completedJobs || 0) + 1,
       }
     );
 
@@ -252,7 +253,8 @@ export default function Dashboard() {
   };
 
   const openPhonePe = () => {
-    window.location.href = "phonepe://";
+    window.location.href =
+      "phonepe://";
   };
 
   const paymentReceived = async () => {
@@ -281,20 +283,74 @@ export default function Dashboard() {
     loadLabour();
   };
 
+  // MODERN LOADING UI
+
   if (!labour) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#020617",
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        Loading Dashboard...
-      </div>
+      <>
+        <div
+          style={{
+            minHeight: "100vh",
+            padding: "20px",
+            background:
+              "linear-gradient(135deg,#020617,#0f172a,#064e3b)",
+          }}
+        >
+          <div
+            style={{
+              height: "180px",
+              borderRadius: "30px",
+              marginBottom: "20px",
+              background:
+                "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)",
+              backgroundSize:
+                "200% 100%",
+              animation:
+                "shimmer 1.5s infinite linear",
+            }}
+          />
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(180px,1fr))",
+              gap: "15px",
+              marginBottom: "20px",
+            }}
+          >
+            {[1, 2, 3, 4].map(
+              (item) => (
+                <div
+                  key={item}
+                  style={{
+                    height: "120px",
+                    borderRadius: "20px",
+                    background:
+                      "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)",
+                    backgroundSize:
+                      "200% 100%",
+                    animation:
+                      "shimmer 1.5s infinite linear",
+                  }}
+                />
+              )
+            )}
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              background-position: 200% 0;
+            }
+
+            100% {
+              background-position: -200% 0;
+            }
+          }
+        `}</style>
+      </>
     );
   }
 
@@ -322,54 +378,55 @@ export default function Dashboard() {
         <p>⭐ {labour.rating}</p>
         <p>📍 {labour.village}</p>
 
-        <button
-          onClick={toggleDuty}
-        >
+        <button onClick={toggleDuty}>
           {labour.onDuty
-            ? "Go Off Duty"
-            : "Go On Duty"}
+            ? "🔴 Go Off Duty"
+            : "🟢 Go On Duty"}
         </button>
       </div>
 
       <div style={glassCard}>
         <h2>🔔 Booking Requests</h2>
 
-        {bookings.map((booking) => (
-          <div
-            key={booking.id}
-            style={{
-              marginTop: "15px",
-            }}
-          >
-            <p>
-              Owner:
-              {booking.ownerName}
-            </p>
-
-            <button
-              onClick={() =>
-                acceptBooking(
-                  booking.id
-                )
-              }
+        {bookings.length === 0 ? (
+          <p>No Booking Requests</p>
+        ) : (
+          bookings.map((booking) => (
+            <div
+              key={booking.id}
+              style={{ marginTop: "15px" }}
             >
-              ✅ Accept
-            </button>
+              <p>
+                Owner:
+                {" "}
+                {booking.ownerName}
+              </p>
 
-            <button
-              onClick={() =>
-                rejectBooking(
-                  booking.id
-                )
-              }
-              style={{
-                marginLeft: "10px",
-              }}
-            >
-              ❌ Reject
-            </button>
-          </div>
-        ))}
+              <button
+                onClick={() =>
+                  acceptBooking(
+                    booking.id
+                  )
+                }
+              >
+                ✅ Accept
+              </button>
+
+              <button
+                onClick={() =>
+                  rejectBooking(
+                    booking.id
+                  )
+                }
+                style={{
+                  marginLeft: "10px",
+                }}
+              >
+                ❌ Reject
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {runningBooking && (
@@ -378,12 +435,15 @@ export default function Dashboard() {
 
           <p>
             Owner:
+            {" "}
             {
               runningBooking.ownerName
             }
           </p>
 
-          <p>Payment: ₹700</p>
+          <p>
+            Payment: ₹700
+          </p>
 
           <button
             onClick={completeWork}
@@ -414,8 +474,7 @@ export default function Dashboard() {
 
           <p>
             Open PhonePe and show
-            your QR code to
-            customer.
+            your QR code to customer.
           </p>
 
           <button
@@ -448,8 +507,7 @@ export default function Dashboard() {
 
         <p>
           Wallet Balance: ₹
-          {labour.walletBalance ||
-            0}
+          {labour.walletBalance || 0}
         </p>
       </div>
     </div>
