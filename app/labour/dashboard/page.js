@@ -1,695 +1,1012 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import {
-  doc,
-  getDoc,
-  updateDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+useEffect,
+useState
+}
+from "react";
+
+
+import {
+useRouter
+}
+from "next/navigation";
+
+
+import {
+
+doc,
+getDoc,
+updateDoc,
+collection,
+query,
+where,
+getDocs
+
+}
+
+from "firebase/firestore";
+
 
 import { db } from "../../firebase";
 
-import DashboardHeader from "./DashboardHeader";
-import StatsCards from "./StatsCards";
-import BookingRequests from "./BookingRequests";
-import RunningJob from "./RunningJob";
-import PaymentCard from "./PaymentCard";
-import LoadingScreen from "./LoadingScreen";
+
+
+import DashboardHeader
+from "./DashboardHeader";
+
+
+import StatsCards
+from "./StatsCards";
+
+
+import BookingRequests
+from "./BookingRequests";
+
+
+import RunningJob
+from "./RunningJob";
+
+
+import PaymentCard
+from "./PaymentCard";
+
+
+import MonthlyEarnings
+from "./MonthlyEarnings";
+
+
+import PendingPayments
+from "./PendingPayments";
+
+
+import OrderHistory
+from "./OrderHistory";
+
+
+import LoadingScreen
+from "./LoadingScreen";
+
 
 import "./dashboard.css";
 
 
-export default function Dashboard() {
 
 
-  const router = useRouter();
 
+export default function Dashboard(){
 
-  const [labour,setLabour] = useState(null);
 
-  const [bookings,setBookings] = useState([]);
 
-  const [runningBooking,setRunningBooking] =
-  useState(null);
+const router=useRouter();
 
-  const [awaitingPayment,setAwaitingPayment] =
-  useState(false);
 
 
+const [labour,setLabour]=useState(null);
 
-  useEffect(()=>{
 
-    loadLabour();
+const [bookings,setBookings]=useState([]);
 
-  },[]);
 
+const [runningBooking,setRunningBooking]=useState(null);
 
 
+const [pendingPayments,setPendingPayments]=useState([]);
 
-  // LOAD ACTIVE JOB
 
-  const loadRunningBooking = async(labourId)=>{
+const [orders,setOrders]=useState([]);
 
 
-    const q=query(
+const [monthlyEarnings,setMonthlyEarnings]=useState(0);
 
-      collection(db,"bookings"),
 
-      where(
-        "labourId",
-        "==",
-        labourId
-      ),
 
-      where(
-        "status",
-        "==",
-        "accepted"
-      )
 
-    );
 
+useEffect(()=>{
 
-    const snapshot =
-    await getDocs(q);
+loadLabour();
 
+},[]);
 
 
-    if(!snapshot.empty){
 
 
-      setRunningBooking({
 
-        id:snapshot.docs[0].id,
 
-        ...snapshot.docs[0].data()
 
-      });
+const logout=()=>{
 
 
-    }
+localStorage.removeItem(
+"labourId"
+);
 
-    else{
 
+router.replace("/login");
 
-      setRunningBooking(null);
 
+};
 
-    }
 
 
-  };
 
 
 
 
+const loadLabour=async()=>{
 
-  // LOAD REQUESTS
 
-  const loadBookings = async(labourId)=>{
+const labourId=
+localStorage.getItem(
+"labourId"
+);
 
 
-    const q=query(
 
-      collection(db,"bookings"),
+if(!labourId)
+return;
 
-      where(
-        "labourId",
-        "==",
-        labourId
-      ),
 
-      where(
-        "status",
-        "==",
-        "pending"
-      )
 
-    );
+const snap=
+await getDoc(
 
+doc(
+db,
+"labours",
+labourId
+)
 
+);
 
-    const snapshot =
-    await getDocs(q);
 
 
+if(snap.exists()){
 
-    let list=[];
 
+setLabour({
 
+id:snap.id,
 
-    snapshot.forEach((item)=>{
+...snap.data()
 
+});
 
-      list.push({
 
-        id:item.id,
+loadBookings(labourId);
 
-        ...item.data()
+loadRunning(labourId);
 
-      });
+loadPendingPayments(labourId);
 
+loadOrders(labourId);
 
-    });
+loadMonthlyEarnings(labourId);
 
 
+}
 
-    setBookings(list);
 
 
-  };
+};
 
 
 
 
 
 
-  // LOAD LABOUR PROFILE
 
-  const loadLabour = async()=>{
 
 
-    const labourId =
-    localStorage.getItem("labourId");
+const loadBookings=async(id)=>{
 
 
+const q=query(
 
-    if(!labourId)
-    return;
+collection(db,"bookings"),
 
+where(
+"labourId",
+"==",
+id
+),
 
+where(
+"status",
+"==",
+"pending"
+)
 
-    const snap =
-    await getDoc(
+);
 
-      doc(
-        db,
-        "labours",
-        labourId
-      )
 
-    );
 
+const snap=
+await getDocs(q);
 
 
-    if(snap.exists()){
 
+let list=[];
 
-      setLabour({
 
-        id:snap.id,
+snap.forEach((item)=>{
 
-        ...snap.data()
 
-      });
+list.push({
 
+id:item.id,
 
+...item.data()
 
-      loadBookings(labourId);
+});
 
-      loadRunningBooking(labourId);
 
+});
 
-    }
 
+setBookings(list);
 
-  };
 
+};
 
 
 
 
-  // LOGOUT
 
-  const logout=()=>{
 
 
-    localStorage.removeItem(
-      "labourId"
-    );
 
 
-    router.replace("/login");
+const loadRunning=async(id)=>{
 
 
-  };
+const q=query(
 
+collection(db,"bookings"),
 
+where(
+"labourId",
+"==",
+id
+),
 
+where(
+"status",
+"==",
+"accepted"
+)
 
+);
 
-  // DUTY TOGGLE
 
-  const toggleDuty=()=>{
 
+const snap=
+await getDocs(q);
 
-    navigator.geolocation.getCurrentPosition(
 
-      async(position)=>{
 
+if(!snap.empty){
 
-        const labourId =
-        localStorage.getItem(
-          "labourId"
-        );
 
+setRunningBooking({
 
+id:snap.docs[0].id,
 
-        await updateDoc(
+...snap.docs[0].data()
 
-          doc(
-            db,
-            "labours",
-            labourId
-          ),
+});
 
-          {
 
-            onDuty:
-            !labour.onDuty,
+}
 
+else{
 
-            latitude:
-            position.coords.latitude,
+setRunningBooking(null);
 
+}
 
-            longitude:
-            position.coords.longitude
 
-          }
 
-        );
+};
 
 
 
-        loadLabour();
 
 
-      },
 
 
-      ()=>{
 
-        alert(
-          "Please enable location"
-        );
 
-      }
+const loadPendingPayments=async(id)=>{
 
-    );
 
+const q=query(
 
-  };
+collection(db,"bookings"),
 
+where(
+"labourId",
+"==",
+id
+),
 
+where(
+"paymentStatus",
+"==",
+"pending"
+)
 
+);
 
 
 
-  // ACCEPT BOOKING
+const snap=
+await getDocs(q);
 
-  const acceptBooking=async(id)=>{
 
 
-    const labourId =
-    localStorage.getItem(
-      "labourId"
-    );
+let list=[];
 
 
 
-    await updateDoc(
+snap.forEach((item)=>{
 
-      doc(
-        db,
-        "bookings",
-        id
-      ),
 
-      {
+list.push({
 
-        status:"accepted",
+id:item.id,
 
-        startTime:new Date()
+...item.data()
 
-      }
+});
 
-    );
 
+});
 
 
-    await updateDoc(
 
-      doc(
-        db,
-        "labours",
-        labourId
-      ),
+setPendingPayments(list);
 
-      {
 
-        busy:true,
+};
 
-        currentBooking:id
 
-      }
 
-    );
 
 
 
-    alert(
-      "Booking Accepted"
-    );
 
 
-    loadLabour();
 
+const loadOrders=async(id)=>{
 
-  };
 
+const q=query(
 
+collection(db,"bookings"),
 
+where(
+"labourId",
+"==",
+id
+)
 
+);
 
 
-  // REJECT
 
-  const rejectBooking=async(id)=>{
+const snap=
+await getDocs(q);
 
 
-    await updateDoc(
 
-      doc(
-        db,
-        "bookings",
-        id
-      ),
+let list=[];
 
-      {
 
-        status:"rejected"
+snap.forEach((item)=>{
 
-      }
 
-    );
+const data=item.data();
 
 
+if(
+data.status==="completed" ||
+data.status==="cancelled"
+)
 
-    loadLabour();
+{
 
 
-  };
+list.push({
 
+id:item.id,
 
+...data
 
+});
 
 
+}
 
 
-  // CANCEL JOB
+});
 
-  const cancelOrder=async()=>{
 
 
-    if(!runningBooking)
-    return;
+setOrders(list);
 
 
+};
 
-    const labourId =
-    localStorage.getItem(
-      "labourId"
-    );
 
 
 
-    await updateDoc(
 
-      doc(
-        db,
-        "bookings",
-        runningBooking.id
-      ),
 
-      {
 
-        status:"cancelled"
 
-      }
 
-    );
+const loadMonthlyEarnings=async(id)=>{
 
 
+const q=query(
 
-    await updateDoc(
+collection(db,"bookings"),
 
-      doc(
-        db,
-        "labours",
-        labourId
-      ),
+where(
+"labourId",
+"==",
+id
+),
 
-      {
+where(
+"paymentStatus",
+"==",
+"paid"
+)
 
-        busy:false,
+);
 
-        currentBooking:null
 
-      }
 
-    );
+const snap=
+await getDocs(q);
 
 
 
-    loadLabour();
+let total=0;
 
 
-  };
 
+const currentMonth=
+new Date().getMonth();
 
 
 
+snap.forEach((item)=>{
 
 
+const data=item.data();
 
-  // COMPLETE WORK
 
-  const completeWork=async()=>{
 
+if(data.paymentDate){
 
-    if(!runningBooking)
-    return;
 
+const date=
+data.paymentDate
+.toDate();
 
 
-    const labourId =
-    localStorage.getItem(
-      "labourId"
-    );
 
+if(
+date.getMonth()
+===
+currentMonth
+)
 
+{
 
-    await updateDoc(
 
-      doc(
-        db,
-        "bookings",
-        runningBooking.id
-      ),
+total +=
+data.receivedAmount || 0;
 
-      {
 
-        status:"completed",
+}
 
-        paymentStatus:"pending",
 
-        amount:700
+}
 
-      }
 
-    );
 
+});
 
 
-    await updateDoc(
 
-      doc(
-        db,
-        "labours",
-        labourId
-      ),
+setMonthlyEarnings(total);
 
-      {
 
-        busy:false,
+};
 
-        currentBooking:null,
 
 
-        completedJobs:
-        (labour.completedJobs || 0)+1
 
-      }
 
-    );
 
 
 
-    setAwaitingPayment(true);
 
+const toggleDuty=()=>{
 
 
-    loadLabour();
+navigator.geolocation.getCurrentPosition(
 
+async(position)=>{
 
-  };
 
+const id=
+localStorage.getItem(
+"labourId"
+);
 
 
 
+await updateDoc(
 
+doc(
+db,
+"labours",
+id
+),
 
+{
 
-  const openPhonePe=()=>{
 
+onDuty:
+!labour.onDuty,
 
-    window.location.href =
-    "phonepe://";
 
+latitude:
+position.coords.latitude,
 
-  };
 
+longitude:
+position.coords.longitude
 
 
+}
 
+);
 
 
 
-  const paymentReceived=async()=>{
+loadLabour();
 
 
-    const labourId =
-    localStorage.getItem(
-      "labourId"
-    );
 
+}
 
+);
 
-    await updateDoc(
 
-      doc(
-        db,
-        "labours",
-        labourId
-      ),
+};
 
-      {
 
-        walletBalance:
-        (labour.walletBalance || 0)+700
 
-      }
 
-    );
 
 
 
-    setAwaitingPayment(false);
 
 
-    loadLabour();
+const acceptBooking=async(id)=>{
 
 
-  };
+const labourId=
+localStorage.getItem(
+"labourId"
+);
 
 
 
+await updateDoc(
 
+doc(
+db,
+"bookings",
+id
+),
 
+{
 
-  if(!labour)
 
-  return <LoadingScreen/>;
+status:"accepted",
 
+startTime:new Date()
 
 
+}
 
+);
 
 
-  return (
 
-    <div className="dashboard">
+await updateDoc(
 
+doc(
+db,
+"labours",
+labourId
+),
 
-      <DashboardHeader
+{
 
-        labour={labour}
 
-        toggleDuty={toggleDuty}
+busy:true,
 
-        logout={logout}
+currentBooking:id
 
-      />
 
+}
 
+);
 
-      <StatsCards
 
-        labour={labour}
 
-      />
+loadLabour();
 
 
+};
 
 
-      <BookingRequests
 
-        bookings={bookings}
 
-        acceptBooking={acceptBooking}
 
-        rejectBooking={rejectBooking}
 
-      />
 
 
 
+const rejectBooking=async(id)=>{
 
-      <RunningJob
 
-        runningBooking={runningBooking}
+await updateDoc(
 
-        completeWork={completeWork}
+doc(
+db,
+"bookings",
+id
+),
 
-        cancelOrder={cancelOrder}
+{
 
-      />
+status:"rejected"
 
+}
 
+);
 
 
+loadLabour();
 
-      <PaymentCard
 
-        awaitingPayment={awaitingPayment}
+};
 
-        openPhonePe={openPhonePe}
 
-        paymentReceived={paymentReceived}
 
-      />
 
 
 
-    </div>
 
-  );
+
+
+const completeWork=async()=>{
+
+
+if(!runningBooking)
+return;
+
+
+
+await updateDoc(
+
+doc(
+db,
+"bookings",
+runningBooking.id
+),
+
+{
+
+
+status:"completed",
+
+paymentStatus:"pending",
+
+totalAmount:700,
+
+receivedAmount:0,
+
+remainingAmount:700,
+
+completedAt:new Date()
+
+
+}
+
+);
+
+
+
+loadLabour();
+
+
+};
+
+
+
+
+
+
+
+
+
+const receivePayment=async(payment)=>{
+
+
+await updateDoc(
+
+doc(
+db,
+"bookings",
+payment.id
+),
+
+{
+
+
+paymentStatus:"paid",
+
+receivedAmount:
+payment.remainingAmount,
+
+remainingAmount:0,
+
+paymentDate:new Date()
+
+
+}
+
+);
+
+
+
+loadLabour();
+
+
+};
+
+
+
+
+
+
+
+
+
+const cancelOrder=async()=>{
+
+
+if(!runningBooking)
+return;
+
+
+
+await updateDoc(
+
+doc(
+db,
+"bookings",
+runningBooking.id
+),
+
+{
+
+status:"cancelled"
+
+}
+
+);
+
+
+
+loadLabour();
+
+
+};
+
+
+
+
+
+
+
+
+
+const openPhonePe=()=>{
+
+
+window.location.href=
+"phonepe://";
+
+
+};
+
+
+
+
+
+
+
+
+
+if(!labour)
+
+return <LoadingScreen/>;
+
+
+
+
+
+
+
+return (
+
+<div className="dashboard">
+
+
+
+<DashboardHeader
+
+labour={labour}
+
+toggleDuty={toggleDuty}
+
+logout={logout}
+
+/>
+
+
+
+
+
+<StatsCards
+
+labour={{
+
+...labour,
+
+monthlyEarnings
+
+}}
+
+pendingAmount={
+
+pendingPayments.reduce(
+
+(a,b)=>
+
+a+(b.remainingAmount||0)
+
+,0)
+
+}
+
+/>
+
+
+
+
+
+<MonthlyEarnings
+
+earnings={monthlyEarnings}
+
+month={
+new Date()
+.toLocaleString(
+"default",
+{
+month:"long"
+}
+)
+}
+
+/>
+
+
+
+
+
+
+<BookingRequests
+
+bookings={bookings}
+
+acceptBooking={acceptBooking}
+
+rejectBooking={rejectBooking}
+
+/>
+
+
+
+
+
+
+
+<RunningJob
+
+runningBooking={runningBooking}
+
+completeWork={completeWork}
+
+cancelOrder={cancelOrder}
+
+/>
+
+
+
+
+
+
+
+<PendingPayments
+
+payments={pendingPayments}
+
+receivePayment={receivePayment}
+
+/>
+
+
+
+
+
+
+
+<PaymentCard
+
+awaitingPayment={
+!!pendingPayments.length
+}
+
+runningBooking={
+pendingPayments[0]
+}
+
+openPhonePe={openPhonePe}
+
+/>
+
+
+
+
+
+
+
+<OrderHistory
+
+orders={orders}
+
+/>
+
+
+
+</div>
+
+);
+
 
 }
