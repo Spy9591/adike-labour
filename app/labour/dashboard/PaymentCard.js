@@ -1,102 +1,107 @@
 "use client";
 
+
 import {
-  FaMoneyBillWave,
-  FaMobileAlt,
-  FaCheckCircle,
-} from "react-icons/fa";
+FaMoneyBillWave,
+FaMobileAlt
+}
+from "react-icons/fa";
+
 
 import "./dashboard.css";
 
 
+
 export default function PaymentCard({
-  awaitingPayment,
-  openPhonePe,
-  paymentReceived,
-}) {
 
-  if (!awaitingPayment) return null;
+awaitingPayment,
 
+runningBooking,
 
-  return (
+openPhonePe
 
-    <div className="paymentCard">
-
-      <h2
-        style={{
-          display:"flex",
-          alignItems:"center",
-          gap:"10px"
-        }}
-      >
-
-        <FaMoneyBillWave/>
-
-        Payment Collection
-
-      </h2>
+}){
 
 
-      <h1
-        style={{
-          marginTop:"20px"
-        }}
-      >
+if(!awaitingPayment || !runningBooking)
 
-        ₹700
-
-      </h1>
-
-
-      <p
-        style={{
-          marginTop:"10px",
-          opacity:.9
-        }}
-      >
-
-        Ask customer to scan your QR code
-        and complete payment.
-
-      </p>
-
-
-      <button
-        className="paymentBtn"
-        onClick={openPhonePe}
-      >
-
-        <FaMobileAlt/>
-
-        {" "}Open PhonePe
-
-      </button>
+return null;
 
 
 
-      <button
+return (
 
-        className="paymentBtn"
-
-        style={{
-          background:"#022c22",
-          color:"white",
-          marginLeft:"10px"
-        }}
-
-        onClick={paymentReceived}
-
-      >
-
-        <FaCheckCircle/>
-
-        {" "}Payment Received
-
-      </button>
+<div className="paymentCard">
 
 
-    </div>
+<h2>
 
-  );
+<FaMoneyBillWave/>
+
+{" "}Payment Pending
+
+</h2>
+
+
+
+<h1
+style={{
+marginTop:"20px"
+}}
+>
+
+₹{runningBooking.totalAmount || 700}
+
+</h1>
+
+
+
+<p
+style={{
+marginTop:"10px"
+}}
+>
+
+Owner:
+
+{" "}
+
+<strong>
+
+{runningBooking.ownerName}
+
+</strong>
+
+</p>
+
+
+<p>
+
+Payment is pending from this owner.
+
+</p>
+
+
+
+<button
+
+className="paymentBtn"
+
+onClick={openPhonePe}
+
+>
+
+<FaMobileAlt/>
+
+{" "}Open PhonePe
+
+</button>
+
+
+
+</div>
+
+);
+
 
 }
