@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   collection,
   getDocs,
+  getDoc,
   query,
   where,
   addDoc,
@@ -65,14 +66,25 @@ export default function OwnerDashboard() {
       return;
     }
 
-    setOwner({
-      id: ownerId,
-      name: "Farm Owner",
-    });
+const ownerRef = doc(
+  db,
+  "owners",
+  ownerId
+);
 
-    loadAvailableLabours();
-    loadBookings(ownerId);
-    loadNotifications(ownerId);
+const ownerSnap =
+  await getDoc(ownerRef);
+
+if (ownerSnap.exists()) {
+  setOwner({
+    id: ownerSnap.id,
+    ...ownerSnap.data(),
+  });
+}
+
+loadAvailableLabours();
+loadBookings(ownerId);
+loadNotifications(ownerId);
   };
 
   const loadAvailableLabours = async () => {
@@ -525,56 +537,71 @@ export default function OwnerDashboard() {
       />
 
       <StatsCards
-        availableLabours={
-          availableLabours.length
-        }
-        runningJobs={
-          runningJobs.length
-        }
-        completedJobs={
-          completedJobs.length
-        }
-        cancelledJobs={
-          cancelledJobs.length
-        }
-      />
+  availableLabours={
+    availableLabours.length
+  }
+  runningJobs={
+    runningJobs.length
+  }
+  completedJobs={
+    completedJobs.length
+  }
+  cancelledJobs={
+    cancelledJobs.length
+  }
+  setSelectedView={
+    setSelectedView
+  }
+/>
+      {selectedView ===
+  "available" && (
+  <AvailableLabours
+    labours={
+      availableLabours
+    }
+    bookLabour={
+      bookLabour
+    }
+  />
+)}
 
-      <AvailableLabours
-        labours={
-          availableLabours
-        }
-        bookLabour={
-          bookLabour
-        }
-      />
+{selectedView ===
+  "running" && (
+  <>
+    <RunningJobs
+      jobs={runningJobs}
+      calculateAmount={
+        calculateAmount
+      }
+    />
 
-      <RunningJobs
-        jobs={runningJobs}
-        calculateAmount={
-          calculateAmount
-        }
-      />
+    <LiveTracking
+      runningJobs={
+        runningJobs
+      }
+    />
+  </>
+)}
 
-      <LiveTracking
-        runningJobs={
-          runningJobs
-        }
-      />
+{selectedView ===
+  "completed" && (
+  <CompletedJobs
+    jobs={completedJobs}
+    openPhonePe={
+      openPhonePe
+    }
+    payCash={payCash}
+    payCustomAmount={
+      payCustomAmount
+    }
+  />
+)}
 
-      <CompletedJobs
-        jobs={completedJobs}
-        openPhonePe={
-          openPhonePe
-        }
-        payCash={payCash}
-        payCustomAmount={
-          payCustomAmount
-        }
-      />
-
-      <CancelledJobs
-        jobs={cancelledJobs}
-      />
-    </div>
+{selectedView ===
+  "cancelled" && (
+  <CancelledJobs
+    jobs={cancelledJobs}
+  />
+)}    </div>
   );
 }
