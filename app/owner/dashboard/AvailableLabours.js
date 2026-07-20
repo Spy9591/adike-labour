@@ -14,16 +14,14 @@ export default function AvailableLabours({
             key={labour.id}
             className="job-card"
           >
-            <h3>
-              👷 {labour.name}
-            </h3>
+            <h3>👷 {labour.name}</h3>
 
             <p>
               📍 {labour.village || "N/A"}
             </p>
 
             <p>
-              ⭐ Rating: {labour.rating || 5}
+              ⭐ {labour.rating || 5}
             </p>
 
             {labour.distance && (
@@ -37,8 +35,8 @@ export default function AvailableLabours({
                 href={`tel:${labour.mobile}`}
                 className="primary-btn"
                 style={{
-    ick={() =>
-                bookLabour(labour)
+                  display: "inline-block",
+                  marginRight: "     bookLabour(labour)
               }
             >
               📋 Book Labour
