@@ -1,50 +1,27 @@
-export default function AvailableLabours({
-  labours,
-  bookLabour,
+export default function LiveTracking({
+  runningJobs,
 }) {
   return (
     <div className="glass-card">
-      <h2>🟢 Available Labour</h2>
+      <h2>📍 Track Labour</h2>
 
-      {labours.length === 0 ? (
-        <p>No Labour Found</p>
+      {runningJobs.length === 0 ? (
+        <p>No Active Labour Found</p>
       ) : (
-        labours.map((labour) => (
+        runningJobs.map((job) => (
           <div
-            key={labour.id}
+            key={job.id}
             className="job-card"
           >
-            <h3>👷 {labour.name}</h3>
+            <h3>👷 {job.labourName}</h3>
 
-            <p>
-              📍 {labour.village || "N/A"}
-            </p>
-
-            <p>
-              ⭐ {labour.rating || 5}
-            </p>
-
-            {labour.distance && (
-              <p>
-                📏 {labour.distance} KM Away
-              </p>
-            )}
-
-            {labour.mobile && (
+            {job.latitude &&
+            job.longitude ? (
               <a
-     labour.mobile}`}
-                📞 Call Labour
-              </a>
-            )}
-
-            <button
-              className="primary-btn"
-              onClick={() =>
-                bookLabour(labour)
-              }
-            >
-              📋 Book Labour
-            </button>
+                href={`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className  )}
           </div>
         ))
       )}
