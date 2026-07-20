@@ -21,9 +21,7 @@ export default function LiveTracking({
             job.longitude ? (
               <a
                 href={`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
-                target="_blank"
-                rel="noreferrer"
-                classNamet Available
+                             Location Not Available
               </p>
             )}
           </div>
