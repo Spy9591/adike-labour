@@ -191,10 +191,9 @@ export default function OwnerDashboard() {
           paymentStatus:
             "unpaid",
 
+          totalAmount: 700,
           paidAmount: 0,
-
-          remainingAmount:
-            700,
+          remainingAmount: 700,
 
           createdAt:
             new Date(),
@@ -208,10 +207,6 @@ export default function OwnerDashboard() {
       loadBookings(ownerId);
     } catch (error) {
       console.log(error);
-
-      alert(
-        "Failed to create booking"
-      );
     }
   };
 
@@ -236,12 +231,10 @@ export default function OwnerDashboard() {
 
       const blocks =
         Math.ceil(
-          extraMinutes /
-            30
+          extraMinutes / 30
         );
 
-      amount +=
-        blocks * 50;
+      amount += blocks * 50;
     }
 
     return Math.round(
@@ -249,59 +242,133 @@ export default function OwnerDashboard() {
     );
   };
 
-  const payFullAmount =
-    async (booking) => {
-      try {
-        const amount =
-          booking.remainingAmount ||
-          booking.totalAmount ||
-          700;
+  const calculateDistance = (
+    lat1,
+    lon1,
+    lat2,
+    lon2
+  ) => {
+    const R = 6371;
 
-        const upiUrl =
-          `upi://pay?pa=test@upi&pn=${booking.labourName}&am=${amount}&cu=INR`;
+    const dLat =
+      ((lat2 - lat1) *
+        Math.PI) /
+      180;
 
-        window.location.href =
-          upiUrl;
+    const dLon =
+      ((lon2 - lon1) *
+        Math.PI) /
+      180;
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            booking.id
-          ),
-          {
-            paymentStatus:
-              "paid",
+    const a =
+      Math.sin(dLat / 2) *
+        Math.sin(dLat / 2) +
+      Math.cos(
+        (lat1 * Math.PI) /
+          180
+      ) *
+        Math.cos(
+          (lat2 * Math.PI) /
+            180
+        ) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
 
-            paidAmount:
-              booking.totalAmount ||
-              700,
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
 
-            remainingAmount: 0,
+    return R * c;
+  };
 
-            paymentMethod:
-              "UPI",
+  const scanNearbyLabours = () => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const ownerLat =
+            position.coords.latitude;
 
-            paymentDate:
-              new Date(),
-          }
-        );
+          const ownerLng =
+            position.coords.longitude;
 
-        loadBookings(
-          localStorage.getItem(
-            "ownerId"
-          )
-        );
-      } catch (error) {
-        console.log(error);
+          const snapshot =
+            await getDocs(
+              collection(
+                db,
+                "labours"
+              )
+            );
+
+          const nearby = [];
+
+          snapshot.forEach(
+            (item) => {
+              const labour =
+                item.data();
+
+              if (
+                labour.onDuty &&
+                !labour.busy &&
+                labour.latitude &&
+                labour.longitude
+              ) {
+                const distance =
+                  calculateDistance(
+                    ownerLat,
+                    ownerLng,
+                    labour.latitude,
+                    labour.longitude
+                  );
+
+                if (
+                  distance <= 10
+                ) {
+                  nearby.push(
+                    {
+                      id: item.id,
+                      distance:
+                        distance.toFixed(
+                          1
+                        ),
+                      ...labour,
+                    }
+                  );
+                }
+              }
+            }
+          );
+
+          setAvailableLabours(
+            nearby
+          );
+
+          alert(
+            `${nearby.length} labour(s) found within 10 KM`
+          );
+        } catch (error) {
+          console.log(error);
+        }
       }
-    };
+    );
+  };
+
+  const openPhonePe = () => {
+    try {
+      window.location.href =
+        "phonepe://";
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const payCash = async (
     booking
   ) => {
     try {
-      const amount =
+      const totalAmount =
         booking.totalAmount ||
         700;
 
@@ -312,25 +379,17 @@ export default function OwnerDashboard() {
           booking.id
         ),
         {
-          paymentStatus:
-            "paid",
-
           paidAmount:
-            amount,
-
+            totalAmount,
           remainingAmount:
             0,
-
+          paymentStatus:
+            "paid",
           paymentMethod:
             "Cash",
-
           paymentDate:
             new Date(),
         }
-      );
-
-      alert(
-        "Cash Payment Recorded"
       );
 
       loadBookings(
@@ -346,7 +405,7 @@ export default function OwnerDashboard() {
   const payCustomAmount =
     async (booking) => {
       const amount = prompt(
-        "Enter Amount"
+        "Enter Amount Paid"
       );
 
       if (
@@ -359,20 +418,21 @@ export default function OwnerDashboard() {
         const paid =
           Number(amount);
 
-        const total =
+        const totalAmount =
           booking.totalAmount ||
           700;
 
-        const existing =
+        const existingPaid =
           booking.paidAmount ||
           0;
 
-        const newPaid =
-          existing + paid;
+        const newPaidAmount =
+          existingPaid + paid;
 
-        const remaining =
+        const remainingAmount =
           Math.max(
-            total - newPaid,
+            totalAmount -
+              newPaidAmount,
             0
           );
 
@@ -384,19 +444,16 @@ export default function OwnerDashboard() {
           ),
           {
             paidAmount:
-              newPaid,
-
+              newPaidAmount,
             remainingAmount:
-              remaining,
-
+              remainingAmount,
             paymentStatus:
-              remaining === 0
+              remainingAmount ===
+              0
                 ? "paid"
                 : "partial",
-
             paymentMethod:
-              "Custom",
-
+              "Partial",
             paymentDate:
               new Date(),
           }
@@ -413,9 +470,7 @@ export default function OwnerDashboard() {
     };
 
   if (!owner) {
-    return (
-      <LoadingScreen />
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -423,6 +478,9 @@ export default function OwnerDashboard() {
       <DashboardHeader
         owner={owner}
         logout={logout}
+        scanNearbyLabours={
+          scanNearbyLabours
+        }
       />
 
       <StatsCards
@@ -458,8 +516,8 @@ export default function OwnerDashboard() {
 
       <CompletedJobs
         jobs={completedJobs}
-        payFullAmount={
-          payFullAmount
+        openPhonePe={
+          openPhonePe
         }
         payCash={payCash}
         payCustomAmount={
