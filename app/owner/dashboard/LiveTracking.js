@@ -13,19 +13,15 @@ export default function LiveTracking({
             key={job.id}
             className="job-card"
           >
-            <h3>
-              👷 {job.labourName}
-            </h3>
+            <h3>👷 {job.labourName}</h3>
 
             {job.latitude &&
             job.longitude ? (
               <a
-                href={/?q=${job.latitude},${job.longitude}`}
-            ) : (
-              <p>
-                Location Not Available
-              </p>
-            )}
+                href={`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className  )}
           </div>
         ))
       )}
