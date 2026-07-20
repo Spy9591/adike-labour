@@ -1,6 +1,7 @@
 export default function DashboardHeader({
   owner,
-  logout
+  logout,
+  scanNearbyLabours,
 }) {
   return (
     <div className="glass-card header-card">
@@ -9,12 +10,26 @@ export default function DashboardHeader({
         <p>Welcome {owner?.name}</p>
       </div>
 
-      <button
-        className="danger-btn"
-        onClick={logout}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+        }}
       >
-        Logout
-      </button>
+        <button
+          className="primary-btn"
+          onClick={scanNearbyLabours}
+        >
+          🔍 Scan Labour
+        </button>
+
+        <button
+          className="danger-btn"
+          onClick={logout}
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 }
