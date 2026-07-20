@@ -1,20 +1,22 @@
 export default function AvailableLabours({
   labours,
-  bookLabour
+  bookLabour,
 }) {
   return (
     <div className="glass-card">
       <h2>🟢 Available Labour</h2>
 
       {labours.length === 0 ? (
-        <p>No Labour Available</p>
+        <p>No Labour Found</p>
       ) : (
         labours.map((labour) => (
           <div
             key={labour.id}
             className="job-card"
           >
-            <h3>{labour.name}</h3>
+            <h3>
+              👷 {labour.name}
+            </h3>
 
             <p>
               📍 {labour.village}
@@ -30,6 +32,12 @@ export default function AvailableLabours({
                 ? "Bike Available"
                 : "No Bike"}
             </p>
+
+            {labour.distance && (
+              <p>
+                📏 {labour.distance} KM Away
+              </p>
+            )}
 
             <button
               className="primary-btn"
