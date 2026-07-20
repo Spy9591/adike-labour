@@ -4,9 +4,7 @@ export default function AvailableLabours({
 }) {
   return (
     <div className="glass-card">
-      <h2>
-        🟢 Available Labour
-      </h2>
+      <h2>🟢 Available Labour</h2>
 
       {labours.length === 0 ? (
         <p>No Labour Found</p>
@@ -21,11 +19,11 @@ export default function AvailableLabours({
             </h3>
 
             <p>
-              📍 {labour.village}
+              📍 {labour.village || "N/A"}
             </p>
 
             <p>
-              ⭐ {labour.rating || 5}
+              ⭐ Rating: {labour.rating || 5}
             </p>
 
             {labour.distance && (
@@ -35,18 +33,15 @@ export default function AvailableLabours({
             )}
 
             {labour.mobile && (
-              {`tel:${labour.mobile}`}
-                📞 Call Labour
-              </a>
-            )}
-
-            <button
-              className="primary-btn"
-              onClick={() =>
+              <a
+                href={`tel:${labour.mobile}`}
+                className="primary-btn"
+                style={{
+    ick={() =>
                 bookLabour(labour)
               }
             >
-              Book Labour
+              📋 Book Labour
             </button>
           </div>
         ))
