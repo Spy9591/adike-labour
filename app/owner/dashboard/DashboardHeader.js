@@ -6,8 +6,13 @@ export default function DashboardHeader({
   return (
     <div className="glass-card header-card">
       <div>
-        <h1>🏡 Farm Owner Dashboard</h1>
-        <p>Welcome {owner?.name}</p>
+        <h1>
+          🏡 Farm Owner Dashboard
+        </h1>
+
+        <p>
+          Welcome {owner?.name}
+        </p>
       </div>
 
       <div
