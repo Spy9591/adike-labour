@@ -15,33 +15,46 @@ export default function CompletedJobs({
           <div
             key={job.id}
             className="job-card"
+            style={{
+              marginBottom: "20px",
+            }}
           >
-            <h3>👷 {job.labourName}</h3>
+            <h3>
+              👷 {job.labourName}
+            </h3>
 
             <p>
-              Total Amount :
-              ₹{job.totalAmount || 700}
+              💰 Total Amount: ₹
+              {job.totalAmount || 700}
             </p>
 
             <p>
-              Paid :
-              ₹{job.paidAmount || 0}
+              ✅ Paid Amount: ₹
+              {job.paidAmount || 0}
             </p>
 
             <p>
-              Remaining :
-              ₹
+              ⏳ Remaining Amount: ₹
               {job.remainingAmount ??
                 job.totalAmount ??
                 700}
             </p>
 
+            <p>
+              💳 Payment Status:
+              {" "}
+              <strong>
+                {job.paymentStatus ||
+                  "Pending"}
+              </strong>
+            </p>
+
             <div
               style={{
                 display: "flex",
-                gap: "10px",
-                marginTop: "15px",
+                gap: "12px",
                 flexWrap: "wrap",
+                marginTop: "15px",
               }}
             >
               <button
@@ -49,8 +62,12 @@ export default function CompletedJobs({
                 onClick={() =>
                   payFullAmount(job)
                 }
+                disabled={
+                  job.paymentStatus ===
+                  "paid"
+                }
               >
-                📱 Pay Full
+                📱 Pay Full Amount
               </button>
 
               <button
@@ -62,8 +79,12 @@ export default function CompletedJobs({
                 onClick={() =>
                   payCash(job)
                 }
+                disabled={
+                  job.paymentStatus ===
+                  "paid"
+                }
               >
-                💵 Cash
+                💵 Pay Cash
               </button>
 
               <button
@@ -75,10 +96,33 @@ export default function CompletedJobs({
                 onClick={() =>
                   payCustomAmount(job)
                 }
+                disabled={
+                  job.paymentStatus ===
+                  "paid"
+                }
               >
                 ✏️ Custom Amount
               </button>
             </div>
+
+            {job.paymentStatus ===
+              "paid" && (
+              <div
+                style={{
+                  marginTop: "15px",
+                  padding: "10px",
+                  borderRadius:
+                    "10px",
+                  background:
+                    "rgba(34,197,94,0.2)",
+                  color: "#22c55e",
+                  fontWeight:
+                    "bold",
+                }}
+              >
+                ✅ Payment Completed
+              </div>
+            )}
           </div>
         ))
       )}
