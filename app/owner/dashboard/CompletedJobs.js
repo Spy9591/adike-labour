@@ -1,7 +1,6 @@
 export default function CompletedJobs({
   jobs,
   openPhonePe,
-  markPaymentReceived,
   payCash,
   payCustomAmount,
 }) {
@@ -43,7 +42,7 @@ export default function CompletedJobs({
               <strong>
                 {" "}
                 {job.paymentStatus ||
-                  "pending"}
+                  "Pending"}
               </strong>
             </p>
 
@@ -60,21 +59,6 @@ export default function CompletedJobs({
                 onClick={openPhonePe}
               >
                 📱 Open PhonePe
-              </button>
-
-              <button
-                className="primary-btn"
-                style={{
-                  background:
-                    "#22c55e",
-                }}
-                onClick={() =>
-                  markPaymentReceived(
-                    job
-                  )
-                }
-              >
-                ✅ Payment Received
               </button>
 
               <button
@@ -105,6 +89,39 @@ export default function CompletedJobs({
                 ✏️ Partial Payment
               </button>
             </div>
+
+            {job.paymentStatus ===
+              "paid" && (
+              <div
+                style={{
+                  marginTop:
+                    "15px",
+                  color:
+                    "#22c55e",
+                  fontWeight:
+                    "bold",
+                }}
+              >
+                ✅ Fully Paid
+              </div>
+            )}
+
+            {job.paymentStatus ===
+              "partial" && (
+              <div
+                style={{
+                  marginTop:
+                    "15px",
+                  color:
+                    "#f59e0b",
+                  fontWeight:
+                    "bold",
+                }}
+              >
+                ⚠ Remaining ₹
+                {job.remainingAmount}
+              </div>
+            )}
           </div>
         ))
       )}
