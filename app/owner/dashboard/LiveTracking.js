@@ -20,7 +20,7 @@ export default function LiveTracking({
             {job.latitude &&
             job.longitude ? (
               <a
-                href={/?q=${job.latitude},${job.longitude}`}>
+                href={/?q=${job.latitude},${job.longitude}`}
             ) : (
               <p>
                 Location Not Available
