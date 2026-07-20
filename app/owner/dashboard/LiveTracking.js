@@ -6,7 +6,7 @@ export default function LiveTracking({
       <h2>📍 Track Labour</h2>
 
       {runningJobs.length === 0 ? (
-        <p>No Active Labour</p>
+        <p>No Active Labour Found</p>
       ) : (
         runningJobs.map((job) => (
           <div
@@ -19,12 +19,11 @@ export default function LiveTracking({
 
             {job.latitude &&
             job.longitude ? (
-              {`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
-                📍 Open Live Location
-              </a>
-            ) : (
-              <p>
-                Location Not Available
+              <a
+                href={`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                classNamet Available
               </p>
             )}
           </div>
