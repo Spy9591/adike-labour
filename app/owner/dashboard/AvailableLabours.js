@@ -32,11 +32,15 @@ export default function AvailableLabours({
 
             {labour.mobile && (
               <a
-                href={`tel:${labour.mobile}`}
-                className="primary-btn"
-                style={{
-                  display: "inline-block",
-                  marginRight: "     bookLabour(labour)
+     labour.mobile}`}
+                📞 Call Labour
+              </a>
+            )}
+
+            <button
+              className="primary-btn"
+              onClick={() =>
+                bookLabour(labour)
               }
             >
               📋 Book Labour
