@@ -20,8 +20,10 @@ export default function LiveTracking({
             {job.latitude &&
             job.longitude ? (
               <a
-                href={`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
-                             Location Not Available
+                href={/?q=${job.latitude},${job.longitude}`}>
+            ) : (
+              <p>
+                Location Not Available
               </p>
             )}
           </div>
