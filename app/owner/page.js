@@ -1,666 +1,432 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
-  addDoc,
   collection,
+  getDocs,
   query,
   where,
-  getDocs,
+  addDoc,
   updateDoc,
   doc,
 } from "firebase/firestore";
 
-import { db } from "../firebase";
+import { db } from "../../firebase";
 
-export default function OwnerPage() {
-  const [mode, setMode] = useState("login");
+import DashboardHeader from "./DashboardHeader";
+import StatsCards from "./StatsCards";
+import AvailableLabours from "./AvailableLabours";
+import RunningJobs from "./RunningJobs";
+import CompletedJobs from "./CompletedJobs";
+import CancelledJobs from "./CancelledJobs";
+import LoadingScreen from "./LoadingScreen";
 
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+import "./dashboard.css";
 
-  const [otp, setOtp] = useState("");
-  const [generatedOtp, setGeneratedOtp] =
-    useState("");
+export default function OwnerDashboard() {
+  const router = useRouter();
 
-  const [verified, setVerified] =
-    useState(false);
+  const [owner, setOwner] = useState(null);
 
-  const [forgotOtp, setForgotOtp] =
-    useState("");
+  const [availableLabours, setAvailableLabours] =
+    useState([]);
 
-  const [
-    generatedForgotOtp,
-    setGeneratedForgotOtp,
-  ] = useState("");
+  const [runningJobs, setRunningJobs] =
+    useState([]);
 
-  const [forgotVerified,
-    setForgotVerified] =
-    useState(false);
+  const [completedJobs, setCompletedJobs] =
+    useState([]);
 
-  const [newPassword,
-    setNewPassword] =
-    useState("");
+  const [cancelledJobs, setCancelledJobs] =
+    useState([]);
 
-  const [name, setName] = useState("");
-  const [village, setVillage] =
-    useState("");
+  useEffect(() => {
+    loadOwner();
+  }, []);
 
-  const [location, setLocation] =
-    useState("");
+  const logout = () => {
+    localStorage.removeItem("ownerId");
+    router.replace("/login");
+  };
 
-  const [farmLocation,
-    setFarmLocation] =
-    useState("");
+  const loadOwner = async () => {
+    const ownerId =
+      localStorage.getItem("ownerId");
 
-  const [workersRequired,
-    setWorkersRequired] =
-    useState("");
+    if (!ownerId) {
+      router.replace("/login");
+      return;
+    }
 
-  const [govtId, setGovtId] =
-    useState("");
+    setOwner({
+      id: ownerId,
+      name: "Farm Owner",
+    });
 
-  const sendOtp = async () => {
+    loadAvailableLabours();
+    loadBookings(ownerId);
+  };
+
+  const loadAvailableLabours = async () => {
     try {
-      if (!email || !phone) {
-        alert(
-          "Enter Email and Mobile Number"
-        );
-        return;
-      }
-
-      const phoneQuery = query(
-        collection(db, "owners"),
-        where("phone", "==", phone)
+      const snapshot = await getDocs(
+        collection(db, "labours")
       );
 
-      const phoneExists =
-        await getDocs(phoneQuery);
+      const list = [];
 
-      if (!phoneExists.empty) {
-        alert(
-          "Account already exists. Please Login or use Forgot Password."
-        );
+      snapshot.forEach((item) => {
+        const data = item.data();
 
-        setMode("login");
-        return;
-      }
-
-      const emailQuery = query(
-        collection(db, "owners"),
-        where("email", "==", email)
-      );
-
-      const emailExists =
-        await getDocs(emailQuery);
-
-      if (!emailExists.empty) {
-        alert(
-          "Email already registered."
-        );
-
-        setMode("login");
-        return;
-      }
-
-      const otpCode = Math.floor(
-        100000 +
-          Math.random() * 900000
-      ).toString();
-
-      setGeneratedOtp(otpCode);
-
-      await fetch("/api/send-otp", {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-          email,
-          otp: otpCode,
-        }),
+        if (
+          data.onDuty === true &&
+          data.busy !== true
+        ) {
+          list.push({
+            id: item.id,
+            ...data,
+          });
+        }
       });
 
-      alert("OTP Sent Successfully");
+      setAvailableLabours(list);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const verifyOtp = () => {
-    if (otp === generatedOtp) {
-      setVerified(true);
-      alert("OTP Verified");
-    } else {
-      alert("Invalid OTP");
-    }
-  };
-
-  const loginUser = async () => {
-    const q = query(
-      collection(db, "owners"),
-      where("phone", "==", phone)
-    );
-
-    const snapshot =
-      await getDocs(q);
-
-    if (snapshot.empty) {
-      alert(
-        "Account not found. Please Create Account."
-      );
-      return;
-    }
-
-    const ownerDoc =
-      snapshot.docs[0];
-
-    const ownerData =
-      ownerDoc.data();
-
-    if (
-      ownerData.password !==
-      password
-    ) {
-      alert("Invalid Password");
-      return;
-    }
-
-    localStorage.setItem(
-      "ownerId",
-      ownerDoc.id
-    );
-
-    window.location.href =
-      "/owner/dashboard";
-  };
-
-  const sendForgotOtp =
-    async () => {
+  const loadBookings = async (
+    ownerId
+  ) => {
+    try {
       const q = query(
-        collection(
-          db,
-          "owners"
-        ),
+        collection(db, "bookings"),
         where(
-          "phone",
+          "ownerId",
           "==",
-          phone
+          ownerId
         )
       );
 
       const snapshot =
         await getDocs(q);
 
-      if (
-        snapshot.empty
-      ) {
-        alert(
-          "Account not found"
+      const running = [];
+      const completed = [];
+      const cancelled = [];
+
+      snapshot.forEach((item) => {
+        const booking = {
+          id: item.id,
+          ...item.data(),
+        };
+
+        if (
+          booking.status ===
+          "accepted"
+        ) {
+          running.push(booking);
+        }
+
+        if (
+          booking.status ===
+          "completed"
+        ) {
+          completed.push(booking);
+        }
+
+        if (
+          booking.status ===
+            "cancelled" ||
+          booking.status ===
+            "rejected"
+        ) {
+          cancelled.push(
+            booking
+          );
+        }
+      });
+
+      setRunningJobs(running);
+      setCompletedJobs(completed);
+      setCancelledJobs(cancelled);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const bookLabour = async (
+    labour
+  ) => {
+    try {
+      const ownerId =
+        localStorage.getItem(
+          "ownerId"
         );
-        return;
-      }
 
-      const ownerData =
-        snapshot.docs[0].data();
-
-      const otpCode =
-        Math.floor(
-          100000 +
-            Math.random() *
-              900000
-        ).toString();
-
-      setGeneratedForgotOtp(
-        otpCode
-      );
-
-      await fetch(
-        "/api/send-otp",
+      await addDoc(
+        collection(db, "bookings"),
         {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            email:
-              ownerData.email,
-            otp: otpCode,
-          }),
+          ownerId,
+          ownerName:
+            owner?.name ||
+            "Farm Owner",
+
+          labourId:
+            labour.id,
+
+          labourName:
+            labour.name,
+
+          village:
+            labour.village || "",
+
+          status:
+            "pending",
+
+          paymentStatus:
+            "unpaid",
+
+          totalAmount: 700,
+          paidAmount: 0,
+          remainingAmount: 700,
+
+          createdAt:
+            new Date(),
         }
       );
 
       alert(
-        `OTP sent to ${ownerData.email}`
-      );
-    };
-
-  const verifyForgotOtp =
-    () => {
-      if (
-        forgotOtp ===
-        generatedForgotOtp
-      ) {
-        setForgotVerified(
-          true
-        );
-
-        alert(
-          "OTP Verified"
-        );
-      } else {
-        alert(
-          "Invalid OTP"
-        );
-      }
-    };
-
-  const resetPassword =
-    async () => {
-      const q = query(
-        collection(
-          db,
-          "owners"
-        ),
-        where(
-          "phone",
-          "==",
-          phone
-        )
+        "✅ Booking Request Sent Successfully"
       );
 
-      const snapshot =
-        await getDocs(q);
+      loadBookings(ownerId);
+    } catch (error) {
+      console.log(error);
+      alert("Booking Failed");
+    }
+  };
 
-      if (
-        snapshot.empty
-      ) {
-        alert(
-          "Account not found"
+  const calculateAmount = (
+    startTime
+  ) => {
+    if (!startTime)
+      return 700;
+
+    const diff =
+      new Date() -
+      startTime.toDate();
+
+    const hours =
+      diff / 3600000;
+
+    let amount = 700;
+
+    if (hours > 9) {
+      const extraMinutes =
+        (hours - 9) * 60;
+
+      const blocks =
+        Math.ceil(
+          extraMinutes / 30
         );
-        return;
-      }
+
+      amount +=
+        blocks * 50;
+    }
+
+    return Math.round(
+      amount
+    );
+  };
+
+  const openPhonePe = () => {
+    try {
+      window.location.href =
+        "phonepe://";
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const payCash = async (
+    booking
+  ) => {
+    try {
+      const totalAmount =
+        booking.totalAmount ||
+        700;
 
       await updateDoc(
         doc(
           db,
-          "owners",
-          snapshot.docs[0].id
+          "bookings",
+          booking.id
         ),
         {
-          password:
-            newPassword,
+          paidAmount:
+            totalAmount,
+
+          remainingAmount: 0,
+
+          paymentStatus:
+            "paid",
+
+          paymentMethod:
+            "Cash",
+
+          paymentDate:
+            new Date(),
         }
       );
 
       alert(
-        "Password Updated Successfully"
+        "Cash Payment Recorded"
       );
 
-      setMode("login");
-      setForgotVerified(
-        false
+      loadBookings(
+        localStorage.getItem(
+          "ownerId"
+        )
       );
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const registerOwner =
-    async (e) => {
-      e.preventDefault();
-
-      const phoneQuery =
-        query(
-          collection(
-            db,
-            "owners"
-          ),
-          where(
-            "phone",
-            "==",
-            phone
-          )
-        );
-
-      const phoneExists =
-        await getDocs(
-          phoneQuery
-        );
+  const payCustomAmount =
+    async (booking) => {
+      const amount = prompt(
+        "Enter Amount Paid"
+      );
 
       if (
-        !phoneExists.empty
-      ) {
-        alert(
-          "Account already exists."
-        );
-
-        setMode("login");
+        !amount ||
+        Number(amount) <= 0
+      )
         return;
-      }
 
-      const docRef =
-        await addDoc(
-          collection(
+      try {
+        const paid =
+          Number(amount);
+
+        const totalAmount =
+          booking.totalAmount ||
+          700;
+
+        const existingPaid =
+          booking.paidAmount ||
+          0;
+
+        const newPaidAmount =
+          existingPaid + paid;
+
+        const remainingAmount =
+          Math.max(
+            totalAmount -
+              newPaidAmount,
+            0
+          );
+
+        await updateDoc(
+          doc(
             db,
-            "owners"
+            "bookings",
+            booking.id
           ),
           {
-            email,
-            phone,
-            password,
+            paidAmount:
+              newPaidAmount,
 
-            name,
-            village,
-            location,
+            remainingAmount:
+              remainingAmount,
 
-            farmLocation,
+            paymentStatus:
+              remainingAmount ===
+              0
+                ? "paid"
+                : "partial",
 
-            workersRequired,
+            paymentMethod:
+              "Partial",
 
-            govtId,
-
-            createdAt:
+            paymentDate:
               new Date(),
           }
         );
 
-      localStorage.setItem(
-        "ownerId",
-        docRef.id
-      );
+        alert(
+          "Partial Payment Saved"
+        );
 
-      window.location.href =
-        "/owner/dashboard";
+        loadBookings(
+          localStorage.getItem(
+            "ownerId"
+          )
+        );
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-  const pageStyle = {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background:
-      "linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb)",
-    padding: "20px",
-  };
-
-  const cardStyle = {
-    width: "100%",
-    maxWidth: "850px",
-    background:
-      "rgba(255,255,255,.08)",
-    backdropFilter:
-      "blur(25px)",
-    borderRadius: "30px",
-    padding: "40px",
-    border:
-      "1px solid rgba(255,255,255,.1)",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "15px",
-    marginBottom: "15px",
-    border: "none",
-    borderRadius: "15px",
-    background:
-      "rgba(255,255,255,.12)",
-    color: "white",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "15px",
-    border: "none",
-    borderRadius: "15px",
-    background:
-      "linear-gradient(90deg,#2563eb,#1d4ed8)",
-    color: "white",
-    cursor: "pointer",
-    marginBottom: "15px",
-  };
+  if (!owner) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <h1
-          style={{
-            color: "white",
-            textAlign: "center",
-            marginBottom: 25,
-          }}
-        >
-          🏡 Owner Portal
-        </h1>
+    <div className="dashboard">
+      <DashboardHeader
+        owner={owner}
+        logout={logout}
+      />
 
-        {mode === "login" && (
-          <>
-            <input
-              style={inputStyle}
-              placeholder="Mobile Number"
-              value={phone}
-              onChange={(e) =>
-                setPhone(
-                  e.target.value
-                )
-              }
-            />
+      <StatsCards
+        availableLabours={
+          availableLabours.length
+        }
+        runningJobs={
+          runningJobs.length
+        }
+        completedJobs={
+          completedJobs.length
+        }
+        cancelledJobs={
+          cancelledJobs.length
+        }
+      />
 
-            <input
-              style={inputStyle}
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) =>
-                setPassword(
-                  e.target.value
-                )
-              }
-            />
+      <AvailableLabours
+        labours={
+          availableLabours
+        }
+        bookLabour={
+          bookLabour
+        }
+      />
 
-            <button
-              style={buttonStyle}
-              onClick={loginUser}
-            >
-              Login
-            </button>
+      <RunningJobs
+        jobs={runningJobs}
+        calculateAmount={
+          calculateAmount
+        }
+      />
 
-            <button
-              style={buttonStyle}
-              onClick={() =>
-                setMode(
-                  "register"
-                )
-              }
-            >
-              Create Account
-            </button>
+      <CompletedJobs
+        jobs={completedJobs}
+        openPhonePe={
+          openPhonePe
+        }
+        payCash={payCash}
+        payCustomAmount={
+          payCustomAmount
+        }
+      />
 
-            <button
-              style={buttonStyle}
-              onClick={() =>
-                setMode(
-                  "forgot"
-                )
-              }
-            >
-              Forgot Password
-            </button>
-          </>
-        )}
-
-        {mode === "register" &&
-          !verified && (
-            <>
-              <input
-                style={inputStyle}
-                placeholder="Email"
-                value={email}
-                onChange={(e) =>
-                  setEmail(
-                    e.target.value
-                  )
-                }
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Mobile Number"
-                value={phone}
-                onChange={(e) =>
-                  setPhone(
-                    e.target.value
-                  )
-                }
-              />
-
-              <input
-                style={inputStyle}
-                type="password"
-                placeholder="Create Password"
-                value={password}
-                onChange={(e) =>
-                  setPassword(
-                    e.target.value
-                  )
-                }
-              />
-
-              <button
-                style={buttonStyle}
-                onClick={sendOtp}
-              >
-                Send OTP
-              </button>
-
-              <input
-                style={inputStyle}
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) =>
-                  setOtp(
-                    e.target.value
-                  )
-                }
-              />
-
-              <button
-                style={buttonStyle}
-                onClick={verifyOtp}
-              >
-                Verify OTP
-              </button>
-            </>
-          )}
-
-        {mode === "register" &&
-          verified && (
-            <form
-              onSubmit={
-                registerOwner
-              }
-            >
-              <input
-                style={inputStyle}
-                value={email}
-                disabled
-              />
-
-              <input
-                style={inputStyle}
-                value={phone}
-                disabled
-              />
-
-              <input
-                style={inputStyle}
-                value={password}
-                disabled
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) =>
-                  setName(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Village"
-                value={village}
-                onChange={(e) =>
-                  setVillage(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Location"
-                value={location}
-                onChange={(e) =>
-                  setLocation(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Farm Location"
-                value={farmLocation}
-                onChange={(e) =>
-                  setFarmLocation(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Workers Required"
-                value={workersRequired}
-                onChange={(e) =>
-                  setWorkersRequired(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Government ID"
-                value={govtId}
-                onChange={(e) =>
-                  setGovtId(
-                    e.target.value
-                  )
-                }
-                required
-              />
-
-              <button
-                type="submit"
-                style={buttonStyle}
-              >
-                Create Account
-              </button>
-            </form>
-          )}
-      </div>
+      <CancelledJobs
+        jobs={cancelledJobs}
+      />
     </div>
   );
 }
