@@ -22,6 +22,8 @@ import RunningJobs from "./RunningJobs";
 import CompletedJobs from "./CompletedJobs";
 import CancelledJobs from "./CancelledJobs";
 import LoadingScreen from "./LoadingScreen";
+import Notifications from "./Notifications";
+import LiveTracking from "./LiveTracking";
 
 import "./dashboard.css";
 
@@ -40,6 +42,9 @@ export default function OwnerDashboard() {
     useState([]);
 
   const [cancelledJobs, setCancelledJobs] =
+    useState([]);
+
+  const [notifications, setNotifications] =
     useState([]);
 
   useEffect(() => {
@@ -67,6 +72,7 @@ export default function OwnerDashboard() {
 
     loadAvailableLabours();
     loadBookings(ownerId);
+    loadNotifications(ownerId);
   };
 
   const loadAvailableLabours = async () => {
@@ -134,9 +140,7 @@ export default function OwnerDashboard() {
           booking.status ===
           "completed"
         ) {
-          completed.push(
-            booking
-          );
+          completed.push(booking);
         }
 
         if (
@@ -158,6 +162,39 @@ export default function OwnerDashboard() {
       console.log(error);
     }
   };
+
+  const loadNotifications =
+    async (ownerId) => {
+      try {
+        const q = query(
+          collection(
+            db,
+            "notifications"
+          ),
+          where(
+            "userId",
+            "==",
+            ownerId
+          )
+        );
+
+        const snapshot =
+          await getDocs(q);
+
+        const list = [];
+
+        snapshot.forEach((item) => {
+          list.push({
+            id: item.id,
+            ...item.data(),
+          });
+        });
+
+        setNotifications(list);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   const bookLabour = async (
     labour
@@ -326,16 +363,14 @@ export default function OwnerDashboard() {
                 if (
                   distance <= 10
                 ) {
-                  nearby.push(
-                    {
-                      id: item.id,
-                      distance:
-                        distance.toFixed(
-                          1
-                        ),
-                      ...labour,
-                    }
-                  );
+                  nearby.push({
+                    id: item.id,
+                    distance:
+                      distance.toFixed(
+                        1
+                      ),
+                    ...labour,
+                  });
                 }
               }
             }
@@ -483,6 +518,12 @@ export default function OwnerDashboard() {
         }
       />
 
+      <Notifications
+        notifications={
+          notifications
+        }
+      />
+
       <StatsCards
         availableLabours={
           availableLabours.length
@@ -511,6 +552,12 @@ export default function OwnerDashboard() {
         jobs={runningJobs}
         calculateAmount={
           calculateAmount
+        }
+      />
+
+      <LiveTracking
+        runningJobs={
+          runningJobs
         }
       />
 
