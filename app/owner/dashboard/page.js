@@ -9,6 +9,8 @@ import {
   query,
   where,
   addDoc,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
@@ -189,6 +191,11 @@ export default function OwnerDashboard() {
           paymentStatus:
             "unpaid",
 
+          paidAmount: 0,
+
+          remainingAmount:
+            700,
+
           createdAt:
             new Date(),
         }
@@ -242,6 +249,169 @@ export default function OwnerDashboard() {
     );
   };
 
+  const payFullAmount =
+    async (booking) => {
+      try {
+        const amount =
+          booking.remainingAmount ||
+          booking.totalAmount ||
+          700;
+
+        const upiUrl =
+          `upi://pay?pa=test@upi&pn=${booking.labourName}&am=${amount}&cu=INR`;
+
+        window.location.href =
+          upiUrl;
+
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            booking.id
+          ),
+          {
+            paymentStatus:
+              "paid",
+
+            paidAmount:
+              booking.totalAmount ||
+              700,
+
+            remainingAmount: 0,
+
+            paymentMethod:
+              "UPI",
+
+            paymentDate:
+              new Date(),
+          }
+        );
+
+        loadBookings(
+          localStorage.getItem(
+            "ownerId"
+          )
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  const payCash = async (
+    booking
+  ) => {
+    try {
+      const amount =
+        booking.totalAmount ||
+        700;
+
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          booking.id
+        ),
+        {
+          paymentStatus:
+            "paid",
+
+          paidAmount:
+            amount,
+
+          remainingAmount:
+            0,
+
+          paymentMethod:
+            "Cash",
+
+          paymentDate:
+            new Date(),
+        }
+      );
+
+      alert(
+        "Cash Payment Recorded"
+      );
+
+      loadBookings(
+        localStorage.getItem(
+          "ownerId"
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const payCustomAmount =
+    async (booking) => {
+      const amount = prompt(
+        "Enter Amount"
+      );
+
+      if (
+        !amount ||
+        Number(amount) <= 0
+      )
+        return;
+
+      try {
+        const paid =
+          Number(amount);
+
+        const total =
+          booking.totalAmount ||
+          700;
+
+        const existing =
+          booking.paidAmount ||
+          0;
+
+        const newPaid =
+          existing + paid;
+
+        const remaining =
+          Math.max(
+            total - newPaid,
+            0
+          );
+
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            booking.id
+          ),
+          {
+            paidAmount:
+              newPaid,
+
+            remainingAmount:
+              remaining,
+
+            paymentStatus:
+              remaining === 0
+                ? "paid"
+                : "partial",
+
+            paymentMethod:
+              "Custom",
+
+            paymentDate:
+              new Date(),
+          }
+        );
+
+        loadBookings(
+          localStorage.getItem(
+            "ownerId"
+          )
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
   if (!owner) {
     return (
       <LoadingScreen />
@@ -288,6 +458,13 @@ export default function OwnerDashboard() {
 
       <CompletedJobs
         jobs={completedJobs}
+        payFullAmount={
+          payFullAmount
+        }
+        payCash={payCash}
+        payCustomAmount={
+          payCustomAmount
+        }
       />
 
       <CancelledJobs
