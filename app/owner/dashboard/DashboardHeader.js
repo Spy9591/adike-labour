@@ -11,7 +11,14 @@ export default function DashboardHeader({
         </h1>
 
         <p>
-          Welcome {owner?.name}
+          Welcome,{" "}
+          <strong>
+            {owner?.name || "Owner"}
+          </strong>
+        </p>
+
+        <p>
+          📍 {owner?.village || "Location Not Available"}
         </p>
       </div>
 
