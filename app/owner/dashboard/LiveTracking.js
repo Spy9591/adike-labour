@@ -3,10 +3,14 @@ export default function LiveTracking({
 }) {
   return (
     <div className="glass-card">
-      <h2>📍 Track Labour</h2>
+      <h2>
+        📍 Live Labour Tracking
+      </h2>
 
       {runningJobs.length === 0 ? (
-        <p>No Active Labour Found</p>
+        <p>
+          No Active Labour Found
+        </p>
       ) : (
         runningJobs.map((job) => (
           <div
@@ -18,15 +22,26 @@ export default function LiveTracking({
             </h3>
 
             <p>
-              Latitude: {job.latitude || "N/A"}
+              Latitude:
+              {" "}
+              {job.latitude ||
+                "N/A"}
             </p>
 
             <p>
-              Longitude: {job.longitude || "N/A"}
+              Longitude:
+              {" "}
+              {job.longitude ||
+                "N/A"}
             </p>
-          </div>
-        ))
-      )}
-    </div>
+
+            {job.latitude &&
+              job.longitude && (
+                <iframe
+                  title={job.id}
+                  width="100%"
+                  height="250"
+                  style={{
+                 iv>
   );
 }
