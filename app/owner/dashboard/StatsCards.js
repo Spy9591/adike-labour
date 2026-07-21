@@ -9,11 +9,10 @@ export default function StatsCards({
     <div className="stats-grid">
       <div
         className="stat-card"
-        style={{
-          cursor: "pointer",
-        }}
         onClick={() =>
-          setSelectedView("available")
+          setSelectedView(
+            "available"
+          )
         }
       >
         <h2>{availableLabours}</h2>
@@ -22,11 +21,10 @@ export default function StatsCards({
 
       <div
         className="stat-card"
-        style={{
-          cursor: "pointer",
-        }}
         onClick={() =>
-          setSelectedView("running")
+          setSelectedView(
+            "running"
+          )
         }
       >
         <h2>{runningJobs}</h2>
@@ -35,11 +33,10 @@ export default function StatsCards({
 
       <div
         className="stat-card"
-        style={{
-          cursor: "pointer",
-        }}
         onClick={() =>
-          setSelectedView("completed")
+          setSelectedView(
+            "completed"
+          )
         }
       >
         <h2>{completedJobs}</h2>
@@ -48,11 +45,10 @@ export default function StatsCards({
 
       <div
         className="stat-card"
-        style={{
-          cursor: "pointer",
-        }}
         onClick={() =>
-          setSelectedView("cancelled")
+          setSelectedView(
+            "cancelled"
+          )
         }
       >
         <h2>{cancelledJobs}</h2>
