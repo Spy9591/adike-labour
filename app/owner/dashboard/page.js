@@ -28,22 +28,16 @@ export default function OwnerDashboard() {
   const router = useRouter();
 
   const [owner, setOwner] = useState(null);
-
   const [availableLabours, setAvailableLabours] =
     useState([]);
-
   const [runningJobs, setRunningJobs] =
     useState([]);
-
   const [completedJobs, setCompletedJobs] =
     useState([]);
-
   const [cancelledJobs, setCancelledJobs] =
     useState([]);
-
   const [notifications, setNotifications] =
     useState([]);
-
   const [selectedView, setSelectedView] =
     useState("available");
 
@@ -53,7 +47,7 @@ export default function OwnerDashboard() {
 
   const logout = () => {
     localStorage.removeItem("ownerId");
-    router.replace("/owner");
+    router.replace("/");
   };
 
   const loadOwner = async () => {
@@ -62,7 +56,7 @@ export default function OwnerDashboard() {
         localStorage.getItem("ownerId");
 
       if (!ownerId) {
-        router.replace("/owner");
+        router.replace("/");
         return;
       }
 
@@ -165,9 +159,7 @@ export default function OwnerDashboard() {
           booking.status ===
             "rejected"
         ) {
-          cancelled.push(
-            booking
-          );
+          cancelled.push(booking);
         }
       });
 
@@ -179,38 +171,39 @@ export default function OwnerDashboard() {
     }
   };
 
-  const loadNotifications =
-    async (ownerId) => {
-      try {
-        const q = query(
-          collection(
-            db,
-            "notifications"
-          ),
-          where(
-            "userId",
-            "==",
-            ownerId
-          )
-        );
+  const loadNotifications = async (
+    ownerId
+  ) => {
+    try {
+      const q = query(
+        collection(
+          db,
+          "notifications"
+        ),
+        where(
+          "userId",
+          "==",
+          ownerId
+        )
+      );
 
-        const snapshot =
-          await getDocs(q);
+      const snapshot =
+        await getDocs(q);
 
-        const list = [];
+      const list = [];
 
-        snapshot.forEach((item) => {
-          list.push({
-            id: item.id,
-            ...item.data(),
-          });
+      snapshot.forEach((item) => {
+        list.push({
+          id: item.id,
+          ...item.data(),
         });
+      });
 
-        setNotifications(list);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+      setNotifications(list);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const bookLabour = async (
     labour
@@ -228,26 +221,17 @@ export default function OwnerDashboard() {
           ownerName:
             owner?.name ||
             "Farm Owner",
-
-          labourId:
-            labour.id,
-
+          labourId: labour.id,
           labourName:
             labour.name,
-
           village:
             labour.village || "",
-
-          status:
-            "pending",
-
+          status: "pending",
           paymentStatus:
             "unpaid",
-
           totalAmount: 700,
           paidAmount: 0,
           remainingAmount: 700,
-
           createdAt:
             new Date(),
         }
@@ -291,6 +275,143 @@ export default function OwnerDashboard() {
     }
 
     return Math.round(amount);
+  };
+
+  const calculateDistance = (
+    lat1,
+    lon1,
+    lat2,
+    lon2
+  ) => {
+    const R = 6371;
+
+    const dLat =
+      ((lat2 - lat1) *
+        Math.PI) /
+      180;
+
+    const dLon =
+      ((lon2 - lon1) *
+        Math.PI) /
+      180;
+
+    const a =
+      Math.sin(dLat / 2) *
+        Math.sin(dLat / 2) +
+      Math.cos(
+        (lat1 * Math.PI) /
+          180
+      ) *
+        Math.cos(
+          (lat2 * Math.PI) /
+            180
+        ) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+
+    return R * c;
+  };
+
+  const scanNearbyLabours = () => {
+    if (!navigator.geolocation) {
+      alert(
+        "Location services are not supported."
+      );
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const ownerLat =
+            position.coords.latitude;
+
+          const ownerLng =
+            position.coords.longitude;
+
+          const snapshot =
+            await getDocs(
+              collection(
+                db,
+                "labours"
+              )
+            );
+
+          const nearby = [];
+
+          snapshot.forEach(
+            (item) => {
+              const labour =
+                item.data();
+
+              if (
+                labour.onDuty ===
+                  true &&
+                labour.busy !==
+                  true &&
+                labour.latitude &&
+                labour.longitude
+              ) {
+                const distance =
+                  calculateDistance(
+                    ownerLat,
+                    ownerLng,
+                    labour.latitude,
+                    labour.longitude
+                  );
+
+                if (
+                  distance <= 10
+                ) {
+                  nearby.push({
+                    id: item.id,
+                    distance:
+                      distance.toFixed(
+                        1
+                      ),
+                    ...labour,
+                  });
+                }
+              }
+            }
+          );
+
+          setAvailableLabours(
+            nearby
+          );
+
+          if (
+            nearby.length === 0
+          ) {
+            alert(
+              "No available labour found within 10 KM."
+            );
+          } else {
+            alert(
+              `${nearby.length} available labour(s) found.`
+            );
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      () => {
+        alert(
+          "Please turn ON location and allow GPS permission."
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
   };
 
   const openPhonePe = () => {
@@ -339,80 +460,70 @@ export default function OwnerDashboard() {
     }
   };
 
-  const payCustomAmount =
-    async (booking) => {
-      const amount = prompt(
-        "Enter Amount Paid"
+  const payCustomAmount = async (
+    booking
+  ) => {
+    const amount = prompt(
+      "Enter Amount Paid"
+    );
+
+    if (
+      !amount ||
+      Number(amount) <= 0
+    )
+      return;
+
+    try {
+      const paid =
+        Number(amount);
+
+      const totalAmount =
+        booking.totalAmount ||
+        700;
+
+      const existingPaid =
+        booking.paidAmount || 0;
+
+      const newPaidAmount =
+        existingPaid + paid;
+
+      const remainingAmount =
+        Math.max(
+          totalAmount -
+            newPaidAmount,
+          0
+        );
+
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          booking.id
+        ),
+        {
+          paidAmount:
+            newPaidAmount,
+          remainingAmount:
+            remainingAmount,
+          paymentStatus:
+            remainingAmount === 0
+              ? "paid"
+              : "partial",
+          paymentMethod:
+            "Partial",
+          paymentDate:
+            new Date(),
+        }
       );
 
-      if (
-        !amount ||
-        Number(amount) <= 0
-      )
-        return;
-
-      try {
-        const paid =
-          Number(amount);
-
-        const totalAmount =
-          booking.totalAmount ||
-          700;
-
-        const existingPaid =
-          booking.paidAmount ||
-          0;
-
-        const newPaidAmount =
-          existingPaid + paid;
-
-        const remainingAmount =
-          Math.max(
-            totalAmount -
-              newPaidAmount,
-            0
-          );
-
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            booking.id
-          ),
-          {
-            paidAmount:
-              newPaidAmount,
-
-            remainingAmount:
-              remainingAmount,
-
-            paymentStatus:
-              remainingAmount === 0
-                ? "paid"
-                : "partial",
-
-            paymentMethod:
-              "Partial",
-
-            paymentDate:
-              new Date(),
-          }
-        );
-
-        loadBookings(
-          localStorage.getItem(
-            "ownerId"
-          )
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-  const scanNearbyLabours = () => {
-    alert(
-      "Scanning nearby labour..."
-    );
+      loadBookings(
+        localStorage.getItem(
+          "ownerId"
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   if (!owner) {
@@ -469,9 +580,7 @@ export default function OwnerDashboard() {
         cancelledJobs={
           cancelledJobs
         }
-        bookLabour={
-          bookLabour
-        }
+        bookLabour={bookLabour}
         calculateAmount={
           calculateAmount
         }
