@@ -12,15 +12,20 @@ export default function Notifications({
           (notification) => (
             <div
               key={notification.id}
-              className="job-card"
+              className="notification-card"
             >
               <h4>
+                🔔{" "}
                 {notification.title}
               </h4>
 
               <p>
                 {notification.message}
               </p>
+
+              <small>
+                {notification.status}
+              </small>
             </div>
           )
         )
