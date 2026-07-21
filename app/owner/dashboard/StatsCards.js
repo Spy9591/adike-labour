@@ -9,64 +9,54 @@ export default function StatsCards({
     <div className="stats-grid">
       <div
         className="stat-card"
+        style={{
+          cursor: "pointer",
+        }}
         onClick={() =>
           setSelectedView("available")
         }
-        style={{ cursor: "pointer" }}
       >
-        <h3>
-          {availableLabours}
-        </h3>
-
-        <span>
-          Available Labour
-        </span>
+        <h2>{availableLabours}</h2>
+        <p>👷 Available Labour</p>
       </div>
 
       <div
         className="stat-card"
+        style={{
+          cursor: "pointer",
+        }}
         onClick={() =>
           setSelectedView("running")
         }
-        style={{ cursor: "pointer" }}
       >
-        <h3>{runningJobs}</h3>
-
-        <span>
-          Running Jobs
-        </span>
+        <h2>{runningJobs}</h2>
+        <p>🚜 Running Jobs</p>
       </div>
 
       <div
         className="stat-card"
+        style={{
+          cursor: "pointer",
+        }}
         onClick={() =>
           setSelectedView("completed")
         }
-        style={{ cursor: "pointer" }}
       >
-        <h3>
-          {completedJobs}
-        </h3>
-
-        <span>
-          Completed Jobs
-        </span>
+        <h2>{completedJobs}</h2>
+        <p>✅ Completed Jobs</p>
       </div>
 
       <div
         className="stat-card"
+        style={{
+          cursor: "pointer",
+        }}
         onClick={() =>
           setSelectedView("cancelled")
         }
-        style={{ cursor: "pointer" }}
       >
-        <h3>
-          {cancelledJobs}
-        </h3>
-
-        <span>
-          Cancelled Jobs
-        </span>
+        <h2>{cancelledJobs}</h2>
+        <p>❌ Cancelled Jobs</p>
       </div>
     </div>
   );
