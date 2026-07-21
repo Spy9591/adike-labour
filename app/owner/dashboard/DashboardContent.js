@@ -50,7 +50,9 @@ export default function DashboardContent({
       )}
 
       {selectedView === "cancelled" && (
-        <CancelledJobs jobs={cancelledJobs} />
+        <CancelledJobs
+          jobs={cancelledJobs}
+        />
       )}
     </>
   );
