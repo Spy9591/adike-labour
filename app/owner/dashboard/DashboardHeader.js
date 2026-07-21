@@ -2,32 +2,41 @@ export default function DashboardHeader({
   owner,
   logout,
   scanNearbyLabours,
+  soundEnabled,
+  setSoundEnabled,
 }) {
   return (
     <div className="glass-card header-card">
-      <div>
-        <h1>
-          🏡 Farm Owner Dashboard
-        </h1>
+      <div className="owner-profile">
+        {owner?.photoURL ? (
+          {owner.photoURL}
+        ) : (
+          <div className="profile-emoji">
+            👨‍🌾
+          </div>
+        )}
 
-        <h3>
-          Welcome,
-          {" "}
-          {owner?.name || "Owner"}
-        </h3>
+        <div>
+          <h1>🏡 Farm Owner Dashboard</h1>
 
-        <p>
-          📍{" "}
-          {owner?.village ||
-            owner?.location ||
-            "Location Not Available"}
-        </p>
+          <h3>
+            {owner?.name || "Owner"}
+          </h3>
+
+          <p>
+            📍{" "}
+            {owner?.village ||
+              owner?.location ||
+              "Location Not Available"}
+          </p>
+        </div>
       </div>
 
       <div
         style={{
           display: "flex",
           gap: "10px",
+          flexWrap: "wrap",
         }}
       >
         <button
@@ -35,6 +44,19 @@ export default function DashboardHeader({
           onClick={scanNearbyLabours}
         >
           🔍 Scan Labour
+        </button>
+
+        <button
+          className="primary-btn"
+          onClick={() =>
+            setSoundEnabled(
+              !soundEnabled
+            )
+          }
+        >
+          {soundEnabled
+            ? "🔔 Sound ON"
+            : "🔕 Sound OFF"}
         </button>
 
         <button
