@@ -6,19 +6,18 @@ export default function DashboardHeader({
   return (
     <div className="glass-card header-card">
       <div>
-        <h1>
-          🏡 Farm Owner Dashboard
-        </h1>
+        <h1>🏡 Farm Owner Dashboard</h1>
 
-        <p>
+        <h3>
           Welcome,{" "}
-          <strong>
-            {owner?.name || "Owner"}
-          </strong>
-        </p>
+          {owner?.name || "Owner"}
+        </h3>
 
         <p>
-          📍 {owner?.village || "Location Not Available"}
+          📍{" "}
+          {owner?.village ||
+            owner?.location ||
+            "Location Not Available"}
         </p>
       </div>
 
