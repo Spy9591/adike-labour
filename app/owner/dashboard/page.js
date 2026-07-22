@@ -30,15 +30,33 @@ export default function OwnerDashboard() {
   const router = useRouter();
 
   const [owner, setOwner] = useState(null);
-  const [availableLabours, setAvailableLabours] = useState([]);
-  const [runningJobs, setRunningJobs] = useState([]);
-  const [completedJobs, setCompletedJobs] = useState([]);
-  const [cancelledJobs, setCancelledJobs] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [selectedView, setSelectedView] = useState("available");
-  const [isScanning, setIsScanning] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const [availableLabours, setAvailableLabours] =
+    useState([]);
+
+  const [runningJobs, setRunningJobs] =
+    useState([]);
+
+  const [completedJobs, setCompletedJobs] =
+    useState([]);
+
+  const [cancelledJobs, setCancelledJobs] =
+    useState([]);
+
+  const [notifications, setNotifications] =
+    useState([]);
+
+  const [selectedView, setSelectedView] =
+    useState("available");
+
+  const [isScanning, setIsScanning] =
+    useState(false);
+
+  const [toast, setToast] =
+    useState(null);
+
+  const [soundEnabled, setSoundEnabled] =
+    useState(true);
 
   useEffect(() => {
     loadOwner();
@@ -49,6 +67,14 @@ export default function OwnerDashboard() {
     subscribeNotifications();
   }, []);
 
+  const showToast = (message) => {
+    setToast(message);
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
   const playNotificationSound = () => {
     if (!soundEnabled) return;
 
@@ -57,14 +83,6 @@ export default function OwnerDashboard() {
     );
 
     audio.play();
-  };
-
-  const showToast = (message) => {
-    setToast(message);
-
-    setTimeout(() => {
-      setToast(null);
-    }, 3000);
   };
 
   const loadOwner = async () => {
@@ -77,9 +95,10 @@ export default function OwnerDashboard() {
         return;
       }
 
-      const ownerSnap = await getDoc(
-        doc(db, "owners", ownerId)
-      );
+      const ownerSnap =
+        await getDoc(
+          doc(db, "owners", ownerId)
+        );
 
       if (ownerSnap.exists()) {
         setOwner({
@@ -129,17 +148,11 @@ export default function OwnerDashboard() {
   };
 
   const scanNearbyLabours = () => {
-    setToast("🔍 Scanning Nearby Labour...");
+    setToast(
+      "🔍 Scanning Nearby Labour..."
+    );
+
     setIsScanning(true);
-
-    if (!navigator.geolocation) {
-      alert(
-        "Location services are not supported."
-      );
-
-      setIsScanning(false);
-      return;
-    }
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -219,62 +232,71 @@ export default function OwnerDashboard() {
       where("ownerId", "==", ownerId)
     );
 
-    onSnapshot(bookingQuery, (snapshot) => {
-      const running = [];
-      const completed = [];
-      const cancelled = [];
+    onSnapshot(
+      bookingQuery,
+      (snapshot) => {
+        const running = [];
+        const completed = [];
+        const cancelled = [];
 
-      snapshot.forEach((item) => {
-        const booking = {
-          id: item.id,
-          ...item.data(),
-        };
+        snapshot.forEach((item) => {
+          const booking = {
+            id: item.id,
+            ...item.data(),
+          };
 
-        if (
-          booking.status === "pending" &&
-          booking.requestExpiry &&
-          Date.now() >
-            booking.requestExpiry
-        ) {
-          updateDoc(
-            doc(
-              db,
-              "bookings",
-              booking.id
-            ),
-            {
-              status: "expired",
-            }
-          );
-        }
+          if (
+            booking.status ===
+              "pending" &&
+            booking.requestExpiry &&
+            Date.now() >
+              booking.requestExpiry
+          ) {
+            updateDoc(
+              doc(
+                db,
+                "bookings",
+                booking.id
+              ),
+              {
+                status: "expired",
+              }
+            );
+          }
 
-        if (
-          booking.status === "accepted"
-        ) {
-          running.push(booking);
-        }
+          if (
+            booking.status ===
+            "accepted"
+          ) {
+            running.push(booking);
+          }
 
-        if (
-          booking.status === "completed" ||
-          booking.paymentStatus ===
-            "paid"
-        ) {
-          completed.push(booking);
-        }
+          if (
+            booking.status ===
+              "completed" ||
+            booking.paymentStatus ===
+              "approved"
+          ) {
+            completed.push(booking);
+          }
 
-        if (
-          booking.status === "cancelled" ||
-          booking.status === "rejected" ||
-          booking.status === "expired"
-        ) {
-          cancelled.push(booking);
-        }
-      });
+          if (
+            booking.status ===
+              "cancelled" ||
+            booking.status ===
+              "rejected" ||
+            booking.status ===
+              "expired"
+          ) {
+            cancelled.push(booking);
+          }
+        });
 
-      setRunningJobs(running);
-      setCompletedJobs(completed);
-      setCancelledJobs(cancelled);
-    });
+        setRunningJobs(running);
+        setCompletedJobs(completed);
+        setCancelledJobs(cancelled);
+      }
+    );
   };
 
   const subscribeNotifications = () => {
@@ -286,21 +308,26 @@ export default function OwnerDashboard() {
       where("userId", "==", ownerId)
     );
 
-    onSnapshot(notifyQuery, (snapshot) => {
-      const list = [];
+    onSnapshot(
+      notifyQuery,
+      (snapshot) => {
+        const list = [];
 
-      snapshot.forEach((item) => {
-        list.push({
-          id: item.id,
-          ...item.data(),
+        snapshot.forEach((item) => {
+          list.push({
+            id: item.id,
+            ...item.data(),
+          });
         });
-      });
 
-      setNotifications(list);
-    });
+        setNotifications(list);
+      }
+    );
   };
 
-  const bookLabour = async (labour) => {
+  const bookLabour = async (
+    labour
+  ) => {
     try {
       const ownerId =
         localStorage.getItem("ownerId");
@@ -317,7 +344,7 @@ export default function OwnerDashboard() {
 
       if (!existing.empty) {
         showToast(
-          "Wait for labour response."
+          "⏳ Request already pending"
         );
         return;
       }
@@ -326,9 +353,14 @@ export default function OwnerDashboard() {
         collection(db, "bookings"),
         {
           ownerId,
+
           labourId: labour.id,
-          labourName: labour.name,
-          labourPhone: labour.phone,
+
+          labourName:
+            labour.name,
+
+          labourPhone:
+            labour.phone,
 
           status: "pending",
 
@@ -339,10 +371,13 @@ export default function OwnerDashboard() {
             Date.now() + 60000,
 
           totalAmount: 700,
+
           receivedAmount: 0,
+
           remainingAmount: 700,
 
-          paymentStatus: "unpaid",
+          paymentStatus:
+            "unpaid",
 
           createdAt: new Date(),
         }
@@ -351,85 +386,64 @@ export default function OwnerDashboard() {
       playNotificationSound();
 
       showToast(
-        "✅ Request Sent"
+        "🚀 Request Sent"
       );
     } catch (error) {
       console.log(error);
     }
   };
 
-  const payFullAmount = async (job) => {
-    const due =
-      job.remainingAmount ??
-      job.totalAmount ??
-      700;
-
-    const paid =
-      job.receivedAmount || 0;
-
-    await updateDoc(
-      doc(db, "bookings", job.id),
-      {
-        receivedAmount: paid + due,
-        remainingAmount: 0,
-        paymentStatus: "paid",
-        paymentType: "Full Payment",
-      }
-    );
-
-    playNotificationSound();
-
-    showToast(
-      "✅ Payment Completed"
-    );
-  };
-
-  const payCustomAmount = async (
+  const payFullAmount = async (
     job
   ) => {
-    const value = prompt(
-      "Enter Amount"
-    );
-
-    if (!value) return;
-
-    const amount = Number(value);
-
-    const total =
-      job.totalAmount || 700;
-
-    const paid =
-      job.receivedAmount || 0;
-
-    const updatedPaid =
-      paid + amount;
-
-    const updatedDue =
-      total - updatedPaid;
-
     await updateDoc(
       doc(db, "bookings", job.id),
       {
-        receivedAmount:
-          updatedPaid,
-        remainingAmount:
-          updatedDue,
         paymentStatus:
-          updatedDue === 0
-            ? "paid"
-            : "partial",
+          "processing",
+
+        ownerPaidAmount:
+          job.remainingAmount,
       }
     );
 
-    if (updatedDue === 0) {
-      playNotificationSound();
-    }
-
-    showToast(`₹${amount} Paid`);
+    showToast(
+      "⏳ Waiting Labour Approval"
+    );
   };
 
+  const payCustomAmount =
+    async (job) => {
+      const value = prompt(
+        "Enter Amount"
+      );
+
+      if (!value) return;
+
+      const amount =
+        Number(value);
+
+      await updateDoc(
+        doc(db, "bookings", job.id),
+        {
+          ownerPaidAmount:
+            amount,
+
+          paymentStatus:
+            "processing",
+        }
+      );
+
+      showToast(
+        "⏳ Waiting Labour Approval"
+      );
+    };
+
   const logout = () => {
-    localStorage.removeItem("ownerId");
+    localStorage.removeItem(
+      "ownerId"
+    );
+
     router.replace("/");
   };
 
@@ -445,21 +459,27 @@ export default function OwnerDashboard() {
         scanNearbyLabours={
           scanNearbyLabours
         }
-        soundEnabled={soundEnabled}
+        soundEnabled={
+          soundEnabled
+        }
         setSoundEnabled={
           setSoundEnabled
         }
       />
 
       <Notifications
-        notifications={notifications}
+        notifications={
+          notifications
+        }
       />
 
       <StatsCards
         availableLabours={
           availableLabours.length
         }
-        runningJobs={runningJobs.length}
+        runningJobs={
+          runningJobs.length
+        }
         completedJobs={
           completedJobs.length
         }
@@ -472,18 +492,24 @@ export default function OwnerDashboard() {
       />
 
       <DashboardContent
-        selectedView={selectedView}
+        selectedView={
+          selectedView
+        }
         availableLabours={
           availableLabours
         }
-        runningJobs={runningJobs}
+        runningJobs={
+          runningJobs
+        }
         completedJobs={
           completedJobs
         }
         cancelledJobs={
           cancelledJobs
         }
-        bookLabour={bookLabour}
+        bookLabour={
+          bookLabour
+        }
         payFullAmount={
           payFullAmount
         }
@@ -494,11 +520,13 @@ export default function OwnerDashboard() {
 
       {toast && (
         <div className="toast">
-          🔔 {toast}
+          {toast}
         </div>
       )}
 
-      {isScanning && <ScanOverlay />}
+      {isScanning && (
+        <ScanOverlay />
+      )}
     </div>
   );
 }
