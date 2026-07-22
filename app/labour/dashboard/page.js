@@ -13,7 +13,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-import { db } from "@/firebase";
+import { db } from "../../firebase";
 
 import DashboardHeader from "./DashboardHeader";
 import StatsCards from "./StatsCards";
