@@ -39,14 +39,41 @@ export default function AvailableLabours({
                 "Not Available"}
             </p>
 
-            <button
-              className="primary-btn"
-              onClick={() =>
-                bookLabour(labour)
-              }
-            >
-              📋 Book Labour
-            </button>
+            {labour.requestStatus ===
+            "pending" ? (
+              <div>
+                <button
+                  className="primary-btn"
+                  disabled
+                  style={{
+                    width: "100%",
+                    opacity: 0.6,
+                    cursor: "not-allowed",
+                  }}
+                >
+                  ⏳ Waiting For Response
+                </button>
+
+                <p
+                  style={{
+                    marginTop: "10px",
+                    color: "#fbbf24",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Wait 1 Minute
+                </p>
+              </div>
+            ) : (
+              <button
+                className="primary-btn"
+                onClick={() =>
+                  bookLabour(labour)
+                }
+              >
+                📋 Send Request
+              </button>
+            )}
           </div>
         ))
       )}

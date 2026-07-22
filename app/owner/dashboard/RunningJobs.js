@@ -1,6 +1,6 @@
 export default function RunningJobs({
   jobs,
-  calculateAmount
+  calculateAmount,
 }) {
   return (
     <div className="glass-card">
@@ -12,23 +12,45 @@ export default function RunningJobs({
         jobs.map((job) => (
           <div
             key={job.id}
-            className="job-card"
+            className="job-card running-job-card"
           >
-            <h3>{job.labourName}</h3>
+            <h3>
+              👷 {job.labourName}
+            </h3>
 
             <p>
-              Status : {job.status}
+              ✅ Status :
+              Accepted
+            </p>
+
+            <p>
+              📞 {job.labourPhone}
+            </p>
+
+            <p>
+              📍{" "}
+              {job.labourVillage ||
+                "N/A"}
             </p>
 
             {job.startTime && (
               <p>
-                Current Amount :
-                ₹
+                💰 Current Amount : ₹
                 {calculateAmount(
                   job.startTime
                 )}
               </p>
             )}
+
+            <div
+              style={{
+                marginTop: "10px",
+                color: "#22c55e",
+                fontWeight: "bold",
+              }}
+            >
+              🔴 Live Tracking Active
+            </div>
           </div>
         ))
       )}
