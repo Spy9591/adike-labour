@@ -9,10 +9,9 @@ export default function DashboardHeader({
     <div className="glass-card header-card">
       <div className="owner-profile">
         {owner?.photoURL ? (
-          <img
-            src={owner.photoURL}
-            alt="Owner"
- e-emoji">
+          {owner.photoURL}
+        ) : (
+          <div className="profile-emoji">
             👨‍🌾
           </div>
         )}
@@ -27,10 +26,6 @@ export default function DashboardHeader({
             {owner?.village ||
               owner?.location ||
               "Location Not Available"}
-          </p>
-
-          <p className="owner-rating">
-            ⭐ {owner?.rating || 5}
           </p>
         </div>
       </div>
