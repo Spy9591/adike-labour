@@ -9,9 +9,8 @@ export default function DashboardHeader({
     <div className="glass-card header-card">
       <div className="owner-profile">
         {owner?.photoURL ? (
-          {owner.photoURL}
-        ) : (
-          <div className="profile-emoji">
+          <img
+            src={owner.photoURL     <div className="profile-emoji">
             👨‍🌾
           </div>
         )}
