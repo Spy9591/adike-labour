@@ -5,6 +5,9 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 
 import "./dashboard.css";
@@ -13,12 +16,15 @@ export default function RunningJob({
   runningBooking,
   completeWork,
   cancelOrder,
+  markReady,
 }) {
   if (!runningBooking) return null;
 
+  const isCompleted =
+    runningBooking.status === "completed";
+
   return (
     <div className="runningCard">
-
       <h2
         style={{
           display: "flex",
@@ -37,53 +43,74 @@ export default function RunningJob({
         }}
       >
         <p>
-          <strong>Customer :</strong>{" "}
-          {runningBooking.ownerName}
+          <strong>Owner:</strong>{" "}
+          {runningBooking.ownerName || "Farm Owner"}
         </p>
 
         <p>
-          <strong>Status :</strong>{" "}
-          <span
-            style={{
-              color: "#BBF7D0",
-            }}
-          >
-            In Progress
-          </span>
+          <FaPhone />{" "}
+          {runningBooking.ownerPhone || "No Number"}
         </p>
 
         <p>
-          <strong>Payment :</strong>{" "}
-          ₹700
+          <FaMapMarkerAlt />{" "}
+          {runningBooking.ownerVillage || "Location N/A"}
         </p>
 
         <p>
-          <FaClock />
-          {" "}
-          Work is currently active.
+          <FaMoneyBillWave /> ₹
+          {runningBooking.totalAmount || 700}
+        </p>
+
+        <p>
+          <strong>Status:</strong>{" "}
+          {isCompleted ? (
+            <span style={{ color: "#22c55e" }}>
+              ✅ Completed
+            </span>
+          ) : (
+            <span style={{ color: "#facc15" }}>
+              🟡 In Progress
+            </span>
+          )}
+        </p>
+
+        <p>
+          <FaClock />{" "}
+          {isCompleted
+            ? "Work Completed"
+            : "Work In Progress"}
         </p>
       </div>
 
       <div className="runningBtns">
+        {!isCompleted && (
+          <>
+            <button
+              className="completeBtn"
+              onClick={completeWork}
+            >
+              <FaCheckCircle /> Complete Work
+            </button>
 
-        <button
-          className="completeBtn"
-          onClick={completeWork}
-        >
-          <FaCheckCircle />
-          {" "}Complete Work
-        </button>
+            <button
+              className="cancelBtn"
+              onClick={cancelOrder}
+            >
+              <FaTimesCircle /> Cancel Order
+            </button>
+          </>
+        )}
 
-        <button
-          className="cancelBtn"
-          onClick={cancelOrder}
-        >
-          <FaTimesCircle />
-          {" "}Cancel Order
-        </button>
-
+        {isCompleted && (
+          <button
+            className="acceptBtn"
+            onClick={markReady}
+          >
+            ✅ Ready For Next Work
+          </button>
+        )}
       </div>
-
     </div>
   );
 }

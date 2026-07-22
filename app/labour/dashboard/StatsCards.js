@@ -14,6 +14,7 @@ export default function StatsCards({
 }) {
   return (
     <div className="stats">
+
       <div className="stat">
         <FaHistory size={40} />
 
@@ -34,8 +35,7 @@ export default function StatsCards({
 
         <h1>
           ₹
-          {labour.monthlyEarnings ||
-            0}
+          {labour.monthlyEarnings || 0}
         </h1>
 
         <p>
@@ -60,17 +60,30 @@ export default function StatsCards({
 
       <div className="stat">
         <h1>
-          {labour.onDuty
+          {labour.busy
+            ? "🟡"
+            : labour.onDuty
             ? "🟢"
             : "🔴"}
         </h1>
 
         <p>
-          {labour.onDuty
-            ? "On Duty"
+          {labour.busy
+            ? "Busy"
+            : labour.onDuty
+            ? "Available"
             : "Off Duty"}
         </p>
+
+        <small>
+          {labour.busy
+            ? "Currently Working"
+            : labour.onDuty
+            ? "Ready For Booking"
+            : "Not Receiving Jobs"}
+        </small>
       </div>
+
     </div>
   );
 }

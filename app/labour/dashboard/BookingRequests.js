@@ -18,20 +18,16 @@ export default function BookingRequests({
   return (
     <div className="card">
       <h2 className="cardTitle">
-        <FaBell /> Booking Requests
+        <FaBell />
+        {" "}
+        Booking Requests
+        ({bookings.length})
       </h2>
 
       {bookings.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px 20px",
-            color: "#cbd5e1",
-          }}
-        >
-          <h3>No Booking Requests</h3>
-          <p>You're all caught up 🎉</p>
-        </div>
+        <p>
+          No Booking Requests
+        </p>
       ) : (
         bookings.map((booking) => (
           <div
@@ -39,34 +35,34 @@ export default function BookingRequests({
             key={booking.id}
           >
             <div>
-              <h3 className="bookingName">
+              <h3>
                 {booking.ownerName}
               </h3>
 
               <p>
-                <FaPhone />{" "}
+                <FaPhone />
+                {" "}
                 {booking.ownerPhone ||
                   "No Number"}
               </p>
 
               <p>
-                <FaMapMarkerAlt />{" "}
+                <FaMapMarkerAlt />
+                {" "}
                 {booking.ownerVillage ||
                   "Village N/A"}
               </p>
 
               <p>
-                📏 {booking.distance || 0} KM
+                📏{" "}
+                {booking.distance || 0}
+                {" "}KM
               </p>
 
-              <p
-                style={{
-                  color: "#22C55E",
-                  marginTop: "8px",
-                  fontWeight: "600",
-                }}
-              >
-                ₹{booking.totalAmount || 700}
+              <p>
+                💰 ₹
+                {booking.totalAmount ||
+                  700}
               </p>
             </div>
 
@@ -74,7 +70,9 @@ export default function BookingRequests({
               <button
                 className="acceptBtn"
                 onClick={() =>
-                  acceptBooking(booking.id)
+                  acceptBooking(
+                    booking.id
+                  )
                 }
               >
                 <FaCheckCircle />
@@ -84,7 +82,9 @@ export default function BookingRequests({
               <button
                 className="rejectBtn"
                 onClick={() =>
-                  rejectBooking(booking.id)
+                  rejectBooking(
+                    booking.id
+                  )
                 }
               >
                 <FaTimesCircle />

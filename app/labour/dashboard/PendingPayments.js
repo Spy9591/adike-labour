@@ -1,140 +1,87 @@
 "use client";
 
-
 import {
-    FaUser,
-    FaPhone,
-    FaRupeeSign
+  FaUser,
+  FaPhone,
+  FaRupeeSign,
 } from "react-icons/fa";
-
 
 import "./dashboard.css";
 
-
 export default function PendingPayments({
-
-payments,
-receivePayment
-
+  payments,
+  receivePayment,
 }) {
-
-
-return (
-
-<div className="card">
-
-
-<h2 className="cardTitle">
-
-💳 Pending Payments
-
-</h2>
-
-
-
-{
-payments.length===0 ?
-
-
-<p
-style={{
-color:"#cbd5e1"
-}}
->
-
-No Pending Payments
-
-</p>
-
-
-
-:
-
-
-payments.map((item)=>(
-
-
-<div
-key={item.id}
-className="booking"
->
-
-
-<div>
-
-
-<h3>
-
-<FaUser/>
-
-{" "}
-
-{item.ownerName}
-
-</h3>
-
-
-<p>
-
-<FaPhone/>
-
-{" "}
-
-{item.ownerPhone || "No Number"}
-
-</p>
-
-
-
-<p
-style={{
-color:"#facc15",
-marginTop:"10px"
-}}
->
-
-Pending:
-
-₹{item.remainingAmount}
-
-</p>
-
-
-
-</div>
-
-
-
-<button
-
-className="acceptBtn"
-
-onClick={()=>receivePayment(item)}
-
->
-
-<FaRupeeSign/>
-
-Receive
-
-</button>
-
-
-
-</div>
-
-
-))
-
-
-}
-
-
-
-</div>
-
-
-);
-
-
+  return (
+    <div className="card">
+      <h2 className="cardTitle">
+        💳 Pending Payments ({payments.length})
+      </h2>
+
+      {payments.length === 0 ? (
+        <p
+          style={{
+            color: "#cbd5e1",
+          }}
+        >
+          No Pending Payments
+        </p>
+      ) : (
+        payments.map((item) => (
+          <div
+            key={item.id}
+            className="booking"
+          >
+            <div>
+              <h3>
+                <FaUser />{" "}
+                {item.ownerName}
+              </h3>
+
+              <p>
+                <FaPhone />{" "}
+                {item.ownerPhone ||
+                  "No Number"}
+              </p>
+
+              <p>
+                Payment Mode:
+                {" "}
+                {item.paymentMethod ||
+                  "Cash"}
+              </p>
+
+              <p>
+                Amount:
+                ₹
+                {item.totalAmount || 0}
+              </p>
+
+              <p
+                style={{
+                  color: "#facc15",
+                }}
+              >
+                Pending:
+                ₹
+                {item.remainingAmount ||
+                  0}
+              </p>
+            </div>
+
+            <button
+              className="acceptBtn"
+              onClick={() =>
+                receivePayment(item)
+              }
+            >
+              <FaRupeeSign />
+              {" "}
+              Payment Received
+            </button>
+          </div>
+        ))
+      )}
+    </div>
+  );
 }
