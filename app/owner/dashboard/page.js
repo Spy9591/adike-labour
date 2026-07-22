@@ -10,7 +10,6 @@ import {
   query,
   where,
   addDoc,
-  updateDoc,
   doc,
 } from "firebase/firestore";
 
@@ -32,6 +31,9 @@ export default function OwnerDashboard() {
 
   const [availableLabours, setAvailableLabours] =
     useState([]);
+
+  const [hasScanned, setHasScanned] =
+    useState(false);
 
   const [runningJobs, setRunningJobs] =
     useState([]);
@@ -72,7 +74,8 @@ export default function OwnerDashboard() {
       loadBookings(ownerId);
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () =>
+      clearInterval(interval);
   }, []);
 
   const playNotificationSound = () => {
@@ -116,38 +119,8 @@ export default function OwnerDashboard() {
         });
       }
 
-      loadAvailableLabours();
       loadBookings(ownerId);
       loadNotifications(ownerId);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const loadAvailableLabours = async () => {
-    try {
-      const snapshot =
-        await getDocs(
-          collection(db, "labours")
-        );
-
-      const list = [];
-
-      snapshot.forEach((item) => {
-        const data = item.data();
-
-        if (
-          data.onDuty === true &&
-          data.busy !== true
-        ) {
-          list.push({
-            id: item.id,
-            ...data,
-          });
-        }
-      });
-
-      setAvailableLabours(list);
     } catch (error) {
       console.log(error);
     }
@@ -239,10 +212,11 @@ export default function OwnerDashboard() {
         });
       });
 
-      if (
+      const hasNewNotification =
         list.length >
-        notifications.length
-      ) {
+        notifications.length;
+
+      if (hasNewNotification) {
         playNotificationSound();
 
         const latest =
@@ -294,7 +268,7 @@ export default function OwnerDashboard() {
             180
         ) *
         Math.sin(dLon / 2) **
-        2;
+          2;
 
     const c =
       2 *
@@ -379,6 +353,8 @@ export default function OwnerDashboard() {
             nearby
           );
 
+          setHasScanned(true);
+
           setIsScanning(false);
 
           if (
@@ -401,6 +377,62 @@ export default function OwnerDashboard() {
         );
       }
     );
+  };
+
+  const bookLabour = async (
+    labour
+  ) => {
+    try {
+      const ownerId =
+        localStorage.getItem(
+          "ownerId"
+        );
+
+      await addDoc(
+        collection(db, "bookings"),
+        {
+          ownerId,
+
+          ownerName:
+            owner?.name || "",
+
+          ownerPhone:
+            owner?.phone || "",
+
+          labourId:
+            labour.id,
+
+          labourName:
+            labour.name || "",
+
+          labourPhone:
+            labour.phone || "",
+
+          labourVillage:
+            labour.village || "",
+
+          distance:
+            labour.distance || "",
+
+          status: "pending",
+
+          paymentStatus:
+            "unpaid",
+
+          createdAt:
+            new Date(),
+        }
+      );
+
+      alert(
+        "✅ Booking Request Sent Successfully"
+      );
+    } catch (error) {
+      console.log(error);
+      alert(
+        "❌ Failed to send booking request"
+      );
+    }
   };
 
   if (!owner) {
@@ -454,6 +486,9 @@ export default function OwnerDashboard() {
         availableLabours={
           availableLabours
         }
+        hasScanned={
+          hasScanned
+        }
         runningJobs={
           runningJobs
         }
@@ -462,6 +497,9 @@ export default function OwnerDashboard() {
         }
         cancelledJobs={
           cancelledJobs
+        }
+        bookLabour={
+          bookLabour
         }
       />
 

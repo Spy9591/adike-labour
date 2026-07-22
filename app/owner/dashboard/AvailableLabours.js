@@ -14,7 +14,9 @@ export default function AvailableLabours({
             key={labour.id}
             className="job-card"
           >
-            <h3>👷 {labour.name}</h3>
+            <h3>
+              👷 {labour.name}
+            </h3>
 
             <p>
               📍 {labour.village || "N/A"}
@@ -30,11 +32,12 @@ export default function AvailableLabours({
               </p>
             )}
 
-            {labour.mobile && (
-              <p>
-                📞 {labour.mobile}
-              </p>
-            )}
+            <p>
+              📞{" "}
+              {labour.mobile ||
+                labour.phone ||
+                "Not Available"}
+            </p>
 
             <button
               className="primary-btn"
