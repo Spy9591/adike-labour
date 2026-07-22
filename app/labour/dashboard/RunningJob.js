@@ -64,15 +64,11 @@ export default function RunningJob({
 
         <p>
           <strong>Status:</strong>{" "}
-          {isCompleted ? (
-            <span style={{ color: "#22c55e" }}>
-              ✅ Completed
-            </span>
-          ) : (
-            <span style={{ color: "#facc15" }}>
-              🟡 In Progress
-            </span>
-          )}
+          {runningBooking.paymentStatus === "pending"
+            ? "💳 Payment Pending"
+            : isCompleted
+            ? "✅ Completed"
+            : "🟡 In Progress"}
         </p>
 
         <p>
@@ -90,26 +86,26 @@ export default function RunningJob({
               className="completeBtn"
               onClick={completeWork}
             >
-              <FaCheckCircle /> Complete Work
+              <FaCheckCircle />
+              {" "}Complete Work
             </button>
 
             <button
               className="cancelBtn"
               onClick={cancelOrder}
             >
-              <FaTimesCircle /> Cancel Order
+              <FaTimesCircle />
+              {" "}Cancel Order
             </button>
           </>
         )}
 
-        {isCompleted && (
-          <button
-            className="acceptBtn"
-            onClick={markReady}
-          >
-            ✅ Ready For Next Work
-          </button>
-        )}
+        <button
+          className="acceptBtn"
+          onClick={markReady}
+        >
+          ✅ Remove Busy Status
+        </button>
       </div>
     </div>
   );
