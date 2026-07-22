@@ -1,76 +1,69 @@
 "use client";
 
-import AvailableLabours from "./AvailableLabours";
-import RunningJobs from "./RunningJobs";
-import CompletedJobs from "./CompletedJobs";
-import CancelledJobs from "./CancelledJobs";
-import LiveTracking from "./LiveTracking";
-
-export default function DashboardContent({
-  selectedView,
-  availableLabours,
-  hasScanned,
-  runningJobs,
-  completedJobs,
-  cancelledJobs,
-  bookLabour,
-  calculateAmount,
-  openPhonePe,
-  payCash,
-  payCustomAmount,
+export default function DashboardHeader({
+  owner,
+  logout,
+  scanNearbyLabours,
+  soundEnabled,
+  setSoundEnabled,
 }) {
-  if (
-    selectedView === "available" &&
-    !hasScanned
-  ) {
-    return (
-      <div className="glass-card">
-        <h2>🔍 Scan Nearby Labour</h2>
-
-        <p>
-          Click Scan Labour to find
-          nearby available workers.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      {selectedView === "available" && (
-        <AvailableLabours
-          labours={availableLabours}
-          bookLabour={bookLabour}
-        />
-      )}
+    <div className="glass-card header-card">
+      <div className="owner-profile">
+        <div className="profile-emoji">
+          👨‍🌾
+        </div>
 
-      {selectedView === "running" && (
-        <>
-          <RunningJobs
-            jobs={runningJobs}
-            calculateAmount={calculateAmount}
-          />
+        <div>
+          <h1 className="owner-name">
+            {owner?.name || "Owner"}
+          </h1>
 
-          <LiveTracking
-            runningJobs={runningJobs}
-          />
-        </>
-      )}
+          <p className="owner-location">
+            📍{" "}
+            {owner?.village ||
+              owner?.location ||
+              "Location Not Available"}
+          </p>
 
-      {selectedView === "completed" && (
-        <CompletedJobs
-          jobs={completedJobs}
-          openPhonePe={openPhonePe}
-          payCash={payCash}
-          payCustomAmount={payCustomAmount}
-        />
-      )}
+          {(owner?.phone || owner?.mobile) && (
+            <p>
+              📞{" "}
+              {owner?.phone ||
+                owner?.mobile}
+            </p>
+          )}
+        </div>
+      </div>
 
-      {selectedView === "cancelled" && (
-        <CancelledJobs
-          jobs={cancelledJobs}
-        />
-      )}
-    </>
+      <div className="header-buttons">
+        <button
+          className="primary-btn"
+          onClick={scanNearbyLabours}
+        >
+          🔍 Scan Labour
+        </button>
+
+        <button
+          className="primary-btn"
+          onClick={() =>
+            setSoundEnabled(
+              !soundEnabled
+            )
+          }
+        >
+          {soundEnabled
+            ? "🔔 Sound ON"
+            : "🔕 Sound OFF"}
+        </button>
+
+        <button
+          className="danger-btn"
+          onClick={logout}
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </div>
   );
 }
