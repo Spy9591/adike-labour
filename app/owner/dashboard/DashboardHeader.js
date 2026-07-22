@@ -8,13 +8,9 @@ export default function DashboardHeader({
   return (
     <div className="glass-card header-card">
       <div className="owner-profile">
-        {owner?.photoURL ? (
-          {owner.photoURL}
-        ) : (
-          <div className="profile-emoji">
-            👨‍🌾
-          </div>
-        )}
+        <div className="profile-emoji">
+          👨‍🌾
+        </div>
 
         <div>
           <h1 className="owner-name">
