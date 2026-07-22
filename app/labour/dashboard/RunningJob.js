@@ -18,11 +18,6 @@ export default function RunningJob({
   cancelOrder,
   markReady,
 }) {
-  if (!runningBooking) return null;
-
-  const isCompleted =
-    runningBooking.status === "completed";
-
   return (
     <div className="runningCard">
       <h2
@@ -36,77 +31,100 @@ export default function RunningJob({
         Running Job
       </h2>
 
-      <div
-        style={{
-          marginTop: "20px",
-          lineHeight: "32px",
-        }}
-      >
-        <p>
-          <strong>Owner:</strong>{" "}
-          {runningBooking.ownerName || "Farm Owner"}
-        </p>
+      {runningBooking ? (
+        <>
+          <div
+            style={{
+              marginTop: "20px",
+              lineHeight: "32px",
+            }}
+          >
+            <p>
+              <strong>Owner:</strong>{" "}
+              {runningBooking.ownerName ||
+                "Farm Owner"}
+            </p>
 
-        <p>
-          <FaPhone />{" "}
-          {runningBooking.ownerPhone || "No Number"}
-        </p>
+            <p>
+              <FaPhone />{" "}
+              {runningBooking.ownerPhone ||
+                "No Number"}
+            </p>
 
-        <p>
-          <FaMapMarkerAlt />{" "}
-          {runningBooking.ownerVillage || "Location N/A"}
-        </p>
+            <p>
+              <FaMapMarkerAlt />{" "}
+              {runningBooking.ownerVillage ||
+                "Location N/A"}
+            </p>
 
-        <p>
-          <FaMoneyBillWave /> ₹
-          {runningBooking.totalAmount || 700}
-        </p>
+            <p>
+              <FaMoneyBillWave /> ₹
+              {runningBooking.totalAmount ||
+                700}
+            </p>
 
-        <p>
-          <strong>Status:</strong>{" "}
-          {runningBooking.paymentStatus === "pending"
-            ? "💳 Payment Pending"
-            : isCompleted
-            ? "✅ Completed"
-            : "🟡 In Progress"}
-        </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {runningBooking.paymentStatus ===
+              "pending"
+                ? "💳 Payment Pending"
+                : "🟡 Busy"}
+            </p>
 
-        <p>
-          <FaClock />{" "}
-          {isCompleted
-            ? "Work Completed"
-            : "Work In Progress"}
-        </p>
-      </div>
+            <p>
+              <FaClock /> Work In Progress
+            </p>
+          </div>
 
-      <div className="runningBtns">
-        {!isCompleted && (
-          <>
+          <div className="runningBtns">
             <button
               className="completeBtn"
               onClick={completeWork}
             >
-              <FaCheckCircle />
-              {" "}Complete Work
+              <FaCheckCircle /> Complete Work
             </button>
 
             <button
               className="cancelBtn"
               onClick={cancelOrder}
             >
-              <FaTimesCircle />
-              {" "}Cancel Order
+              <FaTimesCircle /> Cancel Order
             </button>
-          </>
-        )}
 
-        <button
-          className="acceptBtn"
-          onClick={markReady}
+            <button
+              className="acceptBtn"
+              onClick={markReady}
+              style={{
+                background: "#22c55e",
+                color: "#fff",
+              }}
+            >
+              ✅ Remove Busy Status
+            </button>
+          </div>
+        </>
+      ) : (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "20px",
+          }}
         >
-          ✅ Remove Busy Status
-        </button>
-      </div>
+          <p>No Running Job</p>
+
+          <button
+            className="acceptBtn"
+            onClick={markReady}
+            style={{
+              background: "#22c55e",
+              color: "#fff",
+              marginTop: "15px",
+            }}
+          >
+            ✅ Remove Busy Status
+          </button>
+        </div>
+      )}
     </div>
   );
 }
