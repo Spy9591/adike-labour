@@ -3,9 +3,7 @@ export default function LiveTracking({
 }) {
   return (
     <div className="glass-card">
-      <h2>
-        📍 Live Labour Tracking
-      </h2>
+      <h2>📍 Live Tracking</h2>
 
       {runningJobs.length === 0 ? (
         <p>
@@ -14,8 +12,8 @@ export default function LiveTracking({
       ) : (
         runningJobs.map((job) => (
           <div
-            key={job.id}
             className="job-card"
+            key={job.id}
           >
             <h3>
               👷 {job.labourName}
@@ -24,24 +22,22 @@ export default function LiveTracking({
             <p>
               Latitude:
               {" "}
-              {job.latitude ||
-                "N/A"}
+              {job.latitude || "N/A"}
             </p>
 
             <p>
               Longitude:
               {" "}
-              {job.longitude ||
-                "N/A"}
+              {job.longitude || "N/A"}
             </p>
 
             {job.latitude &&
               job.longitude && (
-                <iframe
-                  title={job.id}
-                  width="100%"
-                  height="250"
-                  style={{
-                 iv>
+                {`https://maps.google.com/maps?q=${job.latitude},${job.longitude}&z=15&output=embed`}
+              )}
+          </div>
+        ))
+      )}
+    </div>
   );
 }
