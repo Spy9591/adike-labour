@@ -56,8 +56,7 @@ export default function BookingRequests({
               </p>
 
               <p>
-                📏{" "}
-                {booking.distance || 0} KM
+                📏 {booking.distance || 0} KM
               </p>
 
               <p
@@ -67,26 +66,15 @@ export default function BookingRequests({
                   fontWeight: "600",
                 }}
               >
-                ₹
-                {booking.totalAmount ||
-                  700}
+                ₹{booking.totalAmount || 700}
               </p>
-
-              {booking.ownerLatitude &&
-                booking.ownerLongitude && (
-                  <a
-                    href={`https://maps.google.com/?q=${booking.ownerLatitude},${booking.ownerLongitude}`}
-                    target="_blank"
-             )}
             </div>
 
             <div className="bookingBtns">
               <button
                 className="acceptBtn"
                 onClick={() =>
-                  acceptBooking(
-                    booking.id
-                  )
+                  acceptBooking(booking.id)
                 }
               >
                 <FaCheckCircle />
@@ -96,9 +84,7 @@ export default function BookingRequests({
               <button
                 className="rejectBtn"
                 onClick={() =>
-                  rejectBooking(
-                    booking.id
-                  )
+                  rejectBooking(booking.id)
                 }
               >
                 <FaTimesCircle />
