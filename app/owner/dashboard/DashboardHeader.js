@@ -9,9 +9,8 @@ export default function DashboardHeader({
     <div className="glass-card header-card">
       <div className="owner-profile">
         {owner?.photoURL ? (
-          {owner.photoURL}
-        ) : (
-          <div className="profile-emoji">
+          <img
+            src={owner.photoURL     <div className="profile-emoji">
             👨‍🌾
           </div>
         )}
@@ -22,8 +21,7 @@ export default function DashboardHeader({
           </h1>
 
           <p className="owner-location">
-            📍{" "}
-            {owner?.village ||
+            📍 {owner?.village ||
               owner?.location ||
               "Location Not Available"}
           </p>
@@ -41,7 +39,9 @@ export default function DashboardHeader({
         <button
           className="primary-btn"
           onClick={() =>
-            setSoundEnabled(!soundEnabled)
+            setSoundEnabled(
+              !soundEnabled
+            )
           }
         >
           {soundEnabled
