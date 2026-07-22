@@ -39,11 +39,33 @@ export default function OwnerDashboard() {
   const [notifications, setNotifications] =
     useState([]);
   const [selectedView, setSelectedView] =
-    useState("available");
+  useState("available");
+
+const [isScanning, setIsScanning] =
+  useState(false);
+
+const [toast, setToast] =
+  useState(null);
+
+const [soundEnabled, setSoundEnabled] =
+  useState(true);
 
   useEffect(() => {
-    loadOwner();
-  }, []);
+  const ownerId =
+    localStorage.getItem("ownerId");
+
+  if (!ownerId) return;
+
+  const interval =
+    setInterval(() => {
+      loadNotifications(ownerId);
+      loadBookings(ownerId);
+    }, 5000);
+
+  return () =>
+    clearInterval(interval);
+}, []);
+
 
   const logout = () => {
     localStorage.removeItem("ownerId");
