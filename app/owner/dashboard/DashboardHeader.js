@@ -9,36 +9,33 @@ export default function DashboardHeader({
     <div className="glass-card header-card">
       <div className="owner-profile">
         {owner?.photoURL ? (
-          {owner.photoURL}
-        ) : (
-          <div className="profile-emoji">
+          <img
+            src={owner.photoURL}
+            alt="Owner"
+ e-emoji">
             👨‍🌾
           </div>
         )}
 
         <div>
-          <h1>🏡 Farm Owner Dashboard</h1>
-
-          <h3>
+          <h1 className="owner-name">
             {owner?.name || "Owner"}
-          </h3>
+          </h1>
 
-          <p>
+          <p className="owner-location">
             📍{" "}
             {owner?.village ||
               owner?.location ||
               "Location Not Available"}
           </p>
+
+          <p className="owner-rating">
+            ⭐ {owner?.rating || 5}
+          </p>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="header-buttons">
         <button
           className="primary-btn"
           onClick={scanNearbyLabours}
@@ -63,7 +60,7 @@ export default function DashboardHeader({
           className="danger-btn"
           onClick={logout}
         >
-          Logout
+          🚪 Logout
         </button>
       </div>
     </div>
