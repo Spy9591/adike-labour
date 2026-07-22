@@ -11,6 +11,8 @@ import {
   where,
   addDoc,
   doc,
+  updateDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
@@ -69,24 +71,93 @@ export default function OwnerDashboard() {
 
     if (!ownerId) return;
 
-    const interval = setInterval(() => {
-      loadNotifications(ownerId);
-      loadBookings(ownerId);
-    }, 5000);
-
-    return () =>
-      clearInterval(interval);
-  }, []);
-
-  const playNotificationSound = () => {
-    if (!soundEnabled) return;
-
-    const audio = new Audio(
-      "/mixkit-bell-notification-933.wav"
+    const bookingQuery = query(
+      collection(db, "bookings"),
+      where("ownerId", "==", ownerId)
     );
 
-    audio.play();
-  };
+    const unsubscribeBookings =
+      onSnapshot(
+        bookingQuery,
+        (snapshot) => {
+          const running = [];
+          const completed = [];
+          const cancelled = [];
+
+          snapshot.forEach((item) => {
+            const booking = {
+              id: item.id,
+              ...item.data(),
+            };
+
+            if (
+              booking.status ===
+              "accepted"
+            ) {
+              running.push(booking);
+            }
+
+            if (
+              booking.status ===
+              "completed"
+            ) {
+              completed.push(booking);
+            }
+
+            if (
+              booking.status ===
+                "cancelled" ||
+              booking.status ===
+                "rejected"
+            ) {
+              cancelled.push(booking);
+            }
+          });
+
+          setRunningJobs(running);
+          setCompletedJobs(completed);
+          setCancelledJobs(cancelled);
+        }
+      );
+
+    const notifyQuery = query(
+      collection(db, "notifications"),
+      where("userId", "==", ownerId)
+    );
+
+    const unsubscribeNotifications =
+      onSnapshot(
+        notifyQuery,
+        (snapshot) => {
+          const list = [];
+
+          snapshot.forEach((item) => {
+            list.push({
+              id: item.id,
+              ...item.data(),
+            });
+          });
+
+          setNotifications(list);
+        }
+      );
+
+    return () => {
+      unsubscribeBookings();
+      unsubscribeNotifications();
+    };
+  }, []);
+
+  const playNotificationSound =
+    () => {
+      if (!soundEnabled) return;
+
+      const audio = new Audio(
+        "/mixkit-bell-notification-933.wav"
+      );
+
+      audio.play();
+    };
 
   const logout = () => {
     localStorage.removeItem("ownerId");
@@ -118,121 +189,6 @@ export default function OwnerDashboard() {
           ...ownerSnap.data(),
         });
       }
-
-      loadBookings(ownerId);
-      loadNotifications(ownerId);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const loadBookings = async (
-    ownerId
-  ) => {
-    try {
-      const q = query(
-        collection(db, "bookings"),
-        where(
-          "ownerId",
-          "==",
-          ownerId
-        )
-      );
-
-      const snapshot =
-        await getDocs(q);
-
-      const running = [];
-      const completed = [];
-      const cancelled = [];
-
-      snapshot.forEach((item) => {
-        const booking = {
-          id: item.id,
-          ...item.data(),
-        };
-
-        if (
-          booking.status ===
-          "accepted"
-        ) {
-          running.push(booking);
-        }
-
-        if (
-          booking.status ===
-          "completed"
-        ) {
-          completed.push(booking);
-        }
-
-        if (
-          booking.status ===
-            "cancelled" ||
-          booking.status ===
-            "rejected"
-        ) {
-          cancelled.push(booking);
-        }
-      });
-
-      setRunningJobs(running);
-      setCompletedJobs(completed);
-      setCancelledJobs(cancelled);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const loadNotifications = async (
-    ownerId
-  ) => {
-    try {
-      const q = query(
-        collection(
-          db,
-          "notifications"
-        ),
-        where(
-          "userId",
-          "==",
-          ownerId
-        )
-      );
-
-      const snapshot =
-        await getDocs(q);
-
-      const list = [];
-
-      snapshot.forEach((item) => {
-        list.push({
-          id: item.id,
-          ...item.data(),
-        });
-      });
-
-      const hasNewNotification =
-        list.length >
-        notifications.length;
-
-      if (hasNewNotification) {
-        playNotificationSound();
-
-        const latest =
-          list[list.length - 1];
-
-        setToast(
-          latest?.message ||
-            "New Notification"
-        );
-
-        setTimeout(() => {
-          setToast(null);
-        }, 5000);
-      }
-
-      setNotifications(list);
     } catch (error) {
       console.log(error);
     }
@@ -392,10 +348,8 @@ export default function OwnerDashboard() {
         collection(db, "bookings"),
         {
           ownerId,
-
           ownerName:
             owner?.name || "",
-
           ownerPhone:
             owner?.phone || "",
 
@@ -419,6 +373,14 @@ export default function OwnerDashboard() {
           paymentStatus:
             "unpaid",
 
+          totalAmount: 700,
+
+          receivedAmount: 0,
+
+          remainingAmount: 700,
+
+          ownerPaidAmount: 0,
+
           createdAt:
             new Date(),
         }
@@ -429,11 +391,103 @@ export default function OwnerDashboard() {
       );
     } catch (error) {
       console.log(error);
+
       alert(
         "❌ Failed to send booking request"
       );
     }
   };
+
+  const payFullAmount = async (
+    job
+  ) => {
+    try {
+      const amount =
+        job.remainingAmount ??
+        job.totalAmount ??
+        700;
+
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          job.id
+        ),
+        {
+          ownerPaidAmount:
+            amount,
+          paymentType:
+            "Full Payment",
+          paymentStatus:
+            "pending",
+        }
+      );
+
+      alert(
+        `₹${amount} payment submitted`
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const payCustomAmount =
+    async (job) => {
+      try {
+        const value = prompt(
+          "Enter Amount"
+        );
+
+        if (!value) return;
+
+        const amount =
+          Number(value);
+
+        if (
+          isNaN(amount) ||
+          amount <= 0
+        ) {
+          alert(
+            "Invalid Amount"
+          );
+          return;
+        }
+
+        const due =
+          job.remainingAmount ??
+          job.totalAmount ??
+          700;
+
+        if (amount > due) {
+          alert(
+            "Amount cannot exceed due amount"
+          );
+          return;
+        }
+
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            job.id
+          ),
+          {
+            ownerPaidAmount:
+              amount,
+            paymentType:
+              "Partial Payment",
+            paymentStatus:
+              "pending",
+          }
+        );
+
+        alert(
+          `₹${amount} payment submitted`
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   if (!owner) {
     return <LoadingScreen />;
@@ -500,6 +554,12 @@ export default function OwnerDashboard() {
         }
         bookLabour={
           bookLabour
+        }
+        payFullAmount={
+          payFullAmount
+        }
+        payCustomAmount={
+          payCustomAmount
         }
       />
 

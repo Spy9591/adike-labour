@@ -14,8 +14,7 @@ export default function DashboardContent({
   cancelledJobs,
   bookLabour,
   calculateAmount,
-  openPhonePe,
-  payCash,
+  payFullAmount,
   payCustomAmount,
 }) {
   return (
@@ -43,8 +42,7 @@ export default function DashboardContent({
       {selectedView === "completed" && (
         <CompletedJobs
           jobs={completedJobs}
-          openPhonePe={openPhonePe}
-          payCash={payCash}
+          payFullAmount={payFullAmount}
           payCustomAmount={payCustomAmount}
         />
       )}
