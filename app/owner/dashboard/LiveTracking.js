@@ -12,8 +12,8 @@ export default function LiveTracking({
       ) : (
         runningJobs.map((job) => (
           <div
-            className="job-card"
             key={job.id}
+            className="job-card"
           >
             <h3>
               👷 {job.labourName}
@@ -22,18 +22,22 @@ export default function LiveTracking({
             <p>
               Latitude:
               {" "}
-              {job.latitude || "N/A"}
+              {job.latitude ||
+                "N/A"}
             </p>
 
             <p>
               Longitude:
               {" "}
-              {job.longitude || "N/A"}
+              {job.longitude ||
+                "N/A"}
             </p>
 
             {job.latitude &&
               job.longitude && (
-                {`https://maps.google.com/maps?q=${job.latitude},${job.longitude}&z=15&output=embed`}
+                {`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
+                  📍 Open Map
+                </a>
               )}
           </div>
         ))
