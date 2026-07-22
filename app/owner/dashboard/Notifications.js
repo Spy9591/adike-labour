@@ -15,7 +15,6 @@ export default function Notifications({
               className="notification-card"
             >
               <h4>
-                🔔{" "}
                 {notification.title}
               </h4>
 
