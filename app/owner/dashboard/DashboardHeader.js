@@ -8,9 +8,13 @@ export default function DashboardHeader({
   return (
     <div className="glass-card header-card">
       <div className="owner-profile">
+<<<<<<< HEAD
         <div className="profile-emoji">
           👨‍🌾
         </div>
+=======
+        <div className="profile-emoji">👨‍🌾</div>
+>>>>>>> fe87b43 (Fix dashboard build errors)
 
         <div>
           <h1 className="owner-name">

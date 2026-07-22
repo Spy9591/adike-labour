@@ -26,13 +26,6 @@ export default function LiveTracking({
               Longitude:{" "}
               {job.longitude || "N/A"}
             </p>
-
-            {job.latitude &&
-              job.longitude && (
-                {`https://maps.google.com/?q=${job.latitude},${job.longitude}`}
-                  📍 Open Map
-                </a>
-              )}
           </div>
         ))
       )}
