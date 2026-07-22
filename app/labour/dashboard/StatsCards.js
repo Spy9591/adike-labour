@@ -1,139 +1,76 @@
 "use client";
 
-
 import {
-
-FaWallet,
-
-FaHistory,
-
-FaStar,
-
-FaClock
-
-}
-
-from "react-icons/fa";
-
+  FaWallet,
+  FaHistory,
+  FaClock,
+} from "react-icons/fa";
 
 import "./dashboard.css";
 
-
-
 export default function StatsCards({
+  labour,
+  pendingAmount,
+}) {
+  return (
+    <div className="stats">
+      <div className="stat">
+        <FaHistory size={40} />
 
-labour,
+        <h1>
+          {labour.completedJobs || 0}
+        </h1>
 
-pendingAmount
+        <p>
+          Completed Jobs
+        </p>
+      </div>
 
-}){
+      <div className="stat">
+        <FaWallet
+          size={40}
+          color="#22c55e"
+        />
 
+        <h1>
+          ₹
+          {labour.monthlyEarnings ||
+            0}
+        </h1>
 
-return (
+        <p>
+          Monthly Earnings
+        </p>
+      </div>
 
-<div className="stats">
+      <div className="stat">
+        <FaClock
+          size={40}
+          color="#facc15"
+        />
 
+        <h1>
+          ₹{pendingAmount || 0}
+        </h1>
 
-<div className="stat">
+        <p>
+          Pending Payment
+        </p>
+      </div>
 
-<FaHistory size={40}/>
+      <div className="stat">
+        <h1>
+          {labour.onDuty
+            ? "🟢"
+            : "🔴"}
+        </h1>
 
-<h1>
-
-{labour.completedJobs || 0}
-
-</h1>
-
-<p>
-Completed Jobs
-</p>
-
-</div>
-
-
-
-
-<div className="stat">
-
-<FaWallet
-size={40}
-color="#22c55e"
-/>
-
-<h1>
-
-₹{labour.monthlyEarnings || 0}
-
-</h1>
-
-
-<p>
-
-Monthly Earnings
-
-</p>
-
-</div>
-
-
-
-
-<div className="stat">
-
-<FaClock
-size={40}
-color="#facc15"
-/>
-
-
-<h1>
-
-₹{pendingAmount || 0}
-
-</h1>
-
-
-<p>
-
-Pending Payment
-
-</p>
-
-
-</div>
-
-
-
-
-<div className="stat">
-
-<FaStar
-size={40}
-color="gold"
-/>
-
-
-<h1>
-
-{labour.rating || 0}
-
-</h1>
-
-
-<p>
-
-Rating
-
-</p>
-
-
-</div>
-
-
-
-</div>
-
-);
-
-
+        <p>
+          {labour.onDuty
+            ? "On Duty"
+            : "Off Duty"}
+        </p>
+      </div>
+    </div>
+  );
 }

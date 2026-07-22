@@ -1,7 +1,12 @@
 "use client";
 
-import { FaUserCircle, FaMapMarkerAlt, FaStar } from "react-icons/fa";
+import {
+  FaUserCircle,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
+
 import { FiLogOut } from "react-icons/fi";
+
 import "./dashboard.css";
 
 export default function DashboardHeader({
@@ -18,14 +23,20 @@ export default function DashboardHeader({
           </div>
 
           <div>
-            <h1 className="name">{labour.name}</h1>
+            <h1 className="name">
+              {labour.name}
+            </h1>
 
             <p className="location">
-              <FaMapMarkerAlt /> {labour.village}
+              <FaMapMarkerAlt />{" "}
+              {labour.village}
             </p>
 
-            <p className="rating">
-              <FaStar /> {labour.rating || 0}
+            <p>
+              📞{" "}
+              {labour.mobile ||
+                labour.phone ||
+                "Not Available"}
             </p>
           </div>
         </div>
@@ -34,8 +45,7 @@ export default function DashboardHeader({
           className="logoutBtn"
           onClick={logout}
         >
-          <FiLogOut />
-          {" "}Logout
+          <FiLogOut /> Logout
         </button>
       </div>
 

@@ -1,6 +1,13 @@
 "use client";
 
-import { FaCheckCircle, FaTimesCircle, FaBell } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaBell,
+  FaPhone,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
+
 import "./dashboard.css";
 
 export default function BookingRequests({
@@ -36,31 +43,50 @@ export default function BookingRequests({
                 {booking.ownerName}
               </h3>
 
-              <p
-                style={{
-                  color: "#CBD5E1",
-                  marginTop: "6px",
-                }}
-              >
-                📍 New Service Request
+              <p>
+                <FaPhone />{" "}
+                {booking.ownerPhone ||
+                  "No Number"}
+              </p>
+
+              <p>
+                <FaMapMarkerAlt />{" "}
+                {booking.ownerVillage ||
+                  "Village N/A"}
+              </p>
+
+              <p>
+                📏{" "}
+                {booking.distance || 0} KM
               </p>
 
               <p
                 style={{
                   color: "#22C55E",
-                  marginTop: "5px",
+                  marginTop: "8px",
                   fontWeight: "600",
                 }}
               >
-                ₹700 Estimated Payment
+                ₹
+                {booking.totalAmount ||
+                  700}
               </p>
+
+              {booking.ownerLatitude &&
+                booking.ownerLongitude && (
+                  <a
+                    href={`https://maps.google.com/?q=${booking.ownerLatitude},${booking.ownerLongitude}`}
+                    target="_blank"
+             )}
             </div>
 
             <div className="bookingBtns">
               <button
                 className="acceptBtn"
                 onClick={() =>
-                  acceptBooking(booking.id)
+                  acceptBooking(
+                    booking.id
+                  )
                 }
               >
                 <FaCheckCircle />
@@ -70,7 +96,9 @@ export default function BookingRequests({
               <button
                 className="rejectBtn"
                 onClick={() =>
-                  rejectBooking(booking.id)
+                  rejectBooking(
+                    booking.id
+                  )
                 }
               >
                 <FaTimesCircle />
