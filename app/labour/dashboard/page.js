@@ -13,7 +13,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-import { db } from "../../firebase";
+import { db } from "@/firebase";
 
 import DashboardHeader from "./DashboardHeader";
 import StatsCards from "./StatsCards";
@@ -21,7 +21,6 @@ import BookingRequests from "./BookingRequests";
 import RunningJob from "./RunningJob";
 import PendingPayments from "./PendingPayments";
 import OrderHistory from "./OrderHistory";
-import LoadingScreen from "./LoadingScreen";
 
 import "./dashboard.css";
 
@@ -47,16 +46,15 @@ export default function Dashboard() {
     useState(0);
 
   useEffect(() => {
-    loadLabour();
+    loadData();
   }, []);
 
   const playNotificationSound =
     () => {
       try {
-        const audio =
-          new Audio(
-            "/mixkit-bell-notification-933.wav"
-          );
+        const audio = new Audio(
+          "/mixkit-bell-notification-933.wav"
+        );
 
         audio.play();
       } catch (error) {
@@ -64,56 +62,58 @@ export default function Dashboard() {
       }
     };
 
-  const logout = () => {
-    localStorage.removeItem(
-      "labourId"
-    );
+  const loadData = async () => {
+    try {
+      const labourId =
+        localStorage.getItem(
+          "labourId"
+        );
 
-    router.replace("/");
-  };
+      if (!labourId) return;
 
-  const loadLabour = async () => {
-    const labourId =
-      localStorage.getItem(
-        "labourId"
-      );
-
-    if (!labourId) return;
-
-    const snap =
-      await getDoc(
-        doc(
-          db,
-          "labours",
-          labourId
-        )
-      );
-
-    if (snap.exists()) {
-      setLabour({
-        id: snap.id,
-        ...snap.data(),
-      });
-
-      loadBookings(labourId);
-      loadRunning(labourId);
-      loadPendingPayments(
+      const labourRef = doc(
+        db,
+        "labours",
         labourId
       );
-      loadOrders(labourId);
-      loadMonthlyEarnings(
+
+      const labourSnap =
+        await getDoc(labourRef);
+
+      if (!labourSnap.exists())
+        return;
+
+      const labourData = {
+        id: labourSnap.id,
+        ...labourSnap.data(),
+      };
+
+      setLabour(labourData);
+
+      await loadBookings(
         labourId
       );
+
+      await loadPendingPayments(
+        labourId
+      );
+
+      await loadOrders(
+        labourId
+      );
+
+      await loadRunningBooking(
+        labourId
+      );
+    } catch (error) {
+      console.log(error);
     }
   };
 
   const loadBookings =
     async (labourId) => {
       const q = query(
-        collection(
-          db,
-          "bookings"
-        ),
+        collection(db, "bookings"),
         where(
           "labourId",
           "==",
@@ -126,12 +126,12 @@ export default function Dashboard() {
         )
       );
 
-      const snap =
+      const snapshot =
         await getDocs(q);
 
       const list = [];
 
-      snap.forEach((doc) => {
+      snapshot.forEach((doc) => {
         list.push({
           id: doc.id,
           ...doc.data(),
@@ -148,13 +148,10 @@ export default function Dashboard() {
       setBookings(list);
     };
 
-  const loadRunning =
+  const loadRunningBooking =
     async (labourId) => {
       const q = query(
-        collection(
-          db,
-          "bookings"
-        ),
+        collection(db, "bookings"),
         where(
           "labourId",
           "==",
@@ -167,26 +164,26 @@ export default function Dashboard() {
         )
       );
 
-      const snap =
+      const snapshot =
         await getDocs(q);
 
-      if (!snap.empty) {
+      if (!snapshot.empty) {
         setRunningBooking({
-          id: snap.docs[0].id,
-          ...snap.docs[0].data(),
+          id:
+            snapshot.docs[0].id,
+          ...snapshot.docs[0].data(),
         });
       } else {
-        setRunningBooking(null);
+        setRunningBooking(
+          null
+        );
       }
     };
 
   const loadPendingPayments =
     async (labourId) => {
       const q = query(
-        collection(
-          db,
-          "bookings"
-        ),
+        collection(db, "bookings"),
         where(
           "labourId",
           "==",
@@ -199,12 +196,12 @@ export default function Dashboard() {
         )
       );
 
-      const snap =
+      const snapshot =
         await getDocs(q);
 
       const list = [];
 
-      snap.forEach((doc) => {
+      snapshot.forEach((doc) => {
         list.push({
           id: doc.id,
           ...doc.data(),
@@ -218,16 +215,15 @@ export default function Dashboard() {
         playNotificationSound();
       }
 
-      setPendingPayments(list);
+      setPendingPayments(
+        list
+      );
     };
 
   const loadOrders =
     async (labourId) => {
       const q = query(
-        collection(
-          db,
-          "bookings"
-        ),
+        collection(db, "bookings"),
         where(
           "labourId",
           "==",
@@ -235,242 +231,266 @@ export default function Dashboard() {
         )
       );
 
-      const snap =
+      const snapshot =
         await getDocs(q);
 
       const list = [];
 
-      snap.forEach((item) => {
+      let earnings = 0;
+
+      snapshot.forEach((doc) => {
         const data =
-          item.data();
+          doc.data();
+
+        list.push({
+          id: doc.id,
+          ...data,
+        });
 
         if (
-          data.status ===
-            "completed" ||
-          data.status ===
-            "cancelled"
+          data.paymentStatus ===
+          "paid"
         ) {
-          list.push({
-            id: item.id,
-            ...data,
-          });
+          earnings +=
+            data.receivedAmount ||
+            0;
         }
       });
 
       setOrders(list);
+      setMonthlyEarnings(
+        earnings
+      );
     };
 
-  const loadMonthlyEarnings =
-    async (labourId) => {
-      const q = query(
-        collection(
-          db,
-          "bookings"
-        ),
-        where(
-          "labourId",
-          "==",
-          labourId
-        ),
-        where(
-          "paymentStatus",
-          "==",
-          "paid"
-        )
-      );
+  const toggleDuty =
+    async () => {
+      try {
+        const labourId =
+          localStorage.getItem(
+            "labourId"
+          );
 
-      const snap =
-        await getDocs(q);
+        await updateDoc(
+          doc(
+            db,
+            "labours",
+            labourId
+          ),
+          {
+            onDuty:
+              !labour.onDuty,
+          }
+        );
 
-      let total = 0;
-
-      snap.forEach((item) => {
-        total +=
-          item.data()
-            .receivedAmount ||
-          0;
-      });
-
-      setMonthlyEarnings(total);
-    };
-
-  const toggleDuty = async () => {
-    const labourId =
-      localStorage.getItem(
-        "labourId"
-      );
-
-    await updateDoc(
-      doc(
-        db,
-        "labours",
-        labourId
-      ),
-      {
-        onDuty:
-          !labour.onDuty,
+        loadData();
+      } catch (error) {
+        console.log(error);
       }
-    );
-
-    loadLabour();
-  };
+    };
 
   const acceptBooking =
     async (bookingId) => {
-      const labourId =
-        localStorage.getItem(
-          "labourId"
+      try {
+        const labourId =
+          localStorage.getItem(
+            "labourId"
+          );
+
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            bookingId
+          ),
+          {
+            status:
+              "accepted",
+          }
         );
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          bookingId
-        ),
-        {
-          status: "accepted",
-          startTime:
-            new Date(),
-        }
-      );
+        await updateDoc(
+          doc(
+            db,
+            "labours",
+            labourId
+          ),
+          {
+            busy: true,
+            currentBooking:
+              bookingId,
+          }
+        );
 
-      await updateDoc(
-        doc(
-          db,
-          "labours",
-          labourId
-        ),
-        {
-          busy: true,
-          currentBooking:
-            bookingId,
-        }
-      );
-
-      loadLabour();
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
     };
 
   const rejectBooking =
     async (bookingId) => {
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          bookingId
-        ),
-        {
-          status: "rejected",
-        }
-      );
+      try {
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            bookingId
+          ),
+          {
+            status:
+              "rejected",
+          }
+        );
 
-      loadLabour();
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
     };
 
   const completeWork =
     async () => {
-      if (!runningBooking)
-        return;
+      try {
+        if (!runningBooking)
+          return;
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          runningBooking.id
-        ),
-        {
-          status: "completed",
-          paymentStatus:
-            "pending",
-          totalAmount:
-            runningBooking.totalAmount ||
-            700,
-          receivedAmount: 0,
-          remainingAmount:
-            runningBooking.totalAmount ||
-            700,
-          completedAt:
-            new Date(),
-        }
-      );
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            runningBooking.id
+          ),
+          {
+            status:
+              "completed",
 
-      loadLabour();
-    };
+            paymentStatus:
+              "pending",
 
-  const receivePayment =
-    async (payment) => {
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          payment.id
-        ),
-        {
-          paymentStatus:
-            "paid",
-          paymentReceived:
-            true,
-          receivedAmount:
-            payment.remainingAmount,
-          remainingAmount: 0,
-          paymentDate:
-            new Date(),
-        }
-      );
+            totalAmount:
+              runningBooking.totalAmount ||
+              700,
 
-      loadLabour();
-    };
+            remainingAmount:
+              runningBooking.totalAmount ||
+              700,
 
-  const markReady =
-    async () => {
-      const labourId =
-        localStorage.getItem(
-          "labourId"
+            receivedAmount: 0,
+          }
         );
 
-      await updateDoc(
-        doc(
-          db,
-          "labours",
-          labourId
-        ),
-        {
-          busy: false,
-          onDuty: true,
-          currentBooking:
-            null,
-        }
-      );
-
-      loadLabour();
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
     };
 
   const cancelOrder =
     async () => {
-      if (!runningBooking)
-        return;
+      try {
+        if (!runningBooking)
+          return;
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          runningBooking.id
-        ),
-        {
-          status:
-            "cancelled",
-        }
-      );
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            runningBooking.id
+          ),
+          {
+            status:
+              "cancelled",
+          }
+        );
 
-      loadLabour();
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-  if (!labour)
-    return <LoadingScreen />;
+  const receivePayment =
+    async (payment) => {
+      try {
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            payment.id
+          ),
+          {
+            paymentStatus:
+              "paid",
+            paymentReceived:
+              true,
+            receivedAmount:
+              payment.remainingAmount,
+            remainingAmount: 0,
+          }
+        );
+
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  const markReady =
+    async () => {
+      try {
+        const labourId =
+          localStorage.getItem(
+            "labourId"
+          );
+
+        await updateDoc(
+          doc(
+            db,
+            "labours",
+            labourId
+          ),
+          {
+            busy: false,
+            onDuty: true,
+            currentBooking:
+              null,
+          }
+        );
+
+        alert(
+          "✅ Busy Status Removed"
+        );
+
+        loadData();
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  const logout = () => {
+    localStorage.removeItem(
+      "labourId"
+    );
+
+    router.replace("/");
+  };
+
+  if (!labour) {
+    return (
+      <div
+        style={{
+          padding: "40px",
+          color: "white",
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
-
       <DashboardHeader
         labour={labour}
         toggleDuty={toggleDuty}
@@ -483,9 +503,9 @@ export default function Dashboard() {
           monthlyEarnings,
         }}
         pendingAmount={pendingPayments.reduce(
-          (a, b) =>
-            a +
-            (b.remainingAmount ||
+          (sum, item) =>
+            sum +
+            (item.remainingAmount ||
               0),
           0
         )}
@@ -526,7 +546,6 @@ export default function Dashboard() {
       <OrderHistory
         orders={orders}
       />
-
     </div>
   );
 }
