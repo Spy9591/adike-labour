@@ -61,19 +61,6 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  const playNotificationSound =
-    () => {
-      try {
-        const audio = new Audio(
-          "/mixkit-bell-notification-933.wav"
-        );
-
-        audio.play();
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
   const loadData = async () => {
     try {
       const labourId =
@@ -115,7 +102,6 @@ export default function Dashboard() {
       await loadOrders(
         labourId
       );
-
     } catch (error) {
       console.log(error);
     }
@@ -180,7 +166,6 @@ export default function Dashboard() {
 
       snapshot.forEach(
         (item) => {
-
           const data = {
             id: item.id,
             ...item.data(),
@@ -230,10 +215,8 @@ export default function Dashboard() {
           };
 
           if (
-            data.status ===
-              "workCompleted" &&
-            (data.remainingAmount ||
-              0) > 0
+            data.paymentStatus ===
+            "processing"
           ) {
             pending.push(data);
           }
@@ -277,7 +260,6 @@ export default function Dashboard() {
         await getDocs(q);
 
       const list = [];
-
       let earnings = 0;
 
       snapshot.forEach(
@@ -303,33 +285,9 @@ export default function Dashboard() {
       );
 
       setOrders(list);
-
       setMonthlyEarnings(
         earnings
       );
-    };
-
-  const toggleDuty =
-    async () => {
-
-      const labourId =
-        localStorage.getItem(
-          "labourId"
-        );
-
-      await updateDoc(
-        doc(
-          db,
-          "labours",
-          labourId
-        ),
-        {
-          onDuty:
-            !labour.onDuty,
-        }
-      );
-
-      loadData();
     };
 
   const acceptBooking =
@@ -347,8 +305,7 @@ export default function Dashboard() {
           bookingId
         ),
         {
-          status:
-            "accepted",
+          status: "accepted",
         }
       );
 
@@ -378,8 +335,7 @@ export default function Dashboard() {
           bookingId
         ),
         {
-          status:
-            "rejected",
+          status: "rejected",
         }
       );
 
@@ -388,109 +344,123 @@ export default function Dashboard() {
 
   const completeWork =
     async () => {
+      try {
 
-      if (!runningBooking)
-        return;
+        if (!runningBooking)
+          return;
 
-      const amount =
-        runningBooking.totalAmount ||
-        700;
+        const amount =
+          runningBooking.totalAmount ||
+          700;
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          runningBooking.id
-        ),
-        {
-          status:
-            "workCompleted",
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            runningBooking.id
+          ),
+          {
+            status:
+              "workCompleted",
 
-          totalAmount:
-            amount,
+            paymentStatus:
+              "unpaid",
 
-          receivedAmount:
-            runningBooking.receivedAmount ||
-            0,
+            totalAmount:
+              amount,
 
-          remainingAmount:
-            runningBooking.remainingAmount ||
-            amount,
+            receivedAmount:
+              0,
 
-          completedDate:
-            new Date().toLocaleDateString(),
+            remainingAmount:
+              amount,
 
-          completedTime:
-            new Date().toLocaleTimeString(),
+            requestedPaymentAmount:
+              0,
 
-          completedTimestamp:
-            Date.now(),
-        }
-      );
+            completedDate:
+              new Date().toLocaleDateString(),
 
-      loadData();
+            completedTime:
+              new Date().toLocaleTimeString(),
+
+            completedTimestamp:
+              Date.now(),
+          }
+        );
+
+        alert(
+          "✅ Work Completed. Waiting For Owner Payment."
+        );
+
+        loadData();
+
+      } catch (error) {
+        console.log(error);
+      }
     };
 
   const acceptPayment =
     async (payment) => {
+      try {
 
-      const currentPaid =
-        payment.receivedAmount ||
-        0;
+        const amountSent =
+          payment.requestedPaymentAmount ||
+          0;
 
-      const amountSent =
-        payment.requestedPaymentAmount ||
-        0;
+        const updatedPaid =
+          (payment.receivedAmount || 0) +
+          amountSent;
 
-      const totalAmount =
-        payment.totalAmount || 0;
+        const updatedDue =
+          Math.max(
+            (payment.totalAmount || 0) -
+              updatedPaid,
+            0
+          );
 
-      const updatedPaid =
-        currentPaid +
-        amountSent;
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            payment.id
+          ),
+          {
+            receivedAmount:
+              updatedPaid,
 
-      const updatedDue =
-        Math.max(
-          totalAmount -
-            updatedPaid,
-          0
+            remainingAmount:
+              updatedDue,
+
+            requestedPaymentAmount:
+              0,
+
+            paymentStatus:
+              updatedDue === 0
+                ? "paid"
+                : "approved",
+
+            status:
+              updatedDue === 0
+                ? "completed"
+                : "workCompleted",
+
+            paymentApprovedDate:
+              new Date().toLocaleDateString(),
+
+            paymentApprovedTime:
+              new Date().toLocaleTimeString(),
+
+            paymentApprovedTimestamp:
+              Date.now(),
+          }
         );
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          payment.id
-        ),
-        {
-          receivedAmount:
-            updatedPaid,
+        loadData();
 
-          remainingAmount:
-            updatedDue,
-
-          paymentStatus:
-            updatedDue === 0
-              ? "paid"
-              : "approved",
-
-          status:
-            updatedDue === 0
-              ? "completed"
-              : "workCompleted",
-
-          paymentApprovedDate:
-            new Date().toLocaleDateString(),
-
-          paymentApprovedTime:
-            new Date().toLocaleTimeString(),
-
-          paymentApprovedTimestamp:
-            Date.now(),
-        }
-      );
-
-      loadData();
+      } catch (error) {
+        console.log(error);
+      }
     };
 
   const rejectPayment =
@@ -505,56 +475,23 @@ export default function Dashboard() {
         {
           paymentStatus:
             "rejected",
+
+          requestedPaymentAmount:
+            0,
         }
       );
 
       loadData();
     };
+
+  const toggleDuty =
+    async () => {};
 
   const cancelOrder =
-    async () => {
-
-      if (!runningBooking)
-        return;
-
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          runningBooking.id
-        ),
-        {
-          status:
-            "cancelled",
-        }
-      );
-
-      loadData();
-    };
+    async () => {};
 
   const markReady =
-    async () => {
-
-      const labourId =
-        localStorage.getItem(
-          "labourId"
-        );
-
-      await updateDoc(
-        doc(
-          db,
-          "labours",
-          labourId
-        ),
-        {
-          busy: false,
-          currentBooking:
-            null,
-        }
-      );
-
-      loadData();
-    };
+    async () => {};
 
   const logout = () => {
     localStorage.removeItem(
@@ -565,16 +502,7 @@ export default function Dashboard() {
   };
 
   if (!labour) {
-    return (
-      <div
-        style={{
-          color: "white",
-          padding: "40px",
-        }}
-      >
-        Loading...
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
@@ -601,8 +529,7 @@ export default function Dashboard() {
         pendingAmount={pendingPayments.reduce(
           (sum, item) =>
             sum +
-            (item.remainingAmount ||
-              0),
+            (item.remainingAmount || 0),
           0
         )}
       />
