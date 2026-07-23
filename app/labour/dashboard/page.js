@@ -364,7 +364,7 @@ export default function Dashboard() {
               "workCompleted",
 
             paymentStatus:
-              "unpaid",
+              "waitingOwnerPayment",
 
             totalAmount:
               amount,
