@@ -6,6 +6,9 @@ export default function DashboardHeader({
   scanNearbyLabours,
   soundEnabled,
   setSoundEnabled,
+  notifications,
+  showNotifications,
+  setShowNotifications,
 }) {
   return (
     <div className="glass-card header-card">
@@ -26,7 +29,8 @@ export default function DashboardHeader({
               "Location Not Available"}
           </p>
 
-          {(owner?.phone || owner?.mobile) && (
+          {(owner?.phone ||
+            owner?.mobile) && (
             <p>
               📞{" "}
               {owner?.phone ||
@@ -38,14 +42,34 @@ export default function DashboardHeader({
 
       <div className="header-buttons">
         <button
-          className="primary-btn"
+          className="glass-btn"
           onClick={scanNearbyLabours}
         >
           🔍 Scan Labour
         </button>
 
         <button
-          className="primary-btn"
+          className="notification-bell"
+          onClick={() =>
+            setShowNotifications(
+              !showNotifications
+            )
+          }
+        >
+          🔔
+
+          {notifications.length >
+            0 && (
+            <span className="notification-badge">
+              {
+                notifications.length
+              }
+            </span>
+          )}
+        </button>
+
+        <button
+          className="glass-btn"
           onClick={() =>
             setSoundEnabled(
               !soundEnabled
@@ -64,6 +88,46 @@ export default function DashboardHeader({
           🚪 Logout
         </button>
       </div>
+
+      {showNotifications && (
+        <div className="notification-popup">
+          <h3>
+            🔔 Notifications
+          </h3>
+
+          {notifications.length ===
+          0 ? (
+            <p>
+              No Notifications
+            </p>
+          ) : (
+            notifications.map(
+              (
+                notification
+              ) => (
+                <div
+                  key={
+                    notification.id
+                  }
+                  className="popup-notification"
+                >
+                  <strong>
+                    {
+                      notification.title
+                    }
+                  </strong>
+
+                  <p>
+                    {
+                      notification.message
+                    }
+                  </p>
+                </div>
+              )
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }

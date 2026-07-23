@@ -1,3 +1,5 @@
+"use client";
+
 export default function RunningJobs({
   jobs,
   calculateAmount,
@@ -18,9 +20,7 @@ export default function RunningJobs({
               👷 {job.labourName}
             </h3>
 
-            <p>
-              ✅ Accepted
-            </p>
+            <p>✅ Accepted</p>
 
             <p>
               📞 {job.labourPhone}
@@ -28,7 +28,7 @@ export default function RunningJobs({
 
             {job.startTime && (
               <p>
-                💰 Current Amount ₹
+                💰 ₹
                 {calculateAmount(
                   job.startTime
                 )}

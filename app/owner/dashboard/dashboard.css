@@ -1,154 +1,250 @@
-/* ============================= */
-/* MAIN DASHBOARD */
-/* ============================= */
+/* ==========================================
+   GLOBAL
+========================================== */
 
-.dashboard {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(
-    135deg,
-    #0f172a,
-    #1e3a8a,
-    #2563eb
-  );
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, sans-serif;
+  background: #0f172a;
   color: white;
 }
 
-/* ============================= */
-/* GLASS CARD */
-/* ============================= */
+.dashboard {
+  min-height: 100vh;
+  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e293b,
+    #1d4ed8
+  );
+}
+
+/* ==========================================
+   GLASS CARD
+========================================== */
 
 .glass-card {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(25px);
-  border-radius: 24px;
-  padding: 22px;
-  margin-bottom: 20px;
-  border: 1px solid
-    rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 35px
-    rgba(0, 0, 0, 0.25);
+  border-radius: 28px;
+  padding: 20px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 15px 35px rgba(0,0,0,.25);
 }
 
-/* ============================= */
-/* HEADER */
-/* ============================= */
+/* ==========================================
+   HEADER
+========================================== */
 
 .header-card {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
 }
 
 .owner-profile {
   display: flex;
-  align-items: center;
   gap: 15px;
+  align-items: center;
 }
 
 .profile-emoji {
-  width: 75px;
-  height: 75px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-  );
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 34px;
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  );
+  font-size: 32px;
 }
 
 .owner-name {
-  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .owner-location {
-  opacity: 0.85;
+  opacity: .8;
 }
 
 .header-buttons {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
-/* ============================= */
-/* BUTTONS */
-/* ============================= */
+/* ==========================================
+   BUTTONS
+========================================== */
 
-.primary-btn,
-.send-request-btn {
+.glass-btn,
+.primary-btn {
   border: none;
   cursor: pointer;
   color: white;
+
+  padding: 14px 18px;
+
+  border-radius: 18px;
+
   font-weight: 700;
-  padding: 14px 20px;
-  border-radius: 16px;
-  transition: 0.3s;
+
+  background: rgba(255,255,255,.12);
+
+  backdrop-filter: blur(25px);
+
+  box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.2),
+      0 12px 25px rgba(0,0,0,.25);
+
+  transition: .3s;
 }
 
-.primary-btn {
-  background: linear-gradient(
-    135deg,
-    #22c55e,
-    #15803d
-  );
-}
-
-.send-request-btn {
-  width: 100%;
-  margin-top: 15px;
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-  );
-}
-
-.primary-btn:hover,
-.send-request-btn:hover {
-  transform: translateY(-2px);
+.glass-btn:hover,
+.primary-btn:hover {
+  transform: translateY(-3px);
 }
 
 .danger-btn {
   border: none;
   cursor: pointer;
+
   color: white;
-  font-weight: 700;
-  padding: 14px 20px;
-  border-radius: 16px;
+
+  padding: 14px 18px;
+
+  border-radius: 18px;
+
   background: linear-gradient(
     135deg,
     #ef4444,
-    #b91c1c
+    #dc2626
   );
+
+  box-shadow:
+      0 12px 25px rgba(239,68,68,.35);
 }
 
-/* ============================= */
-/* STATS */
-/* ============================= */
+/* ==========================================
+   NOTIFICATION BELL
+========================================== */
+
+.notification-bell {
+  position: relative;
+
+  width: 55px;
+  height: 55px;
+
+  border: none;
+  cursor: pointer;
+
+  border-radius: 18px;
+
+  color: white;
+  font-size: 22px;
+
+  background: rgba(255,255,255,.12);
+
+  backdrop-filter: blur(25px);
+
+  box-shadow:
+      0 12px 25px rgba(0,0,0,.25);
+}
+
+.notification-badge {
+  position: absolute;
+
+  right: -6px;
+  top: -6px;
+
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #ef4444;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-popup {
+  position: absolute;
+
+  right: 0;
+  top: 85px;
+
+  width: 320px;
+
+  max-height: 420px;
+
+  overflow-y: auto;
+
+  background: rgba(255,255,255,.12);
+
+  backdrop-filter: blur(35px);
+
+  border-radius: 24px;
+
+  padding: 20px;
+
+  z-index: 9999;
+}
+
+.popup-notification {
+  background: rgba(255,255,255,.08);
+  padding: 12px;
+  border-radius: 16px;
+  margin-top: 10px;
+}
+
+/* ==========================================
+   STATS
+========================================== */
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(220px, 1fr)
-  );
-  gap: 16px;
+
+  grid-template-columns:
+      repeat(auto-fit, minmax(180px,1fr));
+
+  gap: 15px;
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background: rgba(255,255,255,.08);
+
+  backdrop-filter: blur(25px);
+
+  border-radius: 24px;
+
   padding: 20px;
+
   text-align: center;
+
   cursor: pointer;
-  transition: 0.3s;
+
+  transition: .3s;
 }
 
 .stat-card:hover {
@@ -156,43 +252,33 @@
 }
 
 .stat-card h2 {
-  font-size: 34px;
-  margin: 0;
+  font-size: 30px;
 }
 
-/* ============================= */
-/* NOTIFICATIONS */
-/* ============================= */
-
-.notification-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.08
-  );
-  border-radius: 16px;
-  padding: 15px;
-  margin-top: 10px;
+.stat-card p {
+  margin-top: 8px;
 }
 
-/* ============================= */
-/* LABOUR CARD */
-/* ============================= */
+/* ==========================================
+   LABOUR CARDS
+========================================== */
 
 .modern-labour-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.08
-  );
-  backdrop-filter: blur(25px);
-  border-radius: 24px;
-  padding: 22px;
-  margin-top: 18px;
-  border: 1px solid
-    rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,.08);
+
+  backdrop-filter: blur(30px);
+
+  border-radius: 28px;
+
+  padding: 20px;
+
+  margin-top: 15px;
+
+  transition: .3s;
+}
+
+.modern-labour-card:hover {
+  transform: translateY(-3px);
 }
 
 .labour-header {
@@ -204,132 +290,102 @@
 .labour-avatar {
   width: 70px;
   height: 70px;
+
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-  );
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+
+  font-size: 30px;
+
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #1d4ed8
+  );
 }
 
 .labour-meta {
   display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
   gap: 10px;
+  margin-top: 15px;
 }
 
 .labour-meta span {
-  padding: 8px 14px;
-  border-radius: 20px;
-  background: rgba(
-    255,
-    255,
-    255,
-    0.1
-  );
-}
+  flex: 1;
 
-/* ============================= */
-/* REQUEST UI */
-/* ============================= */
-
-.floating-request-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.12
-  );
-  backdrop-filter: blur(30px);
-  border-radius: 24px;
-  padding: 24px;
   text-align: center;
-  margin-top: 15px;
+
+  padding: 10px;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,.08);
 }
 
-.pending-pill {
-  display: inline-block;
-  padding: 8px 18px;
-  border-radius: 20px;
-  background: #2563eb;
-  margin-top: 10px;
+.scan-request-btn {
+  width: 100%;
+
+  border: none;
+
+  cursor: pointer;
+
+  margin-top: 18px;
+
+  padding: 15px;
+
+  border-radius: 18px;
+
+  color: white;
+
+  font-weight: 700;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #1d4ed8
+    );
 }
 
-.request-timer {
-  color: #fbbf24;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-.pulse-circle {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: #2563eb;
-  margin: auto;
-  animation: pulse 1.5s infinite;
-}
-
-/* ============================= */
-/* RUNNING JOBS */
-/* ============================= */
+/* ==========================================
+   RUNNING JOBS
+========================================== */
 
 .running-job-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.08
-  );
+  background: rgba(255,255,255,.08);
+
+  backdrop-filter: blur(25px);
+
+  border-radius: 24px;
+
   padding: 20px;
-  border-radius: 20px;
+
   margin-top: 15px;
-  border-left: 5px solid
-    #22c55e;
+
+  border-left: 5px solid #22c55e;
 }
 
 .live-badge {
-  margin-top: 12px;
+  display: inline-block;
+
+  margin-top: 15px;
+
+  background: rgba(34,197,94,.18);
+
   color: #22c55e;
+
+  padding: 8px 12px;
+
+  border-radius: 16px;
+
   font-weight: bold;
 }
 
-/* ============================= */
-/* PAYMENT PROCESSING */
-/* ============================= */
-
-.payment-processing-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.12
-  );
-  backdrop-filter: blur(25px);
-  border-radius: 24px;
-  padding: 24px;
-  margin-top: 15px;
-}
-
-.loader-ring {
-  width: 60px;
-  height: 60px;
-  border: 4px solid
-    rgba(255,255,255,0.2);
-  border-top: 4px solid white;
-  border-radius: 50%;
-  margin: 15px auto;
-  animation: spin 1s linear infinite;
-}
-
-/* ============================= */
-/* PAYMENT SUCCESS */
-/* ============================= */
+/* ==========================================
+   PAYMENT CARDS
+========================================== */
 
 .glass-payment-success {
   background: linear-gradient(
@@ -337,28 +393,13 @@
     #22c55e,
     #15803d
   );
-  border-radius: 24px;
+
+  border-radius: 30px;
+
   padding: 24px;
+
   margin-top: 15px;
 }
-
-.success-circle {
-  width: 80px;
-  height: 80px;
-  margin: auto auto 15px;
-  border-radius: 50%;
-  background: white;
-  color: #16a34a;
-  font-size: 38px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-}
-
-/* ============================= */
-/* PARTIAL PAYMENT */
-/* ============================= */
 
 .glass-payment-warning {
   background: linear-gradient(
@@ -366,66 +407,280 @@
     #f97316,
     #ea580c
   );
-  border-radius: 24px;
+
+  border-radius: 30px;
+
   padding: 24px;
+
   margin-top: 15px;
 }
-
-/* ============================= */
-/* PAYMENT ROWS */
-/* ============================= */
 
 .payment-row {
   display: flex;
   justify-content: space-between;
+
   padding: 10px 0;
+
+  border-bottom:
+      1px solid rgba(255,255,255,.15);
 }
 
 .payment-actions {
+  margin-top: 20px;
+
+  display: flex;
+
+  gap: 10px;
+}
+
+.success-circle {
+  width: 85px;
+  height: 85px;
+
+  background: white;
+
+  color: #16a34a;
+
+  margin: auto auto 18px;
+
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 40px;
+  font-weight: bold;
+}
+
+/* ==========================================
+   TRANSACTION DETAILS
+========================================== */
+
+.transaction-section {
+  margin-top: 18px;
+
+  padding-top: 15px;
+
+  border-top:
+      1px solid rgba(255,255,255,.2);
+}
+
+/* ==========================================
+   PAYMENT MODAL
+========================================== */
+
+.payment-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,.65);
+
+  backdrop-filter: blur(10px);
+
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.payment-modal {
+  width: 380px;
+  max-width: 95%;
+
+  border-radius: 30px;
+
+  background: rgba(255,255,255,.12);
+
+  backdrop-filter: blur(35px);
+
+  padding: 30px;
+
+  text-align: center;
+
+  color: white;
+}
+
+.payment-modal-icon {
+  width: 90px;
+  height: 90px;
+
+  margin: auto;
+
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 40px;
+
+  background:
+      linear-gradient(
+      135deg,
+      #22c55e,
+      #16a34a
+      );
+}
+
+.payment-input {
+  width: 100%;
+
+  margin-top: 20px;
+
+  border: none;
+  outline: none;
+
+  color: white;
+
+  padding: 18px;
+
+  font-size: 18px;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.12);
+}
+
+.payment-input::placeholder {
+  color: rgba(255,255,255,.6);
+}
+
+.payment-modal-buttons {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
-  flex-wrap: wrap;
+  margin-top: 20px;
 }
 
-/* ============================= */
-/* TOAST */
-/* ============================= */
+.cancel-btn,
+.pay-btn {
+  flex: 1;
 
-.toast {
-  position: fixed;
-  right: 20px;
-  top: 20px;
-  background: #22c55e;
-  padding: 14px 20px;
-  border-radius: 16px;
+  border: none;
+
+  cursor: pointer;
+
+  padding: 16px;
+
+  border-radius: 18px;
+
   color: white;
-  font-weight: bold;
-  z-index: 9999;
+
+  font-weight: 700;
 }
 
-/* ============================= */
-/* SCAN OVERLAY */
-/* ============================= */
+.cancel-btn {
+  background: rgba(255,255,255,.12);
+}
+
+.pay-btn {
+  background: linear-gradient(
+    135deg,
+    #22c55e,
+    #15803d
+  );
+}
+
+/* ==========================================
+   SCAN OVERLAY
+========================================== */
 
 .scan-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(
-    0,
-    0,
-    0,
-    0.8
-  );
+
+  background: rgba(0,0,0,.65);
+
+  backdrop-filter: blur(10px);
+
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+
+  z-index: 9999;
 }
 
-/* ============================= */
-/* ANIMATIONS */
-/* ============================= */
+.scan-card {
+  width: 340px;
+
+  text-align: center;
+
+  color: white;
+
+  padding: 30px;
+
+  border-radius: 30px;
+
+  background: rgba(255,255,255,.12);
+
+  backdrop-filter: blur(35px);
+}
+
+.scanner-circle {
+  width: 100px;
+  height: 100px;
+
+  border-radius: 50%;
+
+  margin: auto;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 42px;
+
+  background:
+      linear-gradient(
+      135deg,
+      #3b82f6,
+      #2563eb
+      );
+
+  animation: pulse 1.5s infinite;
+}
+
+.scan-loader {
+  width: 60px;
+  height: 60px;
+
+  margin: 22px auto;
+
+  border-radius: 50%;
+
+  border: 5px solid rgba(255,255,255,.2);
+  border-top: 5px solid white;
+
+  animation: spin 1s linear infinite;
+}
+
+/* ==========================================
+   TOAST
+========================================== */
+
+.toast {
+  position: fixed;
+
+  bottom: 20px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(15,23,42,.9);
+
+  backdrop-filter: blur(20px);
+
+  padding: 14px 18px;
+
+  border-radius: 16px;
+
+  z-index: 9999;
+}
+
+/* ==========================================
+   ANIMATIONS
+========================================== */
 
 @keyframes spin {
   from {
@@ -439,22 +694,42 @@
 
 @keyframes pulse {
   0% {
-    transform: scale(0.8);
-    opacity: 1;
+    transform: scale(.95);
+  }
+
+  50% {
+    transform: scale(1.06);
   }
 
   100% {
-    transform: scale(1.8);
-    opacity: 0;
+    transform: scale(.95);
   }
 }
 
-/* ============================= */
-/* MOBILE */
-/* ============================= */
+/* ==========================================
+   MOBILE
+========================================== */
 
 @media (max-width: 768px) {
   .header-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+  }
+
+  .header-buttons button {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .labour-meta {
     flex-direction: column;
   }
 
@@ -462,11 +737,13 @@
     flex-direction: column;
   }
 
-  .labour-meta {
+  .payment-modal-buttons {
     flex-direction: column;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .notification-popup {
+    width: calc(100vw - 30px);
+    left: 15px;
+    right: 15px;
   }
 }

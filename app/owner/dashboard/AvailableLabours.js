@@ -1,3 +1,5 @@
+"use client";
+
 export default function AvailableLabours({
   labours,
   bookLabour,
@@ -21,9 +23,7 @@ export default function AvailableLabours({
 
               <div>
                 <h3>{labour.name}</h3>
-                <p>
-                  📍 {labour.village}
-                </p>
+                <p>📍 {labour.village}</p>
               </div>
             </div>
 
@@ -38,10 +38,8 @@ export default function AvailableLabours({
             </div>
 
             <button
-              className="send-request-btn"
-              onClick={() =>
-                bookLabour(labour)
-              }
+              className="glass-btn"
+              onClick={() => bookLabour(labour)}
             >
               🚀 Send Request
             </button>

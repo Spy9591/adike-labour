@@ -1,14 +1,28 @@
+"use client";
+
 export default function ScanOverlay() {
   return (
     <div className="scan-overlay">
-      <div className="radar"></div>
+      <div className="scan-card">
 
-      <h2>🔍 Scanning Nearby Labour...</h2>
+        <div className="scanner-circle">
+          📡
+        </div>
 
-      <p>
-        Finding available labour near your
-        location
-      </p>
+        <h2>Finding Nearby Labour</h2>
+
+        <p>
+          Searching for available workers
+          around your current location...
+        </p>
+
+        <div className="scan-loader"></div>
+
+        <div className="scan-text">
+          Please wait
+        </div>
+
+      </div>
     </div>
   );
 }
