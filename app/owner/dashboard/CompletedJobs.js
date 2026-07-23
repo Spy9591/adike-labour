@@ -5,26 +5,30 @@ export default function CompletedJobs({
   payFullAmount,
   payCustomAmount,
 }) {
-  const monthlySpend =
-    jobs.reduce(
-      (total, job) =>
-        total +
-        (job.receivedAmount ||
-          0),
-      0
+  const monthlySpend = jobs.reduce(
+    (total, job) =>
+      total + (job.receivedAmount || 0),
+    0
+  );
+
+  const askCustomAmount = (job) => {
+    const amount = prompt(
+      `Enter amount (Due: ₹${job.remainingAmount || 0})`
     );
+
+    if (!amount) return;
+
+    payCustomAmount(job, amount);
+  };
 
   return (
     <div className="glass-card">
+
       <div className="monthly-spend-card">
         <div>
-          <p>
-            Monthly Spend
-          </p>
+          <p>Monthly Spend</p>
 
-          <h1>
-            ₹{monthlySpend}
-          </h1>
+          <h1>₹{monthlySpend}</h1>
         </div>
 
         <div className="monthly-spend-icon">
@@ -43,128 +47,164 @@ export default function CompletedJobs({
           <p>No Jobs Found</p>
         </div>
       ) : (
-        jobs.map((job) => (
-          <div
-            key={job.id}
-            className={
-              (job.remainingAmount ||
-                0) > 0
-                ? "glass-payment-warning"
-                : "glass-payment-success"
-            }
-          >
-            {(job.remainingAmount ||
-              0) > 0 ? (
-              <>
-                <h2>
-                  💰 Pending Payment
-                </h2>
+        jobs.map((job) => {
 
-                <div className="payment-row">
-                  <span>
-                    Total
-                  </span>
+          const total =
+            job.totalAmount || 0;
 
-                  <span>
-                    ₹
-                    {
-                      job.totalAmount
-                    }
-                  </span>
-                </div>
+          const paid =
+            job.receivedAmount || 0;
 
-                <div className="payment-row">
-                  <span>
-                    Paid
-                  </span>
+          const due =
+            job.remainingAmount || 0;
 
-                  <span>
-                    ₹
-                    {job.receivedAmount ||
-                      0}
-                  </span>
-                </div>
+          const isCompleted =
+            due === 0 &&
+            job.status ===
+              "completed";
 
-                <div className="payment-row">
-                  <span>Due</span>
+          return (
+            <div
+              key={job.id}
+              className={
+                isCompleted
+                  ? "glass-payment-success"
+                  : "glass-payment-warning"
+              }
+            >
+              {!isCompleted ? (
+                <>
+                  <h2>
+                    💰 Payment Pending
+                  </h2>
 
-                  <span>
-                    ₹
-                    {
-                      job.remainingAmount
-                    }
-                  </span>
-                </div>
+                  <div className="payment-row">
+                    <span>
+                      Labour
+                    </span>
 
-                <div className="payment-actions">
-                  <button
-                    className="glass-btn"
-                    onClick={() =>
-                      payFullAmount(
-                        job
-                      )
-                    }
-                  >
-                    ✅ Full Payment
-                  </button>
+                    <span>
+                      {job.labourName ||
+                        "-"}
+                    </span>
+                  </div>
 
-                  <button
-                    className="glass-btn"
-                    onClick={() =>
-                      payCustomAmount(
-                        job
-                      )
-                    }
-                  >
-                    💳 Other Amount
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="success-circle">
-                  ✓
-                </div>
+                  <div className="payment-row">
+                    <span>
+                      Total Amount
+                    </span>
 
-                <h2>
-                  Payment Completed
-                </h2>
+                    <span>
+                      ₹{total}
+                    </span>
+                  </div>
 
-                <div className="payment-row">
-                  <span>
-                    Total
-                  </span>
+                  <div className="payment-row paid-row">
+                    <span>
+                      Paid Amount
+                    </span>
 
-                  <span>
-                    ₹
-                    {
-                      job.totalAmount
-                    }
-                  </span>
-                </div>
+                    <span>
+                      ₹{paid}
+                    </span>
+                  </div>
 
-                <div className="payment-row">
-                  <span>
-                    Paid
-                  </span>
+                  <div className="payment-row due-row">
+                    <span>
+                      Due Amount
+                    </span>
 
-                  <span>
-                    ₹
-                    {
-                      job.receivedAmount
-                    }
-                  </span>
-                </div>
+                    <span>
+                      ₹{due}
+                    </span>
+                  </div>
 
-                <div className="payment-row">
-                  <span>Due</span>
+                  {job.paymentStatus ===
+                  "processing" ? (
+                    <div
+                      className="jobStatusBadge"
+                      style={{
+                        marginTop:
+                          "15px",
+                      }}
+                    >
+                      ⏳ Waiting Labour
+                      Approval
+                    </div>
+                  ) : (
+                    <div className="payment-actions">
 
-                  <span>₹0</span>
-                </div>
-              </>
-            )}
-          </div>
-        ))
+                      <button
+                        className="glass-btn"
+                        onClick={() =>
+                          payFullAmount(
+                            job
+                          )
+                        }
+                      >
+                        ✅ Full Payment
+                      </button>
+
+                      <button
+                        className="glass-btn"
+                        onClick={() =>
+                          askCustomAmount(
+                            job
+                          )
+                        }
+                      >
+                        💳 Other Amount
+                      </button>
+
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="success-circle">
+                    ✓
+                  </div>
+
+                  <h2>
+                    ✅ Payment Completed
+                  </h2>
+
+                  <div className="payment-row">
+                    <span>
+                      Total Amount
+                    </span>
+
+                    <span>
+                      ₹{total}
+                    </span>
+                  </div>
+
+                  <div className="payment-row">
+                    <span>
+                      Paid Amount
+                    </span>
+
+                    <span>
+                      ₹{paid}
+                    </span>
+                  </div>
+
+                  <div className="payment-row">
+                    <span>
+                      Due Amount
+                    </span>
+
+                    <span>₹0</span>
+                  </div>
+
+                  <div className="jobStatusBadge">
+                    ✅ Fully Paid
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );
