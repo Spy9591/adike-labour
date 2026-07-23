@@ -1,107 +1,108 @@
 "use client";
 
-
 import {
-FaMoneyBillWave,
-FaMobileAlt
-}
-from "react-icons/fa";
-
+  FaMoneyBillWave,
+  FaCheckCircle,
+} from "react-icons/fa";
 
 import "./dashboard.css";
 
-
-
 export default function PaymentCard({
+  completedPayments,
+}) {
 
-awaitingPayment,
+  if (
+    !completedPayments ||
+    completedPayments.length === 0
+  ) {
+    return null;
+  }
 
-runningBooking,
+  return (
+    <div className="glass-card">
 
-openPhonePe
+      <h2 className="cardTitle">
+        ✅ Completed Payments (
+        {completedPayments.length})
+      </h2>
 
-}){
+      {completedPayments.map((item) => (
+        <div
+          key={item.id}
+          className="completed-payment-card"
+        >
 
+          <div className="successCircle">
+            ✓
+          </div>
 
-if(!awaitingPayment || !runningBooking)
+          <h3>
+            <FaMoneyBillWave />
+            {" "}
+            Payment Completed
+          </h3>
 
-return null;
+          <div className="payment-row">
+            <span>
+              Total Amount
+            </span>
 
+            <span>
+              ₹
+              {item.totalAmount || 0}
+            </span>
+          </div>
 
+          <div className="payment-row paid-row">
+            <span>
+              Paid Amount
+            </span>
 
-return (
+            <span>
+              ₹
+              {item.receivedAmount || 0}
+            </span>
+          </div>
 
-<div className="paymentCard">
+          <div className="payment-row due-row">
+            <span>
+              Due Amount
+            </span>
 
+            <span>₹0</span>
+          </div>
 
-<h2>
+          <div className="payment-row">
+            <span>
+              Completed Date
+            </span>
 
-<FaMoneyBillWave/>
+            <span>
+              {item.paymentApprovedDate ||
+                item.completedDate ||
+                "-"}
+            </span>
+          </div>
 
-{" "}Payment Pending
+          <div className="payment-row">
+            <span>
+              Completed Time
+            </span>
 
-</h2>
+            <span>
+              {item.paymentApprovedTime ||
+                item.completedTime ||
+                "-"}
+            </span>
+          </div>
 
+          <div className="jobStatusBadge">
+            ✅ Fully Paid
+          </div>
 
+        </div>
+      ))}
 
-<h1
-style={{
-marginTop:"20px"
-}}
->
-
-₹{runningBooking.totalAmount || 700}
-
-</h1>
-
-
-
-<p
-style={{
-marginTop:"10px"
-}}
->
-
-Owner:
-
-{" "}
-
-<strong>
-
-{runningBooking.ownerName}
-
-</strong>
-
-</p>
-
-
-<p>
-
-Payment is pending from this owner.
-
-</p>
-
-
-
-<button
-
-className="paymentBtn"
-
-onClick={openPhonePe}
-
->
-
-<FaMobileAlt/>
-
-{" "}Open PhonePe
-
-</button>
-
-
-
-</div>
-
-);
-
-
+    </div>
+  );
 }

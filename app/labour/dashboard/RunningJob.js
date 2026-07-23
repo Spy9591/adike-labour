@@ -36,11 +36,13 @@ export default function RunningJob({
           <div
             style={{
               marginTop: "20px",
-              lineHeight: "32px",
+              lineHeight: "34px",
             }}
           >
             <p>
-              <strong>Owner:</strong>{" "}
+              <strong>
+                Owner:
+              </strong>{" "}
               {runningBooking.ownerName ||
                 "Farm Owner"}
             </p>
@@ -57,67 +59,118 @@ export default function RunningJob({
                 "Location N/A"}
             </p>
 
-            <p>
-              <FaMoneyBillWave /> ₹
-              {runningBooking.totalAmount ||
-                700}
-            </p>
+            <div className="jobStatusBadge">
+              🚜 Running Job
+            </div>
 
-            <p>
-              <strong>Status:</strong>{" "}
-              {runningBooking.paymentStatus ===
-              "pending"
-                ? "💳 Payment Pending"
-                : "🟡 Busy"}
-            </p>
+            <div className="liveBadge">
+              🔴 Live Job
+            </div>
 
-            <p>
+            <div
+              className="amountBox"
+              style={{
+                marginTop: "20px",
+              }}
+            >
+              <div className="payment-row">
+                <span>
+                  Total Amount
+                </span>
+
+                <span>
+                  ₹
+                  {runningBooking.totalAmount ||
+                    700}
+                </span>
+              </div>
+
+              <div className="payment-row paid-row">
+                <span>
+                  Paid Amount
+                </span>
+
+                <span>
+                  ₹
+                  {runningBooking.receivedAmount ||
+                    0}
+                </span>
+              </div>
+
+              <div className="payment-row due-row">
+                <span>
+                  Due Amount
+                </span>
+
+                <span>
+                  ₹
+                  {runningBooking.remainingAmount ||
+                    runningBooking.totalAmount ||
+                    700}
+                </span>
+              </div>
+            </div>
+
+            <p
+              style={{
+                marginTop: "15px",
+              }}
+            >
               <FaClock /> Work In Progress
+            </p>
+
+            <p>
+              <FaMoneyBillWave /> Payment Status:
+              {" "}
+              {runningBooking.paymentStatus ||
+                "Pending"}
             </p>
           </div>
 
           <div className="runningBtns">
+
             <button
               className="completeBtn"
               onClick={completeWork}
             >
-              <FaCheckCircle /> Complete Work
+              <FaCheckCircle />
+              {" "}
+              Complete Work
             </button>
 
             <button
               className="cancelBtn"
               onClick={cancelOrder}
             >
-              <FaTimesCircle /> Cancel Order
+              <FaTimesCircle />
+              {" "}
+              Cancel Order
             </button>
 
             <button
               className="acceptBtn"
               onClick={markReady}
-              style={{
-                background: "#22c55e",
-                color: "#fff",
-              }}
             >
               ✅ Remove Busy Status
             </button>
+
           </div>
         </>
       ) : (
         <div
           style={{
             textAlign: "center",
-            padding: "20px",
+            padding: "25px",
           }}
         >
-          <p>No Running Job</p>
+          <h3>
+            No Running Job
+          </h3>
 
           <button
             className="acceptBtn"
             onClick={markReady}
             style={{
-              background: "#22c55e",
-              color: "#fff",
               marginTop: "15px",
             }}
           >

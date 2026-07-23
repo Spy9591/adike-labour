@@ -17,11 +17,12 @@ export default function BookingRequests({
 }) {
   return (
     <div className="card">
+
       <h2 className="cardTitle">
         <FaBell />
         {" "}
-        Booking Requests
-        ({bookings.length})
+        Booking Requests (
+        {bookings.length})
       </h2>
 
       {bookings.length === 0 ? (
@@ -31,10 +32,12 @@ export default function BookingRequests({
       ) : (
         bookings.map((booking) => (
           <div
-            className="booking"
             key={booking.id}
+            className="booking"
           >
+
             <div>
+
               <h3>
                 {booking.ownerName}
               </h3>
@@ -55,18 +58,23 @@ export default function BookingRequests({
 
               <p>
                 📏{" "}
-                {booking.distance || 0}
+                {booking.distance ||
+                  0}
                 {" "}KM
               </p>
 
-              <p>
+              <div
+                className="jobStatusBadge"
+              >
                 💰 ₹
                 {booking.totalAmount ||
                   700}
-              </p>
+              </div>
+
             </div>
 
             <div className="bookingBtns">
+
               <button
                 className="acceptBtn"
                 onClick={() =>
@@ -76,7 +84,8 @@ export default function BookingRequests({
                 }
               >
                 <FaCheckCircle />
-                {" "}Accept
+                {" "}
+                Accept
               </button>
 
               <button
@@ -88,12 +97,16 @@ export default function BookingRequests({
                 }
               >
                 <FaTimesCircle />
-                {" "}Reject
+                {" "}
+                Reject
               </button>
+
             </div>
+
           </div>
         ))
       )}
+
     </div>
   );
 }

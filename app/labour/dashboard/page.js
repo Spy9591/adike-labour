@@ -20,6 +20,7 @@ import StatsCards from "./StatsCards";
 import BookingRequests from "./BookingRequests";
 import RunningJob from "./RunningJob";
 import PendingPayments from "./PendingPayments";
+import PaymentCard from "./PaymentCard";
 import OrderHistory from "./OrderHistory";
 
 import "./dashboard.css";
@@ -39,11 +40,22 @@ export default function Dashboard() {
   const [pendingPayments, setPendingPayments] =
     useState([]);
 
+  const [completedPayments, setCompletedPayments] =
+    useState([]);
+
   const [orders, setOrders] =
     useState([]);
 
   const [monthlyEarnings, setMonthlyEarnings] =
     useState(0);
+
+  const [notifications, setNotifications] =
+    useState([]);
+
+  const [
+    showNotifications,
+    setShowNotifications,
+  ] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -83,14 +95,16 @@ export default function Dashboard() {
       if (!labourSnap.exists())
         return;
 
-      const labourData = {
+      setLabour({
         id: labourSnap.id,
         ...labourSnap.data(),
-      };
-
-      setLabour(labourData);
+      });
 
       await loadBookings(
+        labourId
+      );
+
+      await loadRunningBooking(
         labourId
       );
 
@@ -102,9 +116,6 @@ export default function Dashboard() {
         labourId
       );
 
-      await loadRunningBooking(
-        labourId
-      );
     } catch (error) {
       console.log(error);
     }
@@ -112,8 +123,12 @@ export default function Dashboard() {
 
   const loadBookings =
     async (labourId) => {
+
       const q = query(
-        collection(db, "bookings"),
+        collection(
+          db,
+          "bookings"
+        ),
         where(
           "labourId",
           "==",
@@ -131,27 +146,26 @@ export default function Dashboard() {
 
       const list = [];
 
-      snapshot.forEach((doc) => {
-        list.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      if (
-        list.length >
-        bookings.length
-      ) {
-        playNotificationSound();
-      }
+      snapshot.forEach(
+        (item) => {
+          list.push({
+            id: item.id,
+            ...item.data(),
+          });
+        }
+      );
 
       setBookings(list);
     };
 
   const loadRunningBooking =
     async (labourId) => {
+
       const q = query(
-        collection(db, "bookings"),
+        collection(
+          db,
+          "bookings"
+        ),
         where(
           "labourId",
           "==",
@@ -174,56 +188,92 @@ export default function Dashboard() {
           ...snapshot.docs[0].data(),
         });
       } else {
-        setRunningBooking(
-          null
-        );
+        setRunningBooking(null);
       }
     };
 
   const loadPendingPayments =
     async (labourId) => {
+
       const q = query(
-        collection(db, "bookings"),
+        collection(
+          db,
+          "bookings"
+        ),
         where(
           "labourId",
           "==",
           labourId
-        ),
-        where(
-          "paymentStatus",
-          "==",
-          "pending"
         )
       );
 
       const snapshot =
         await getDocs(q);
 
-      const list = [];
+      const pending = [];
+      const completed = [];
 
-      snapshot.forEach((doc) => {
-        list.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
+      snapshot.forEach(
+        (item) => {
+
+          const data = {
+            id: item.id,
+            ...item.data(),
+          };
+
+          if (
+            data.paymentStatus ===
+            "processing"
+          ) {
+            pending.push(data);
+          }
+
+          if (
+            data.paymentStatus ===
+              "paid" &&
+            data.remainingAmount ===
+              0
+          ) {
+            completed.push(data);
+          }
+        }
+      );
 
       if (
-        list.length >
+        pending.length >
         pendingPayments.length
       ) {
         playNotificationSound();
+
+        setNotifications(
+          pending.map(
+            (payment) => ({
+              id:
+                payment.id,
+              message:
+                `Amount Sent ₹${payment.requestedPaymentAmount}`,
+            })
+          )
+        );
       }
 
       setPendingPayments(
-        list
+        pending
+      );
+
+      setCompletedPayments(
+        completed
       );
     };
 
   const loadOrders =
     async (labourId) => {
+
       const q = query(
-        collection(db, "bookings"),
+        collection(
+          db,
+          "bookings"
+        ),
         where(
           "labourId",
           "==",
@@ -238,26 +288,29 @@ export default function Dashboard() {
 
       let earnings = 0;
 
-      snapshot.forEach((doc) => {
-        const data =
-          doc.data();
+      snapshot.forEach(
+        (item) => {
 
-        list.push({
-          id: doc.id,
-          ...data,
-        });
+          const data =
+            item.data();
 
-        if (
-          data.paymentStatus ===
-          "paid"
-        ) {
-          earnings +=
-            data.receivedAmount ||
-            0;
+          list.push({
+            id: item.id,
+            ...data,
+          });
+
+          if (
+            data.paymentStatus ===
+            "paid"
+          ) {
+            earnings +=
+              data.receivedAmount || 0;
+          }
         }
-      });
+      );
 
       setOrders(list);
+
       setMonthlyEarnings(
         earnings
       );
@@ -266,6 +319,7 @@ export default function Dashboard() {
   const toggleDuty =
     async () => {
       try {
+
         const labourId =
           localStorage.getItem(
             "labourId"
@@ -284,6 +338,7 @@ export default function Dashboard() {
         );
 
         loadData();
+
       } catch (error) {
         console.log(error);
       }
@@ -291,184 +346,226 @@ export default function Dashboard() {
 
   const acceptBooking =
     async (bookingId) => {
-      try {
-        const labourId =
-          localStorage.getItem(
-            "labourId"
-          );
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            bookingId
-          ),
-          {
-            status:
-              "accepted",
-          }
+      const labourId =
+        localStorage.getItem(
+          "labourId"
         );
 
-        await updateDoc(
-          doc(
-            db,
-            "labours",
-            labourId
-          ),
-          {
-            busy: true,
-            currentBooking:
-              bookingId,
-          }
-        );
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          bookingId
+        ),
+        {
+          status:
+            "accepted",
+        }
+      );
 
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
+      await updateDoc(
+        doc(
+          db,
+          "labours",
+          labourId
+        ),
+        {
+          busy: true,
+          currentBooking:
+            bookingId,
+        }
+      );
+
+      loadData();
     };
 
   const rejectBooking =
     async (bookingId) => {
-      try {
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            bookingId
-          ),
-          {
-            status:
-              "rejected",
-          }
-        );
 
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          bookingId
+        ),
+        {
+          status:
+            "rejected",
+        }
+      );
+
+      loadData();
     };
 
   const completeWork =
     async () => {
-      try {
-        if (!runningBooking)
-          return;
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            runningBooking.id
-          ),
-          {
-            status:
-              "completed",
+      if (!runningBooking)
+        return;
 
-            paymentStatus:
-              "pending",
+      const amount =
+        runningBooking.totalAmount ||
+        700;
 
-            totalAmount:
-              runningBooking.totalAmount ||
-              700,
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          runningBooking.id
+        ),
+        {
+          status:
+            "workCompleted",
 
-            remainingAmount:
-              runningBooking.totalAmount ||
-              700,
+          totalAmount:
+            amount,
 
-            receivedAmount: 0,
-          }
+          receivedAmount:
+            runningBooking.receivedAmount || 0,
+
+          remainingAmount:
+            runningBooking.remainingAmount ||
+            amount,
+
+          completedDate:
+            new Date().toLocaleDateString(),
+
+          completedTime:
+            new Date().toLocaleTimeString(),
+
+          completedTimestamp:
+            Date.now(),
+        }
+      );
+
+      alert(
+        "✅ Work Completed. Waiting for owner payment."
+      );
+
+      loadData();
+    };
+
+  const acceptPayment =
+    async (payment) => {
+
+      const amount =
+        payment.requestedPaymentAmount ||
+        0;
+
+      const updatedPaid =
+        (payment.receivedAmount || 0) +
+        amount;
+
+      const updatedDue =
+        Math.max(
+          (payment.totalAmount || 0) -
+            updatedPaid,
+          0
         );
 
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          payment.id
+        ),
+        {
+          receivedAmount:
+            updatedPaid,
+
+          remainingAmount:
+            updatedDue,
+
+          paymentApprovedDate:
+            new Date().toLocaleDateString(),
+
+          paymentApprovedTime:
+            new Date().toLocaleTimeString(),
+
+          paymentApprovedTimestamp:
+            Date.now(),
+
+          paymentStatus:
+            updatedDue === 0
+              ? "paid"
+              : "approved",
+
+          status:
+            updatedDue === 0
+              ? "completed"
+              : "workCompleted",
+        }
+      );
+
+      loadData();
+    };
+
+  const rejectPayment =
+    async (payment) => {
+
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          payment.id
+        ),
+        {
+          paymentStatus:
+            "rejected",
+        }
+      );
+
+      loadData();
     };
 
   const cancelOrder =
     async () => {
-      try {
-        if (!runningBooking)
-          return;
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            runningBooking.id
-          ),
-          {
-            status:
-              "cancelled",
-          }
-        );
+      if (!runningBooking)
+        return;
 
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
-    };
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          runningBooking.id
+        ),
+        {
+          status:
+            "cancelled",
+        }
+      );
 
-  const receivePayment =
-    async (payment) => {
-      try {
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            payment.id
-          ),
-          {
-            paymentStatus:
-              "paid",
-            paymentReceived:
-              true,
-            receivedAmount:
-              payment.remainingAmount,
-            remainingAmount: 0,
-          }
-        );
-
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
+      loadData();
     };
 
   const markReady =
     async () => {
-      try {
-        const labourId =
-          localStorage.getItem(
-            "labourId"
-          );
 
-        await updateDoc(
-          doc(
-            db,
-            "labours",
-            labourId
-          ),
-          {
-            busy: false,
-            onDuty: true,
-            currentBooking:
-              null,
-          }
+      const labourId =
+        localStorage.getItem(
+          "labourId"
         );
 
-        alert(
-          "✅ Busy Status Removed"
-        );
+      await updateDoc(
+        doc(
+          db,
+          "labours",
+          labourId
+        ),
+        {
+          busy: false,
+          currentBooking:
+            null,
+        }
+      );
 
-        loadData();
-      } catch (error) {
-        console.log(error);
-      }
+      loadData();
     };
 
   const logout = () => {
+
     localStorage.removeItem(
       "labourId"
     );
@@ -491,10 +588,18 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
+
       <DashboardHeader
         labour={labour}
         toggleDuty={toggleDuty}
         logout={logout}
+        notifications={notifications}
+        showNotifications={
+          showNotifications
+        }
+        setShowNotifications={
+          setShowNotifications
+        }
       />
 
       <StatsCards
@@ -505,8 +610,7 @@ export default function Dashboard() {
         pendingAmount={pendingPayments.reduce(
           (sum, item) =>
             sum +
-            (item.remainingAmount ||
-              0),
+            (item.remainingAmount || 0),
           0
         )}
       />
@@ -531,21 +635,33 @@ export default function Dashboard() {
         cancelOrder={
           cancelOrder
         }
-        markReady={markReady}
+        markReady={
+          markReady
+        }
       />
 
       <PendingPayments
         payments={
           pendingPayments
         }
-        receivePayment={
-          receivePayment
+        acceptPayment={
+          acceptPayment
+        }
+        rejectPayment={
+          rejectPayment
+        }
+      />
+
+      <PaymentCard
+        completedPayments={
+          completedPayments
         }
       />
 
       <OrderHistory
         orders={orders}
       />
+
     </div>
   );
 }

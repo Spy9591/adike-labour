@@ -5,28 +5,34 @@ import { useState } from "react";
 import {
   FaUser,
   FaPhone,
-  FaRupeeSign,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 
 import "./dashboard.css";
 
 export default function PendingPayments({
   payments,
-  receivePayment,
+  acceptPayment,
+  rejectPayment,
 }) {
   const [showDetails, setShowDetails] =
-    useState(false);
+    useState(true);
 
   return (
-    <div className="card">
+    <div className="glass-card">
+
       <h2
         className="cardTitle"
-        style={{ cursor: "pointer" }}
         onClick={() =>
           setShowDetails(!showDetails)
         }
+        style={{
+          cursor: "pointer",
+        }}
       >
-        💳 Pending Payments (
+        💳 Amount Sent (
         {payments.length})
         {" "}
         {showDetails ? "▲" : "▼"}
@@ -35,61 +41,134 @@ export default function PendingPayments({
       {showDetails && (
         <>
           {payments.length === 0 ? (
-            <p>No Pending Payments</p>
+            <div className="empty-state">
+              <h3>
+                No Amount Sent
+              </h3>
+            </div>
           ) : (
             payments.map((item) => (
               <div
                 key={item.id}
-                className="booking"
+                className="amount-sent-card"
               >
-                <div>
-                  <h3>
-                    <FaUser />{" "}
-                    {item.ownerName}
-                  </h3>
+                <h3>
+                  <FaMoneyBillWave />
+                  {" "}
+                  Amount Sent
+                </h3>
 
-                  <p>
-                    <FaPhone />{" "}
+                <div className="payment-row">
+                  <span>
+                    <FaUser />
+                    {" "}
+                    Owner
+                  </span>
+                  <span>
+                    {item.ownerName ||
+                      "Farm Owner"}
+                  </span>
+                </div>
+
+                <div className="payment-row">
+                  <span>
+                    <FaPhone />
+                    {" "}
+                    Mobile
+                  </span>
+                  <span>
                     {item.ownerPhone ||
                       "No Number"}
-                  </p>
+                  </span>
+                </div>
 
-                  <p>
-                    Payment Mode:
-                    {" "}
-                    {item.paymentMethod ||
-                      "Cash"}
-                  </p>
+                <div className="payment-row">
+                  <span>
+                    Total Amount
+                  </span>
+                  <span>
+                    ₹{item.totalAmount || 0}
+                  </span>
+                </div>
 
-                  <p>
-                    Amount:
+                <div className="payment-row paid-row">
+                  <span>
+                    Paid Amount
+                  </span>
+                  <span>
                     ₹
-                    {item.totalAmount ||
+                    {item.receivedAmount ||
                       0}
-                  </p>
+                  </span>
+                </div>
 
-                  <p
-                    style={{
-                      color: "#facc15",
-                    }}
-                  >
-                    Pending:
+                <div className="payment-row due-row">
+                  <span>
+                    Due Amount
+                  </span>
+                  <span>
                     ₹
                     {item.remainingAmount ||
                       0}
-                  </p>
+                  </span>
                 </div>
 
-                <button
-                  className="acceptBtn"
-                  onClick={() =>
-                    receivePayment(item)
-                  }
-                >
-                  <FaRupeeSign />
-                  {" "}
-                  Payment Received
-                </button>
+                <div className="payment-row">
+                  <span>
+                    Amount Sent
+                  </span>
+                  <span>
+                    ₹
+                    {item.requestedPaymentAmount ||
+                      0}
+                  </span>
+                </div>
+
+                <div className="payment-row">
+                  <span>
+                    Sent Date
+                  </span>
+                  <span>
+                    {item.paymentRequestDate ||
+                      "-"}
+                  </span>
+                </div>
+
+                <div className="payment-row">
+                  <span>
+                    Sent Time
+                  </span>
+                  <span>
+                    {item.paymentRequestTime ||
+                      "-"}
+                  </span>
+                </div>
+
+                <div className="paymentActionBtns">
+
+                  <button
+                    className="acceptBtn"
+                    onClick={() =>
+                      acceptPayment(item)
+                    }
+                  >
+                    <FaCheckCircle />
+                    {" "}
+                    Accept Amount
+                  </button>
+
+                  <button
+                    className="rejectBtn"
+                    onClick={() =>
+                      rejectPayment(item)
+                    }
+                  >
+                    <FaTimesCircle />
+                    {" "}
+                    Reject Amount
+                  </button>
+
+                </div>
               </div>
             ))
           )}

@@ -50,15 +50,19 @@ export default function StatsCards({
         />
 
         <h1>
-          ₹{pendingAmount || 0}
+          ₹
+          {Number(
+            pendingAmount || 0
+          )}
         </h1>
 
         <p>
-          Pending Payment
+          Due Amount
         </p>
       </div>
 
       <div className="stat">
+
         <h1>
           {labour.busy
             ? "🟡"
@@ -82,6 +86,7 @@ export default function StatsCards({
             ? "Ready For Booking"
             : "Not Receiving Jobs"}
         </small>
+
       </div>
 
     </div>

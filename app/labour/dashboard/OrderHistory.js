@@ -19,9 +19,12 @@ export default function OrderHistory({
 
   return (
     <div className="card">
+
       <h2
         className="cardTitle"
-        style={{ cursor: "pointer" }}
+        style={{
+          cursor: "pointer",
+        }}
         onClick={() =>
           setShowOrders(!showOrders)
         }
@@ -35,47 +38,60 @@ export default function OrderHistory({
       {showOrders && (
         <>
           {orders.length === 0 ? (
-            <p>No Previous Orders</p>
+            <p>
+              No Previous Orders
+            </p>
           ) : (
             orders.map((order) => (
               <div
                 key={order.id}
                 className="booking"
               >
+
                 <div>
+
                   <h3>
                     {order.ownerName}
                   </h3>
 
                   <p>
-                    <FaPhone />{" "}
+                    <FaPhone />
+                    {" "}
                     {order.ownerPhone ||
                       "No Number"}
                   </p>
 
                   <p>
-                    Amount:
+                    Total :
                     ₹
                     {order.totalAmount ||
                       0}
                   </p>
 
-                  <p>
-                    Received:
+                  <p
+                    style={{
+                      color: "#22c55e",
+                    }}
+                  >
+                    Paid :
                     ₹
                     {order.receivedAmount ||
                       0}
                   </p>
 
-                  <p>
-                    Pending:
+                  <p
+                    style={{
+                      color: "#facc15",
+                    }}
+                  >
+                    Due :
                     ₹
                     {order.remainingAmount ||
                       0}
                   </p>
 
                   <p>
-                    Payment Method:
+                    Payment Method :
                     {" "}
                     {order.paymentMethod ||
                       "Cash"}
@@ -84,14 +100,16 @@ export default function OrderHistory({
                   <p>
                     <FaCalendarAlt />
                     {" "}
-                    {order.completedAt
-                      ? new Date(
-                          order.completedAt
-                            .seconds *
-                            1000
-                        ).toLocaleDateString()
-                      : "N/A"}
+                    {order.completedDate ||
+                      "N/A"}
                   </p>
+
+                  <p>
+                    ⏰{" "}
+                    {order.completedTime ||
+                      "-"}
+                  </p>
+
                 </div>
 
                 <div>
@@ -99,7 +117,10 @@ export default function OrderHistory({
                   "completed" ? (
                     <span
                       style={{
-                        color: "#22c55e",
+                        color:
+                          "#22c55e",
+                        fontWeight:
+                          "bold",
                       }}
                     >
                       <FaCheckCircle />
@@ -109,7 +130,10 @@ export default function OrderHistory({
                   ) : (
                     <span
                       style={{
-                        color: "#ef4444",
+                        color:
+                          "#ef4444",
+                        fontWeight:
+                          "bold",
                       }}
                     >
                       <FaTimesCircle />
@@ -118,11 +142,13 @@ export default function OrderHistory({
                     </span>
                   )}
                 </div>
+
               </div>
             ))
           )}
         </>
       )}
+
     </div>
   );
 }
