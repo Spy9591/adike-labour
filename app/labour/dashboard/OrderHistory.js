@@ -22,12 +22,12 @@ export default function OrderHistory({
 
       <h2
         className="cardTitle"
-        style={{
-          cursor: "pointer",
-        }}
         onClick={() =>
           setShowOrders(!showOrders)
         }
+        style={{
+          cursor: "pointer",
+        }}
       >
         📋 Order History (
         {orders.length})
@@ -64,30 +64,27 @@ export default function OrderHistory({
                   <p>
                     Total :
                     ₹
-                    {order.totalAmount ||
-                      0}
+                    {order.totalAmount || 0}
                   </p>
 
                   <p
                     style={{
-                      color: "#22c55e",
+                      color:"#22c55e",
                     }}
                   >
                     Paid :
                     ₹
-                    {order.receivedAmount ||
-                      0}
+                    {order.receivedAmount || 0}
                   </p>
 
                   <p
                     style={{
-                      color: "#facc15",
+                      color:"#facc15",
                     }}
                   >
                     Due :
                     ₹
-                    {order.remainingAmount ||
-                      0}
+                    {order.remainingAmount || 0}
                   </p>
 
                   <p>
@@ -113,14 +110,13 @@ export default function OrderHistory({
                 </div>
 
                 <div>
+
                   {order.status ===
                   "completed" ? (
                     <span
                       style={{
-                        color:
-                          "#22c55e",
-                        fontWeight:
-                          "bold",
+                        color:"#22c55e",
+                        fontWeight:"bold",
                       }}
                     >
                       <FaCheckCircle />
@@ -130,10 +126,8 @@ export default function OrderHistory({
                   ) : (
                     <span
                       style={{
-                        color:
-                          "#ef4444",
-                        fontWeight:
-                          "bold",
+                        color:"#ef4444",
+                        fontWeight:"bold",
                       }}
                     >
                       <FaTimesCircle />
@@ -141,6 +135,7 @@ export default function OrderHistory({
                       Cancelled
                     </span>
                   )}
+
                 </div>
 
               </div>

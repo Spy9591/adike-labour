@@ -26,14 +26,18 @@ export default function BookingRequests({
       </h2>
 
       {bookings.length === 0 ? (
+
         <p>
           No Booking Requests
         </p>
+
       ) : (
+
         bookings.map((booking) => (
+
           <div
-            key={booking.id}
             className="booking"
+            key={booking.id}
           >
 
             <div>
@@ -58,14 +62,11 @@ export default function BookingRequests({
 
               <p>
                 📏{" "}
-                {booking.distance ||
-                  0}
+                {booking.distance || 0}
                 {" "}KM
               </p>
 
-              <div
-                className="jobStatusBadge"
-              >
+              <div className="jobStatusBadge">
                 💰 ₹
                 {booking.totalAmount ||
                   700}
@@ -104,6 +105,7 @@ export default function BookingRequests({
             </div>
 
           </div>
+
         ))
       )}
 

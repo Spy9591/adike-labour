@@ -34,8 +34,7 @@ export default function StatsCards({
         />
 
         <h1>
-          ₹
-          {labour.monthlyEarnings || 0}
+          ₹{labour.monthlyEarnings || 0}
         </h1>
 
         <p>
@@ -50,10 +49,7 @@ export default function StatsCards({
         />
 
         <h1>
-          ₹
-          {Number(
-            pendingAmount || 0
-          )}
+          ₹{pendingAmount || 0}
         </h1>
 
         <p>

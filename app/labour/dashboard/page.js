@@ -83,14 +83,14 @@ export default function Dashboard() {
 
       if (!labourId) return;
 
-      const labourRef = doc(
-        db,
-        "labours",
-        labourId
-      );
-
       const labourSnap =
-        await getDoc(labourRef);
+        await getDoc(
+          doc(
+            db,
+            "labours",
+            labourId
+          )
+        );
 
       if (!labourSnap.exists())
         return;
@@ -170,26 +170,34 @@ export default function Dashboard() {
           "labourId",
           "==",
           labourId
-        ),
-        where(
-          "status",
-          "==",
-          "accepted"
         )
       );
 
       const snapshot =
         await getDocs(q);
 
-      if (!snapshot.empty) {
-        setRunningBooking({
-          id:
-            snapshot.docs[0].id,
-          ...snapshot.docs[0].data(),
-        });
-      } else {
-        setRunningBooking(null);
-      }
+      let activeJob = null;
+
+      snapshot.forEach(
+        (item) => {
+
+          const data = {
+            id: item.id,
+            ...item.data(),
+          };
+
+          if (
+            data.status ===
+            "accepted"
+          ) {
+            activeJob = data;
+          }
+        }
+      );
+
+      setRunningBooking(
+        activeJob
+      );
     };
 
   const loadPendingPayments =
@@ -222,40 +230,24 @@ export default function Dashboard() {
           };
 
           if (
-            data.paymentStatus ===
-            "processing"
+            data.status ===
+              "workCompleted" &&
+            (data.remainingAmount ||
+              0) > 0
           ) {
             pending.push(data);
           }
 
           if (
-            data.paymentStatus ===
-              "paid" &&
-            data.remainingAmount ===
-              0
+            data.status ===
+              "completed" &&
+            (data.remainingAmount ||
+              0) === 0
           ) {
             completed.push(data);
           }
         }
       );
-
-      if (
-        pending.length >
-        pendingPayments.length
-      ) {
-        playNotificationSound();
-
-        setNotifications(
-          pending.map(
-            (payment) => ({
-              id:
-                payment.id,
-              message:
-                `Amount Sent ₹${payment.requestedPaymentAmount}`,
-            })
-          )
-        );
-      }
 
       setPendingPayments(
         pending
@@ -304,7 +296,8 @@ export default function Dashboard() {
             "paid"
           ) {
             earnings +=
-              data.receivedAmount || 0;
+              data.receivedAmount ||
+              0;
           }
         }
       );
@@ -318,30 +311,25 @@ export default function Dashboard() {
 
   const toggleDuty =
     async () => {
-      try {
 
-        const labourId =
-          localStorage.getItem(
-            "labourId"
-          );
-
-        await updateDoc(
-          doc(
-            db,
-            "labours",
-            labourId
-          ),
-          {
-            onDuty:
-              !labour.onDuty,
-          }
+      const labourId =
+        localStorage.getItem(
+          "labourId"
         );
 
-        loadData();
+      await updateDoc(
+        doc(
+          db,
+          "labours",
+          labourId
+        ),
+        {
+          onDuty:
+            !labour.onDuty,
+        }
+      );
 
-      } catch (error) {
-        console.log(error);
-      }
+      loadData();
     };
 
   const acceptBooking =
@@ -422,7 +410,8 @@ export default function Dashboard() {
             amount,
 
           receivedAmount:
-            runningBooking.receivedAmount || 0,
+            runningBooking.receivedAmount ||
+            0,
 
           remainingAmount:
             runningBooking.remainingAmount ||
@@ -439,27 +428,30 @@ export default function Dashboard() {
         }
       );
 
-      alert(
-        "✅ Work Completed. Waiting for owner payment."
-      );
-
       loadData();
     };
 
   const acceptPayment =
     async (payment) => {
 
-      const amount =
+      const currentPaid =
+        payment.receivedAmount ||
+        0;
+
+      const amountSent =
         payment.requestedPaymentAmount ||
         0;
 
+      const totalAmount =
+        payment.totalAmount || 0;
+
       const updatedPaid =
-        (payment.receivedAmount || 0) +
-        amount;
+        currentPaid +
+        amountSent;
 
       const updatedDue =
         Math.max(
-          (payment.totalAmount || 0) -
+          totalAmount -
             updatedPaid,
           0
         );
@@ -477,15 +469,6 @@ export default function Dashboard() {
           remainingAmount:
             updatedDue,
 
-          paymentApprovedDate:
-            new Date().toLocaleDateString(),
-
-          paymentApprovedTime:
-            new Date().toLocaleTimeString(),
-
-          paymentApprovedTimestamp:
-            Date.now(),
-
           paymentStatus:
             updatedDue === 0
               ? "paid"
@@ -495,6 +478,15 @@ export default function Dashboard() {
             updatedDue === 0
               ? "completed"
               : "workCompleted",
+
+          paymentApprovedDate:
+            new Date().toLocaleDateString(),
+
+          paymentApprovedTime:
+            new Date().toLocaleTimeString(),
+
+          paymentApprovedTimestamp:
+            Date.now(),
         }
       );
 
@@ -565,7 +557,6 @@ export default function Dashboard() {
     };
 
   const logout = () => {
-
     localStorage.removeItem(
       "labourId"
     );
@@ -577,8 +568,8 @@ export default function Dashboard() {
     return (
       <div
         style={{
-          padding: "40px",
           color: "white",
+          padding: "40px",
         }}
       >
         Loading...
@@ -610,7 +601,8 @@ export default function Dashboard() {
         pendingAmount={pendingPayments.reduce(
           (sum, item) =>
             sum +
-            (item.remainingAmount || 0),
+            (item.remainingAmount ||
+              0),
           0
         )}
       />
