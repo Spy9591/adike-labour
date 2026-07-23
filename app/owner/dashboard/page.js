@@ -7,10 +7,10 @@ import {
   collection,
   query,
   where,
-  getDoc,
-  getDocs,
   addDoc,
   updateDoc,
+  getDoc,
+  getDocs,
   onSnapshot,
   doc,
 } from "firebase/firestore";
@@ -18,8 +18,8 @@ import {
 import { db } from "../../firebase";
 
 import DashboardHeader from "./DashboardHeader";
-import DashboardContent from "./DashboardContent";
 import StatsCards from "./StatsCards";
+import DashboardContent from "./DashboardContent";
 import LoadingScreen from "./LoadingScreen";
 import ScanOverlay from "./ScanOverlay";
 
@@ -124,16 +124,14 @@ export default function OwnerDashboard() {
   const loadOwner = async () => {
     try {
       const ownerId =
-        localStorage.getItem(
-          "ownerId"
-        );
+        localStorage.getItem("ownerId");
 
       if (!ownerId) {
         router.replace("/");
         return;
       }
 
-      const ownerDoc =
+      const ownerSnapshot =
         await getDoc(
           doc(
             db,
@@ -142,10 +140,10 @@ export default function OwnerDashboard() {
           )
         );
 
-      if (ownerDoc.exists()) {
+      if (ownerSnapshot.exists()) {
         setOwner({
-          id: ownerDoc.id,
-          ...ownerDoc.data(),
+          id: ownerSnapshot.id,
+          ...ownerSnapshot.data(),
         });
       }
     } catch (error) {
@@ -166,7 +164,7 @@ export default function OwnerDashboard() {
             )
           );
 
-        const labours = [];
+        const results = [];
 
         snapshot.forEach(
           (item) => {
@@ -179,7 +177,7 @@ export default function OwnerDashboard() {
               labour.busy !==
                 true
             ) {
-              labours.push({
+              results.push({
                 id: item.id,
                 ...labour,
               });
@@ -188,11 +186,11 @@ export default function OwnerDashboard() {
         );
 
         setAvailableLabours(
-          labours
+          results
         );
 
         showToast(
-          `✅ ${labours.length} Labour Found`
+          `${results.length} labour found`
         );
       } catch (error) {
         console.log(error);
@@ -210,20 +208,21 @@ export default function OwnerDashboard() {
 
       if (!ownerId) return;
 
-      const q = query(
-        collection(
-          db,
-          "notifications"
-        ),
-        where(
-          "userId",
-          "==",
-          ownerId
-        )
-      );
+      const notificationQuery =
+        query(
+          collection(
+            db,
+            "notifications"
+          ),
+          where(
+            "userId",
+            "==",
+            ownerId
+          )
+        );
 
-      return onSnapshot(
-        q,
+      onSnapshot(
+        notificationQuery,
         (
           snapshot
         ) => {
@@ -231,10 +230,10 @@ export default function OwnerDashboard() {
             [];
 
           snapshot.forEach(
-            (docSnap) => {
+            (item) => {
               list.push({
-                id: docSnap.id,
-                ...docSnap.data(),
+                id: item.id,
+                ...item.data(),
               });
             }
           );
@@ -268,7 +267,7 @@ export default function OwnerDashboard() {
           )
         );
 
-      return onSnapshot(
+      onSnapshot(
         bookingQuery,
         (
           snapshot
@@ -339,46 +338,6 @@ export default function OwnerDashboard() {
 
               if (
                 booking.status ===
-                  "pending" &&
-                booking.requestExpiry &&
-                Date.now() >
-                  booking.requestExpiry
-              ) {
-                updateDoc(
-                  doc(
-                    db,
-                    "bookings",
-                    booking.id
-                  ),
-                  {
-                    status:
-                      "expired",
-                  }
-                );
-              }
-
-              if (
-                booking.paymentStatus ===
-                  "processing" &&
-                booking.paymentExpiry &&
-                Date.now() >
-                  booking.paymentExpiry
-              ) {
-                updateDoc(
-                  doc(
-                    db,
-                    "bookings",
-                    booking.id
-                  ),
-                  {
-                    paymentStatus:
-                      "expired",
-                  }
-                );
-              }
-
-              if (
-                booking.status ===
                 "accepted"
               ) {
                 running.push(
@@ -387,14 +346,18 @@ export default function OwnerDashboard() {
               }
 
               if (
+                booking.status ===
+                  "workCompleted" ||
                 booking.paymentStatus ===
                   "processing" ||
                 booking.paymentStatus ===
                   "approved" ||
-                booking.paymentStatus ===
-                  "paid" ||
-                booking.status ===
-                  "completed"
+                (
+                  booking.status ===
+                    "completed" &&
+                  booking.paymentStatus ===
+                    "paid"
+                )
               ) {
                 completed.push(
                   booking
@@ -405,9 +368,9 @@ export default function OwnerDashboard() {
                 booking.status ===
                   "cancelled" ||
                 booking.status ===
-                  "rejected" ||
+                  "expired" ||
                 booking.status ===
-                  "expired"
+                  "rejected"
               ) {
                 cancelled.push(
                   booking
@@ -465,13 +428,6 @@ export default function OwnerDashboard() {
             status:
               "pending",
 
-            requestSentAt:
-              Date.now(),
-
-            requestExpiry:
-              Date.now() +
-              60000,
-
             totalAmount:
               700,
 
@@ -490,6 +446,13 @@ export default function OwnerDashboard() {
             paymentHistory:
               [],
 
+            requestSentAt:
+              Date.now(),
+
+            requestExpiry:
+              Date.now() +
+              60000,
+
             createdAt:
               new Date(),
           }
@@ -498,8 +461,6 @@ export default function OwnerDashboard() {
         showToast(
           "🚀 Request Sent"
         );
-
-        playNotificationSound();
       } catch (error) {
         console.log(error);
       }
@@ -509,37 +470,33 @@ export default function OwnerDashboard() {
     async (
       job
     ) => {
-      try {
-        const meta =
-          getPaymentMeta();
+      const meta =
+        getPaymentMeta();
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            job.id
-          ),
-          {
-            paymentStatus:
-              "processing",
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          job.id
+        ),
+        {
+          paymentStatus:
+            "processing",
 
-            requestedPaymentAmount:
-              job.remainingAmount,
+          requestedPaymentAmount:
+            job.remainingAmount,
 
-            paymentExpiry:
-              Date.now() +
-              120000,
+          paymentExpiry:
+            Date.now() +
+            120000,
 
-            ...meta,
-          }
-        );
+          ...meta,
+        }
+      );
 
-        showToast(
-          "💳 Waiting Labour Approval"
-        );
-      } catch (error) {
-        console.log(error);
-      }
+      showToast(
+        "Waiting Labour Approval"
+      );
     };
 
   const payCustomAmount =
@@ -547,37 +504,33 @@ export default function OwnerDashboard() {
       job,
       amount
     ) => {
-      try {
-        const meta =
-          getPaymentMeta();
+      const meta =
+        getPaymentMeta();
 
-        await updateDoc(
-          doc(
-            db,
-            "bookings",
-            job.id
-          ),
-          {
-            paymentStatus:
-              "processing",
+      await updateDoc(
+        doc(
+          db,
+          "bookings",
+          job.id
+        ),
+        {
+          paymentStatus:
+            "processing",
 
-            requestedPaymentAmount:
-              amount,
+          requestedPaymentAmount:
+            amount,
 
-            paymentExpiry:
-              Date.now() +
-              120000,
+          paymentExpiry:
+            Date.now() +
+            120000,
 
-            ...meta,
-          }
-        );
+          ...meta,
+        }
+      );
 
-        showToast(
-          `💳 ₹${amount} Waiting Approval`
-        );
-      } catch (error) {
-        console.log(error);
-      }
+      showToast(
+        `₹${amount} Waiting Approval`
+      );
     };
 
   const logout = () => {
@@ -589,9 +542,7 @@ export default function OwnerDashboard() {
   };
 
   if (!owner) {
-    return (
-      <LoadingScreen />
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -603,14 +554,14 @@ export default function OwnerDashboard() {
         scanNearbyLabours={
           scanNearbyLabours
         }
+        notifications={
+          notifications
+        }
         soundEnabled={
           soundEnabled
         }
         setSoundEnabled={
           setSoundEnabled
-        }
-        notifications={
-          notifications
         }
         showNotifications={
           showNotifications
