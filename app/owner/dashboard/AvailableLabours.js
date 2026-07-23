@@ -6,10 +6,18 @@ export default function AvailableLabours({
 }) {
   return (
     <div className="glass-card">
-      <h2>👷 Available Labour</h2>
+      <h2>
+        📡 Nearby Available Labour
+      </h2>
 
       {labours.length === 0 ? (
-        <p>No Labour Found</p>
+        <div className="empty-state">
+          <div className="empty-icon">
+            👷
+          </div>
+
+          <p>No Labour Found</p>
+        </div>
       ) : (
         labours.map((labour) => (
           <div
@@ -23,7 +31,10 @@ export default function AvailableLabours({
 
               <div>
                 <h3>{labour.name}</h3>
-                <p>📍 {labour.village}</p>
+
+                <p>
+                  📍 {labour.village}
+                </p>
               </div>
             </div>
 
@@ -38,8 +49,10 @@ export default function AvailableLabours({
             </div>
 
             <button
-              className="glass-btn"
-              onClick={() => bookLabour(labour)}
+              className="scan-request-btn"
+              onClick={() =>
+                bookLabour(labour)
+              }
             >
               🚀 Send Request
             </button>

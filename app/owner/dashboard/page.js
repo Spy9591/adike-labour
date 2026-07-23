@@ -51,7 +51,8 @@ export default function OwnerDashboard() {
   const [isScanning, setIsScanning] =
     useState(false);
 
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] =
+    useState(null);
 
   const [soundEnabled, setSoundEnabled] =
     useState(true);
@@ -60,6 +61,11 @@ export default function OwnerDashboard() {
     showNotifications,
     setShowNotifications,
   ] = useState(false);
+
+  const [
+    lastPaymentStatus,
+    setLastPaymentStatus,
+  ] = useState({});
 
   useEffect(() => {
     loadOwner();
@@ -73,10 +79,9 @@ export default function OwnerDashboard() {
   const showToast = (message) => {
     setToast(message);
 
-    setTimeout(
-      () => setToast(null),
-      3000
-    );
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
   };
 
   const playNotificationSound = () => {
@@ -128,7 +133,7 @@ export default function OwnerDashboard() {
         return;
       }
 
-      const ownerSnap =
+      const ownerDoc =
         await getDoc(
           doc(
             db,
@@ -137,10 +142,10 @@ export default function OwnerDashboard() {
           )
         );
 
-      if (ownerSnap.exists()) {
+      if (ownerDoc.exists()) {
         setOwner({
-          id: ownerSnap.id,
-          ...ownerSnap.data(),
+          id: ownerDoc.id,
+          ...ownerDoc.data(),
         });
       }
     } catch (error) {
@@ -148,132 +153,95 @@ export default function OwnerDashboard() {
     }
   };
 
-  const calculateDistance = (
-    lat1,
-    lon1,
-    lat2,
-    lon2
-  ) => {
-    const R = 6371;
+  const scanNearbyLabours =
+    async () => {
+      try {
+        setIsScanning(true);
 
-    const dLat =
-      ((lat2 - lat1) *
-        Math.PI) /
-      180;
+        const snapshot =
+          await getDocs(
+            collection(
+              db,
+              "labours"
+            )
+          );
 
-    const dLon =
-      ((lon2 - lon1) *
-        Math.PI) /
-      180;
+        const labours = [];
 
-    const a =
-      Math.sin(dLat / 2) *
-        Math.sin(dLat / 2) +
-      Math.cos(
-        (lat1 *
-          Math.PI) /
-          180
-      ) *
-        Math.cos(
-          (lat2 *
-            Math.PI) /
-            180
-        ) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+        snapshot.forEach(
+          (item) => {
+            const labour =
+              item.data();
 
-    const c =
-      2 *
-      Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
+            if (
+              labour.onDuty ===
+                true &&
+              labour.busy !==
+                true
+            ) {
+              labours.push({
+                id: item.id,
+                ...labour,
+              });
+            }
+          }
+        );
+
+        setAvailableLabours(
+          labours
+        );
+
+        showToast(
+          `✅ ${labours.length} Labour Found`
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsScanning(false);
+      }
+    };
+
+  const subscribeNotifications =
+    () => {
+      const ownerId =
+        localStorage.getItem(
+          "ownerId"
+        );
+
+      if (!ownerId) return;
+
+      const q = query(
+        collection(
+          db,
+          "notifications"
+        ),
+        where(
+          "userId",
+          "==",
+          ownerId
+        )
       );
 
-    return R * c;
-  };
-
-  const scanNearbyLabours =
-    () => {
-      setIsScanning(true);
-
-      navigator.geolocation.getCurrentPosition(
-        async (
-          position
+      return onSnapshot(
+        q,
+        (
+          snapshot
         ) => {
-          try {
-            const ownerLat =
-              position.coords
-                .latitude;
+          const list =
+            [];
 
-            const ownerLng =
-              position.coords
-                .longitude;
+          snapshot.forEach(
+            (docSnap) => {
+              list.push({
+                id: docSnap.id,
+                ...docSnap.data(),
+              });
+            }
+          );
 
-            const snapshot =
-              await getDocs(
-                collection(
-                  db,
-                  "labours"
-                )
-              );
-
-            const nearby = [];
-
-            snapshot.forEach(
-              (item) => {
-                const labour =
-                  item.data();
-
-                if (
-                  labour.onDuty ===
-                    true &&
-                  labour.busy !==
-                    true &&
-                  labour.latitude &&
-                  labour.longitude
-                ) {
-                  const distance =
-                    calculateDistance(
-                      ownerLat,
-                      ownerLng,
-                      labour.latitude,
-                      labour.longitude
-                    );
-
-                  if (
-                    distance <=
-                    10
-                  ) {
-                    nearby.push({
-                      id: item.id,
-                      ...labour,
-                      distance:
-                        distance.toFixed(
-                          1
-                        ),
-                    });
-                  }
-                }
-              }
-            );
-
-            setAvailableLabours(
-              nearby
-            );
-
-            showToast(
-              `✅ ${nearby.length} Labour Found`
-            );
-
-            setIsScanning(
-              false
-            );
-          } catch (error) {
-            console.log(error);
-            setIsScanning(
-              false
-            );
-          }
+          setNotifications(
+            list
+          );
         }
       );
     };
@@ -300,7 +268,7 @@ export default function OwnerDashboard() {
           )
         );
 
-      onSnapshot(
+      return onSnapshot(
         bookingQuery,
         (
           snapshot
@@ -314,6 +282,9 @@ export default function OwnerDashboard() {
           const cancelled =
             [];
 
+          const statusMap =
+            {};
+
           snapshot.forEach(
             (item) => {
               const booking =
@@ -321,6 +292,50 @@ export default function OwnerDashboard() {
                   id: item.id,
                   ...item.data(),
                 };
+
+              statusMap[
+                booking.id
+              ] =
+                booking.paymentStatus;
+
+              const previous =
+                lastPaymentStatus[
+                  booking.id
+                ];
+
+              if (
+                previous !==
+                booking.paymentStatus
+              ) {
+                if (
+                  booking.paymentStatus ===
+                  "approved"
+                ) {
+                  playNotificationSound();
+
+                  showToast(
+                    `✅ ${booking.labourName} approved payment`
+                  );
+                }
+
+                if (
+                  booking.paymentStatus ===
+                  "rejected"
+                ) {
+                  showToast(
+                    `❌ ${booking.labourName} rejected payment`
+                  );
+                }
+
+                if (
+                  booking.paymentStatus ===
+                  "expired"
+                ) {
+                  showToast(
+                    "⌛ Payment expired"
+                  );
+                }
+              }
 
               if (
                 booking.status ===
@@ -372,12 +387,14 @@ export default function OwnerDashboard() {
               }
 
               if (
-                booking.status ===
-                  "completed" ||
+                booking.paymentStatus ===
+                  "processing" ||
                 booking.paymentStatus ===
                   "approved" ||
                 booking.paymentStatus ===
-                  "paid"
+                  "paid" ||
+                booking.status ===
+                  "completed"
               ) {
                 completed.push(
                   booking
@@ -399,6 +416,10 @@ export default function OwnerDashboard() {
             }
           );
 
+          setLastPaymentStatus(
+            statusMap
+          );
+
           setRunningJobs(
             running
           );
@@ -409,52 +430,6 @@ export default function OwnerDashboard() {
 
           setCancelledJobs(
             cancelled
-          );
-        }
-      );
-    };
-
-  const subscribeNotifications =
-    () => {
-      const ownerId =
-        localStorage.getItem(
-          "ownerId"
-        );
-
-      if (!ownerId) return;
-
-      const notifyQuery =
-        query(
-          collection(
-            db,
-            "notifications"
-          ),
-          where(
-            "userId",
-            "==",
-            ownerId
-          )
-        );
-
-      onSnapshot(
-        notifyQuery,
-        (
-          snapshot
-        ) => {
-          const list =
-            [];
-
-          snapshot.forEach(
-            (item) => {
-              list.push({
-                id: item.id,
-                ...item.data(),
-              });
-            }
-          );
-
-          setNotifications(
-            list
           );
         }
       );
@@ -506,11 +481,11 @@ export default function OwnerDashboard() {
             remainingAmount:
               700,
 
-            requestedPaymentAmount:
-              0,
-
             paymentStatus:
               "unpaid",
+
+            requestedPaymentAmount:
+              0,
 
             paymentHistory:
               [],
@@ -520,51 +495,52 @@ export default function OwnerDashboard() {
           }
         );
 
-        playNotificationSound();
-
         showToast(
           "🚀 Request Sent"
         );
+
+        playNotificationSound();
       } catch (error) {
         console.log(error);
       }
     };
 
-  const payFullAmount = async (
-    job
-  ) => {
-    try {
-      const meta =
-        getPaymentMeta();
+  const payFullAmount =
+    async (
+      job
+    ) => {
+      try {
+        const meta =
+          getPaymentMeta();
 
-      await updateDoc(
-        doc(
-          db,
-          "bookings",
-          job.id
-        ),
-        {
-          paymentStatus:
-            "processing",
+        await updateDoc(
+          doc(
+            db,
+            "bookings",
+            job.id
+          ),
+          {
+            paymentStatus:
+              "processing",
 
-          requestedPaymentAmount:
-            job.remainingAmount,
+            requestedPaymentAmount:
+              job.remainingAmount,
 
-          paymentExpiry:
-            Date.now() +
-            120000,
+            paymentExpiry:
+              Date.now() +
+              120000,
 
-          ...meta,
-        }
-      );
+            ...meta,
+          }
+        );
 
-      showToast(
-        "💳 Full Payment Request Sent"
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
+        showToast(
+          "💳 Waiting Labour Approval"
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   const payCustomAmount =
     async (
@@ -597,7 +573,7 @@ export default function OwnerDashboard() {
         );
 
         showToast(
-          `💳 ₹${amount} Request Sent`
+          `💳 ₹${amount} Waiting Approval`
         );
       } catch (error) {
         console.log(error);
@@ -613,11 +589,14 @@ export default function OwnerDashboard() {
   };
 
   if (!owner) {
-    return <LoadingScreen />;
+    return (
+      <LoadingScreen />
+    );
   }
 
   return (
     <div className="dashboard">
+
       <DashboardHeader
         owner={owner}
         logout={logout}
@@ -695,6 +674,7 @@ export default function OwnerDashboard() {
       {isScanning && (
         <ScanOverlay />
       )}
+
     </div>
   );
 }

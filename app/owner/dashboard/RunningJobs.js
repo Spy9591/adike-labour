@@ -9,34 +9,56 @@ export default function RunningJobs({
       <h2>🚜 Running Jobs</h2>
 
       {jobs.length === 0 ? (
-        <p>No Running Jobs</p>
+        <div className="empty-state">
+          <div className="empty-icon">
+            🚜
+          </div>
+
+          <p>No Running Jobs</p>
+        </div>
       ) : (
         jobs.map((job) => (
           <div
             key={job.id}
             className="running-job-card"
           >
-            <h3>
-              👷 {job.labourName}
-            </h3>
+            <div className="running-job-header">
+              <div className="labour-avatar">
+                👷
+              </div>
 
-            <p>✅ Accepted</p>
+              <div>
+                <h3>
+                  {job.labourName}
+                </h3>
 
-            <p>
-              📞 {job.labourPhone}
-            </p>
+                <p>
+                  📞 {job.labourPhone}
+                </p>
+              </div>
+            </div>
+
+            <div className="job-status-pill">
+              ✅ Running
+            </div>
 
             {job.startTime && (
-              <p>
-                💰 ₹
-                {calculateAmount(
-                  job.startTime
-                )}
-              </p>
+              <div className="running-payment-box">
+                <span>
+                  Current Amount
+                </span>
+
+                <h2>
+                  ₹
+                  {calculateAmount(
+                    job.startTime
+                  )}
+                </h2>
+              </div>
             )}
 
             <div className="live-badge">
-              🔴 Live Tracking
+              🔴 Live Job
             </div>
           </div>
         ))

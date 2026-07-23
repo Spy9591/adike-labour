@@ -5,37 +5,79 @@ export default function CompletedJobs({
   payFullAmount,
   payCustomAmount,
 }) {
+  const monthlySpend =
+    jobs.reduce(
+      (total, job) =>
+        total +
+        (job.receivedAmount ||
+          0),
+      0
+    );
+
   return (
     <div className="glass-card">
+      <div className="monthly-spend-card">
+        <div>
+          <p>
+            Monthly Spend
+          </p>
+
+          <h1>
+            ₹{monthlySpend}
+          </h1>
+        </div>
+
+        <div className="monthly-spend-icon">
+          💰
+        </div>
+      </div>
+
       <h2>💳 Payments</h2>
 
       {jobs.length === 0 ? (
-        <p>No Jobs Found</p>
+        <div className="empty-state">
+          <div className="empty-icon">
+            💳
+          </div>
+
+          <p>No Jobs Found</p>
+        </div>
       ) : (
         jobs.map((job) => (
           <div
             key={job.id}
             className={
-              (job.remainingAmount || 0) > 0
+              (job.remainingAmount ||
+                0) > 0
                 ? "glass-payment-warning"
                 : "glass-payment-success"
             }
           >
-            {(job.remainingAmount || 0) > 0 ? (
+            {(job.remainingAmount ||
+              0) > 0 ? (
               <>
                 <h2>
                   💰 Pending Payment
                 </h2>
 
                 <div className="payment-row">
-                  <span>Total</span>
                   <span>
-                    ₹{job.totalAmount}
+                    Total
+                  </span>
+
+                  <span>
+                    ₹
+                    {
+                      job.totalAmount
+                    }
                   </span>
                 </div>
 
                 <div className="payment-row">
-                  <span>Paid</span>
+                  <span>
+                    Paid
+                  </span>
+
                   <span>
                     ₹
                     {job.receivedAmount ||
@@ -45,9 +87,12 @@ export default function CompletedJobs({
 
                 <div className="payment-row">
                   <span>Due</span>
+
                   <span>
                     ₹
-                    {job.remainingAmount}
+                    {
+                      job.remainingAmount
+                    }
                   </span>
                 </div>
 
@@ -55,7 +100,9 @@ export default function CompletedJobs({
                   <button
                     className="glass-btn"
                     onClick={() =>
-                      payFullAmount(job)
+                      payFullAmount(
+                        job
+                      )
                     }
                   >
                     ✅ Full Payment
@@ -64,7 +111,9 @@ export default function CompletedJobs({
                   <button
                     className="glass-btn"
                     onClick={() =>
-                      payCustomAmount(job)
+                      payCustomAmount(
+                        job
+                      )
                     }
                   >
                     💳 Other Amount
@@ -82,22 +131,34 @@ export default function CompletedJobs({
                 </h2>
 
                 <div className="payment-row">
-                  <span>Total</span>
                   <span>
-                    ₹{job.totalAmount}
+                    Total
+                  </span>
+
+                  <span>
+                    ₹
+                    {
+                      job.totalAmount
+                    }
                   </span>
                 </div>
 
                 <div className="payment-row">
-                  <span>Paid</span>
+                  <span>
+                    Paid
+                  </span>
+
                   <span>
                     ₹
-                    {job.receivedAmount}
+                    {
+                      job.receivedAmount
+                    }
                   </span>
                 </div>
 
                 <div className="payment-row">
                   <span>Due</span>
+
                   <span>₹0</span>
                 </div>
               </>
